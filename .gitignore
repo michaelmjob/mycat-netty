@@ -1,0 +1,8 @@
+.idea/
+.idea
+*.eml
+*.iml
+target/
+.settings/
+*.log
+
