@@ -1,18 +1,17 @@
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.server.ProtocolProcessException;
-import com.openddal.server.ProtocolTransport;
-import com.openddal.server.TraceableProcessor;
-import com.openddal.server.mysql.parser.*;
-import com.openddal.server.mysql.proto.*;
-import com.openddal.server.mysql.respo.*;
-import com.openddal.server.util.ErrorCode;
-import com.openddal.server.util.MysqlDefs;
-import com.openddal.server.util.ResultSetUtil;
-import com.openddal.server.util.StringUtil;
-import com.openddal.util.JdbcUtils;
-import com.openddal.util.New;
-import com.openddal.util.StringUtils;
+import org.mycat.netty.ProtocolProcessException;
+import org.mycat.netty.ProtocolTransport;
+import org.mycat.netty.TraceableProcessor;
+import org.mycat.netty.mysql.parser.*;
+import org.mycat.netty.mysql.proto.*;
+import org.mycat.netty.mysql.respo.*;
+import org.mycat.netty.util.ErrorCode;
+import org.mycat.netty.util.MysqlDefs;
+import org.mycat.netty.util.ResultSetUtil;
+import org.mycat.netty.util.StringUtil;
+import org.mycat.netty.util.StringUtils;
+
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,12 +186,12 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         List<String> schemas;
         try {
             rs = getConnection().getMetaData().getSchemas();
-            schemas = New.arrayList();
+            schemas = new ArrayList<String>();
             while (rs.next()) {
                 schemas.add(rs.getString("SCHEMA_NAME"));
             }
         } finally {
-            JdbcUtils.closeSilently(rs);
+            //JdbcUtils.closeSilently(rs);
         }
         if (schema == null || !schemas.contains(schema)) {
             throw error(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + schema + "'");
@@ -312,7 +311,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 execute(stmt, ServerParse.SHOW);
             }
         } finally {
-            JdbcUtils.closeSilently(rs);
+            //JdbcUtils.closeSilently(rs);
         }
     }
 
@@ -383,8 +382,8 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 rs = stmt.executeQuery(sql);
                 sendResultSet(rs);
             } finally {
-                JdbcUtils.closeSilently(stmt);
-                JdbcUtils.closeSilently(rs);
+                //JdbcUtils.closeSilently(stmt);
+                //JdbcUtils.closeSilently(rs);
             }
             break;
         case ServerParse.SET:
@@ -393,8 +392,8 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 stmt.execute(sql);
                 sendOk();
             } finally {
-                JdbcUtils.closeSilently(stmt);
-                JdbcUtils.closeSilently(rs);
+                //JdbcUtils.closeSilently(stmt);
+                //JdbcUtils.closeSilently(rs);
             }
             break;
 

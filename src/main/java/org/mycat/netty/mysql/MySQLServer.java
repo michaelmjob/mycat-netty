@@ -1,25 +1,21 @@
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.engine.Constants;
-import com.openddal.server.NettyServer;
-import com.openddal.server.ProtocolHandler;
-import com.openddal.server.ServerArgs;
+import org.mycat.netty.util.Constants;
+import org.mycat.netty.NettyServer;
+import org.mycat.netty.ProtocolHandler;
+import org.mycat.netty.ServerArgs;
 import io.netty.channel.ChannelHandler;
 
 /**
- * 
- * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
- *
+ * Created by snow_young on 16/8/3.
  */
 public class MySQLServer extends NettyServer {
-    
-
 
     public static final String DEFAULT_CHARSET = "utf8";
     
     public static final byte PROTOCOL_VERSION = 10;
 
-    public static final String VERSION_COMMENT = "OpenDDAL MySQL Protocol Server";
+    public static final String VERSION_COMMENT = "Mycat based netty MySQL Protocol Server";
     public static final String SERVER_VERSION = "5.7.13" + VERSION_COMMENT + "-" + Constants.getFullVersion();
 
     public MySQLServer(ServerArgs args) {

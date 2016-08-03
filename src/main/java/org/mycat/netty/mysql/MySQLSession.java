@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.server.Session;
-import com.openddal.server.mysql.proto.Handshake;
-import com.openddal.server.mysql.proto.HandshakeResponse;
-import com.openddal.server.util.CharsetUtil;
-import com.openddal.util.JdbcUtils;
-import com.openddal.util.New;
+import org.mycat.netty.Session;
+import org.mycat.netty.mysql.proto.Handshake;
+import org.mycat.netty.mysql.proto.HandshakeResponse;
+import org.mycat.netty.util.CharsetUtil;
+
 import io.netty.channel.Channel;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,7 +36,7 @@ public class MySQLSession implements Session {
     private Handshake handshake;
     private HandshakeResponse handshakeResponse;
     private Connection engineConnection;
-    private Map<String, Object> attachments = New.hashMap();
+    private Map<String, Object> attachments = new HashMap<String, Object>();
     private String charset;
     private int charsetIndex;
     public String username;
@@ -50,7 +50,6 @@ public class MySQLSession implements Session {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public <T> T setAttachment(String key, T value) {
         T old = (T) attachments.get(key);
         attachments.put(key, value);
@@ -58,7 +57,6 @@ public class MySQLSession implements Session {
     }
 
     @SuppressWarnings("unchecked")
-    @Override
     public <T> T getAttachment(String key) {
         T val = (T) attachments.get(key);
         return val;
@@ -88,7 +86,6 @@ public class MySQLSession implements Session {
     /**
      * @return the engineConnection
      */
-    @Override
     public Connection getEngineConnection() {
         return engineConnection;
     }
@@ -129,7 +126,6 @@ public class MySQLSession implements Session {
     }
 
     public void close() {
-        JdbcUtils.closeSilently(getEngineConnection());
         attachments.clear();
         if (channel != null && channel.isOpen()) {
             channel.attr(Session.CHANNEL_SESSION_KEY).remove();
@@ -160,7 +156,6 @@ public class MySQLSession implements Session {
         }
     }
 
-    @Override
     public int getCharsetIndex() {
         return this.charsetIndex;
     }

@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.server.*;
-import com.openddal.server.mysql.proto.ERR;
+import org.mycat.netty.*;
+import org.mycat.netty.mysql.proto.ERR;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -55,6 +56,7 @@ public class MySQLProtocolHandler extends ProtocolHandler {
     
     /**
      * Execute the processor in user threads.
+     * TODO: JAVA8
      */
     class HandleTask implements Runnable {
         private ChannelHandlerContext ctx;
@@ -65,7 +67,6 @@ public class MySQLProtocolHandler extends ProtocolHandler {
             this.transport = transport;
         }
 
-        @Override
         public void run() {
             try {
                 ProtocolProcessor processor = processorFactory.getProcessor(transport);

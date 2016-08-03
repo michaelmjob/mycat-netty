@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.server.mysql.proto.Packet;
+import org.mycat.netty.mysql.proto.Packet;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -27,11 +30,13 @@ import java.util.List;
  *
  */
 public class MySQLProtocolDecoder extends ByteToMessageDecoder {
+    private static final Logger logger = LoggerFactory.getLogger(MySQLProtocolDecoder.class);
 
     private static final int FRAME_LENGTH_FIELD_LENGTH = 4;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        logger.debug("MYSQLProtocolDecoder start");
         // Make sure if the length field was received.
         if (in.readableBytes() < FRAME_LENGTH_FIELD_LENGTH) {
             // The length field was not received yet - return.

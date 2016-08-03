@@ -1,9 +1,9 @@
 package org.mycat.netty.mysql.respo;
 
-import com.openddal.server.mysql.MySQLProtocolProcessor;
-import com.openddal.server.mysql.parser.ServerParseSet;
-import com.openddal.server.util.ErrorCode;
-import com.openddal.server.util.StringUtil;
+import org.mycat.netty.mysql.MySQLProtocolProcessor;
+import org.mycat.netty.mysql.parser.ServerParseSet;
+import org.mycat.netty.util.ErrorCode;
+import org.mycat.netty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,0 +1,1 @@
+java -jar  /Users/snow_young/secrect/opensource/mycat-netty/target/mycat-1.0-SNAPSHOT.jar

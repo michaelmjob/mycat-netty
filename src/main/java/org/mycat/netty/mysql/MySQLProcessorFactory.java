@@ -1,8 +1,8 @@
-package java.org.mycat.netty.mysql;
+package org.mycat.netty.mysql;
 
-import com.openddal.server.ProcessorFactory;
-import com.openddal.server.ProtocolProcessor;
-import com.openddal.server.ProtocolTransport;
+import org.mycat.netty.ProcessorFactory;
+import org.mycat.netty.ProtocolProcessor;
+import org.mycat.netty.ProtocolTransport;
 
 public class MySQLProcessorFactory implements ProcessorFactory {
     
@@ -12,7 +12,6 @@ public class MySQLProcessorFactory implements ProcessorFactory {
         protocolProcessor = new MySQLProtocolProcessor();
     }
 
-    @Override
     public ProtocolProcessor getProcessor(ProtocolTransport trans) {
         return protocolProcessor;
     }

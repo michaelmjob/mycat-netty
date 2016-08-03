@@ -1,11 +1,11 @@
 package org.mycat.netty.mysql.respo;
 
 import com.google.common.base.Splitter;
-import com.openddal.result.SimpleResultSet;
-import com.openddal.util.New;
+//import org.mycat.netty.mysql.result.SimpleResultSet;
 
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,28 +15,29 @@ public final class SelectVariables {
 
     public static ResultSet getResultSet(String sql) {
 
-        SimpleResultSet result = new SimpleResultSet();
-
-        String subSql = sql.substring(sql.indexOf("SELECT") + 6);
-        List<String> splitVar = Splitter.on(",").omitEmptyStrings().trimResults().splitToList(subSql);
-        splitVar = convert(splitVar);
-        int conut = splitVar.size();
-        for (int i = 0; i < conut; i++) {
-            String s = splitVar.get(i);
-            result.addColumn(s, Types.VARCHAR, Integer.MAX_VALUE, 0);
-        }
-        Object[] row = new Object[conut];
-        for (int i = 0; i < conut; i++) {
-            String s = splitVar.get(i);
-            String value = variables.get(s) == null ? "" : variables.get(s);
-            row[i] = value;
-        }
-        result.addRow(row);
-        return result;
+        return  null;
+//        SimpleResultSet result = new SimpleResultSet();
+//
+//        String subSql = sql.substring(sql.indexOf("SELECT") + 6);
+//        List<String> splitVar = Splitter.on(",").omitEmptyStrings().trimResults().splitToList(subSql);
+//        splitVar = convert(splitVar);
+//        int conut = splitVar.size();
+//        for (int i = 0; i < conut; i++) {
+//            String s = splitVar.get(i);
+//            result.addColumn(s, Types.VARCHAR, Integer.MAX_VALUE, 0);
+//        }
+//        Object[] row = new Object[conut];
+//        for (int i = 0; i < conut; i++) {
+//            String s = splitVar.get(i);
+//            String value = variables.get(s) == null ? "" : variables.get(s);
+//            row[i] = value;
+//        }
+//        result.addRow(row);
+//        return result;
     }
 
     private static List<String> convert(List<String> in) {
-        List<String> out = New.arrayList(in.size());
+        List<String> out = new ArrayList<String>();
         for (String s : in) {
             int asIndex = s.toUpperCase().indexOf(" AS ");
             if (asIndex != -1) {
