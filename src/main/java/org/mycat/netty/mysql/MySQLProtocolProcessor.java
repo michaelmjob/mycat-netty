@@ -318,6 +318,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
     public void processSelect(String stmt, int offs) throws Exception {
         switch (ServerParseSelect.parse(stmt, offs)) {
         case ServerParseSelect.VERSION_COMMENT:
+            //TODO: bugfix
             sendResultSet(ShowVersion.getCommentResultSet());
             break;
         case ServerParseSelect.DATABASE:
@@ -336,7 +337,9 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             sendResultSet(TxResultSet.getIsolationResultSet(getConnection().getTransactionIsolation()));
             break;
         case ServerParseSelect.VERSION:
-            sendResultSet(ShowVersion.getResultSet());
+//            sendResultSet(ShowVersion.getResultSet());
+
+
             break;
         case ServerParseSelect.LAST_INSERT_ID:
             execute("SELECT LAST_INSERT_ID()", ServerParse.SELECT);
@@ -456,6 +459,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         resultset.sequenceId = getNextSequenceId();
         ResultSetPacket.characterSet = getSession().getCharsetIndex();
 
+        // TODO: 保留这个设计
         for (int i = 0; i < colunmCount; i++) {
             int j = i + 1;
             ColumnPacket columnPacket = new ColumnPacket();
