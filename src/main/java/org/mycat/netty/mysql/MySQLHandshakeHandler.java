@@ -57,7 +57,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.debug("MySQLHandshakeHandler channel Active");
+        logger.info("MySQLHandshakeHandler channel Active");
         
         ByteBuf out = ctx.alloc().buffer();
         Handshake handshake = new Handshake();
@@ -93,7 +93,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.debug("channel read {}", msg);
+        logger.info("channel read {}", msg);
 
         ProtocolTransport transport = new ProtocolTransport(ctx.channel(), (ByteBuf) msg);
         if(transport.getSession() == null) {
@@ -141,7 +141,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
      * @return
      */
     private void success(Channel channel) {
-        logger.debug("success info return form MySQLHandshakeHandler");
+        logger.info("success info return form MySQLHandshakeHandler");
         ByteBuf out = channel.alloc().buffer();
         OK ok = new OK();
         ok.sequenceId = 2;
@@ -164,7 +164,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 
         public void run() {
             // maybe error
-            logger.debug("auth task is running");
+            logger.info("auth task is running");
             MySQLSession session = ctx.attr(TMP_SESSION_KEY).getAndRemove();
             HandshakeResponse authReply = null;
             try {
@@ -214,7 +214,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         }
         
         public void error(int errno, String msg) {
-            logger.debug("error mesg : " + msg);
+            logger.info("error mesg : " + msg);
             transport.out.clear();
             ERR err = new ERR();
             err.errorCode = errno;

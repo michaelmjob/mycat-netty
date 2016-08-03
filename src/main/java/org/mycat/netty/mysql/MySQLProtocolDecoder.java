@@ -36,7 +36,7 @@ public class MySQLProtocolDecoder extends ByteToMessageDecoder {
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        logger.debug("MYSQLProtocolDecoder start");
+        logger.info("MYSQLProtocolDecoder start");
         // Make sure if the length field was received.
         if (in.readableBytes() < FRAME_LENGTH_FIELD_LENGTH) {
             // The length field was not received yet - return.

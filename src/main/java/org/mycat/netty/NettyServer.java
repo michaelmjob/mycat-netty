@@ -59,7 +59,7 @@ public abstract class NettyServer {
      */
     public void init() {
 
-        logger.debug("nettyServer init");
+        logger.info("nettyServer init");
         try {
 //            if (!StringUtils.isNullOrEmpty(args.configFile)) {
 //                System.setProperty("ddal.engineConfigLocation", args.configFile);
