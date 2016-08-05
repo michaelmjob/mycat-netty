@@ -1,5 +1,6 @@
 package org.mycat.netty.mysql.packet;
 
+import io.netty.buffer.ByteBuf;
 import org.mycat.netty.ProtocolTransport;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
@@ -41,35 +42,38 @@ public class EOFPacket extends MySQLPacket {
 
     @Override
     public byte[] getPacket() {
-//        getProtocolTransport().out.writeBytes(ok.toPacket());
-//        int size = calcPacketSize();
-//        BufferUtil.writeUB3(buffer, size);
-//        buffer.put(packetId);
-//        buffer.put(fieldCount);
-//        BufferUtil.writeUB2(buffer, warningCount);
-//        BufferUtil.writeUB2(buffer, status);
-//        return buffer;
 
         int size = calcPacketSize();
         byte[] packet = new byte[size+4];
+
         System.arraycopy(Proto.build_fixed_int(3, size), 0, packet, 0, 3);
         System.arraycopy(Proto.build_fixed_int(1, packetId), 0, packet, 3, 1);
         int offset = 4;
-        // main info
+
+//        // main info
         ArrayList<byte[]> payload = new ArrayList<byte[]>();
         payload.add(Proto.build_byte(Flags.EOF));
         payload.add(Proto.build_fixed_int(2, this.warningCount));
         payload.add(Proto.build_fixed_int(2, this.status));
-
+//
         for (byte[] field: payload) {
             System.arraycopy(field, 0, packet, offset, field.length);
             offset += field.length;
         }
-
+        System.out.println("EofPacket array : " + packet);
+        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
-
     }
 
+    @Override
+    public void write(ByteBuf buf){
+        int size = calcPacketSize();
+        buf.writeBytes(Proto.build_fixed_int(3, size));
+        buf.writeBytes(Proto.build_fixed_int(1, packetId));
+        buf.writeBytes(Proto.build_byte(Flags.EOF));
+        buf.writeBytes(Proto.build_fixed_int(2, this.warningCount));
+        buf.writeBytes(Proto.build_fixed_int(2, this.status));
+    }
 
     @Override
     public int calcPacketSize() {

@@ -1,5 +1,6 @@
 package org.mycat.netty.mysql.packet;
 
+import io.netty.buffer.ByteBuf;
 import org.mycat.netty.ProtocolTransport;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
@@ -45,16 +46,9 @@ public class ResultSetHeaderPacket extends MySQLPacket {
     }
 
     @Override
-    public void write(ProtocolTransport transport) {
-
-//        ArrayList<byte[]> payload = new ArrayList<byte[]>();
-//        payload.add(Proto.build_byte(Flags.OK));
-//        payload.add(Proto.build_lenenc_int(this.affectedRows));
-//        payload.add(Proto.build_lenenc_int(this.lastInsertId));
-//        payload.add(Proto.build_fixed_int(2, this.statusFlags));
-//        payload.add(Proto.build_fixed_int(2, this.warnings));
-
+    public void write(ByteBuf buf) {
 //        int size = calcPacketSize();
+//        buffer = c.checkWriteBuffer(buffer, c.getPacketHeaderSize() + size,writeSocketIfFull);
 //        BufferUtil.writeUB3(buffer, size);
 //        buffer.put(packetId);
 //        BufferUtil.writeLength(buffer, fieldCount);
@@ -62,6 +56,34 @@ public class ResultSetHeaderPacket extends MySQLPacket {
 //            BufferUtil.writeLength(buffer, extra);
 //        }
 //        return buffer;
+        int size = calcPacketSize();
+        BufUtil.writeUB3(buf, size);
+        buf.writeByte(packetId);
+        BufUtil.writeLength(buf, fieldCount);
+        if(extra > 0){
+            BufUtil.writeLength(buf, extra);
+        }
+    }
+
+    @Override
+    public byte[] getPacket() {
+        int size = calcPacketSize();
+        byte[] packet = new byte[size + 4];
+        System.arraycopy(Proto.build_fixed_int(3, size), 0, packet, 0, 3);
+        System.arraycopy(Proto.build_fixed_int(1, packetId), 0, packet, 3, 1);
+        int offset = 4;
+        byte[] fieldCountBytes = Proto.build_lenenc_int(fieldCount);
+        System.arraycopy(fieldCountBytes, 0, packet, offset, fieldCountBytes.length);
+        offset += fieldCountBytes.length;
+
+        if(extra > 0){
+            byte[] extraBytes = Proto.build_lenenc_int(extra);
+            System.arraycopy(extraBytes, 0, packet, offset, extraBytes.length);
+
+        }
+        System.out.println("ResultSetHeaderPacket array : " + packet);
+        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+        return packet;
     }
 
     @Override

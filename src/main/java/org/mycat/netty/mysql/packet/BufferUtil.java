@@ -1,5 +1,7 @@
 package org.mycat.netty.mysql.packet;
 
+import io.netty.buffer.ByteBuf;
+
 import java.nio.ByteBuffer;
 
 /**

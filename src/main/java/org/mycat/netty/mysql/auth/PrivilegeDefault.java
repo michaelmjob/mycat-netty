@@ -44,12 +44,14 @@ public class PrivilegeDefault implements Privilege {
     }
 
     public boolean userExists(String user) {
+        logger.info("check userExists {}", user);
         String property = prop.getProperty("users");
         String[] users = StringUtil.split(property, ',', true);
         return Arrays.asList(users).contains(user);
     }
 
     public boolean schemaExists(String user, String schema) {
+        logger.info("check schemaexists {} for user {}", schema, user);
         String property = prop.getProperty(user + ".schemas");
         String[] schemas = StringUtil.split(property, ',', true);
         return Arrays.asList(schemas).contains(schema);
@@ -61,7 +63,7 @@ public class PrivilegeDefault implements Privilege {
 
     @Override
     public boolean checkPassword(String user, String password, String salt) {
-
+        logger.info("check password for user {} with pass {} and salt {}", user, password, salt);
         String localPass = password(user);
         try {
             if(StringUtil.isEmpty(localPass) && StringUtil.isEmpty(password)){

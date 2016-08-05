@@ -1,5 +1,6 @@
 package org.mycat.netty.mysql.packet;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.mycat.netty.ProtocolTransport;
 
@@ -120,7 +121,7 @@ public abstract class MySQLPacket {
     public static final byte COM_REGISTER_SLAVE = 21;
 
     /**
-     * mysql_stmt_prepare  在这里
+     * mysql_stmt_prepare
      */
     public static final byte COM_STMT_PREPARE = 22;
 
@@ -174,6 +175,11 @@ public abstract class MySQLPacket {
     public byte[] getPacket() {
         throw new UnsupportedOperationException();
     }
+
+    public void write(ByteBuf buf){ throw new UnsupportedOperationException(); };
+
+
+
     /**
      * 计算数据包大小，不包含包头长度。
      */

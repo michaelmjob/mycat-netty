@@ -6,6 +6,7 @@ import org.mycat.netty.TraceableProcessor;
 import org.mycat.netty.mysql.parser.*;
 import org.mycat.netty.mysql.proto.*;
 import org.mycat.netty.mysql.respo.*;
+import org.mycat.netty.mysql.response.ShowVersion;
 import org.mycat.netty.util.ErrorCode;
 import org.mycat.netty.util.MysqlDefs;
 import org.mycat.netty.util.ResultSetUtil;
@@ -22,7 +23,7 @@ import java.util.List;
 
 public class MySQLProtocolProcessor extends TraceableProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLProtocolProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MySQLProtocolProcessor.class);
 
     protected void doProcess(ProtocolTransport transport) throws Exception {
 
@@ -31,7 +32,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         buffer.readBytes(packet);
         setSequenceId(Packet.getSequenceId(packet));
         byte type = Packet.getType(packet);
-
+        logger.info("type : {}", type);
         switch (type) {
         case Flags.COM_INIT_DB:
             sendOk();
@@ -274,7 +275,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             break;
         default:
             StringBuilder s = new StringBuilder();
-            LOGGER.warn(s.append(stmt).append(" is not executed").toString());
+            logger.warn(s.append(stmt).append(" is not executed").toString());
             sendOk();
         }
     }
@@ -298,7 +299,9 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 unsupported("PHYSICAL_SLOW");
                 break;
             case ServerParseShow.VARIABLES:
+                logger.info("enter show variables");
                 sendResultSet(ShowVariables.getResultSet());
+                logger.info("return enter show variables");
                 break;
             case ServerParseShow.SESSION_STATUS:
             case ServerParseShow.SESSION_VARIABLES:
@@ -319,7 +322,10 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         switch (ServerParseSelect.parse(stmt, offs)) {
         case ServerParseSelect.VERSION_COMMENT:
             //TODO: bugfix
-            sendResultSet(ShowVersion.getCommentResultSet());
+            logger.info("run into showversion");
+//            sendResultSet(ShowVersion.getCommentResultSet());
+            ShowVersion.execute(getProtocolTransport());
+            logger.info("return showversion");
             break;
         case ServerParseSelect.DATABASE:
             execute("SELECT SCHEMA()", ServerParse.SELECT);
@@ -338,8 +344,6 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             break;
         case ServerParseSelect.VERSION:
 //            sendResultSet(ShowVersion.getResultSet());
-
-
             break;
         case ServerParseSelect.LAST_INSERT_ID:
             execute("SELECT LAST_INSERT_ID()", ServerParse.SELECT);
