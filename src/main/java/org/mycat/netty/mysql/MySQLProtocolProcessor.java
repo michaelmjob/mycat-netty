@@ -8,6 +8,7 @@ import org.mycat.netty.mysql.proto.*;
 import org.mycat.netty.mysql.respo.*;
 import org.mycat.netty.mysql.response.ShowVersion;
 import org.mycat.netty.mysql.response.ShowVariables;
+import org.mycat.netty.mysql.response.SelectVariables;
 import org.mycat.netty.util.ErrorCode;
 import org.mycat.netty.util.MysqlDefs;
 import org.mycat.netty.util.ResultSetUtil;
@@ -35,83 +36,83 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         byte type = Packet.getType(packet);
         logger.info("type : {}", type);
         switch (type) {
-        case Flags.COM_INIT_DB:
-            sendOk();
-            break;
-        case Flags.COM_QUERY:
-            String query = Com_Query.loadFromPacket(packet).query;
-            getTrace().protocol("COM_QUERY").sql(query);
-            query(query);
-            break;
-        case Flags.COM_PING:
-            getTrace().protocol("COM_PING");
-            sendOk();
-            break;
-        case Flags.COM_QUIT:
-            getTrace().protocol("COM_QUIT");
-            getSession().close();
-            getProtocolTransport().close();
-            break;
-        case Flags.COM_PROCESS_KILL:
-            getTrace().protocol("COM_PROCESS_KILL");
-        case Flags.COM_STMT_PREPARE:
-            getTrace().protocol("COM_STMT_PREPARE");
-        case Flags.COM_STMT_EXECUTE:
-            getTrace().protocol("COM_STMT_EXECUTE");
-        case Flags.COM_STMT_CLOSE:
-            getTrace().protocol("COM_STMT_CLOSE");
-            break;
-        case Flags.COM_SLEEP:// deprecated
-            getTrace().protocol("COM_SLEEP");
-        case Flags.COM_FIELD_LIST:
-            getTrace().protocol("COM_FIELD_LIST");
-        case Flags.COM_CREATE_DB:
-            getTrace().protocol("COM_CREATE_DB");
-        case Flags.COM_DROP_DB:
-            getTrace().protocol("COM_DROP_DB");
-        case Flags.COM_REFRESH:
-            getTrace().protocol("COM_REFRESH");
-        case Flags.COM_SHUTDOWN:
-            getTrace().protocol("COM_SHUTDOWN");
-        case Flags.COM_STATISTICS:
-            getTrace().protocol("COM_STATISTICS");
-        case Flags.COM_PROCESS_INFO: // deprecated
-            getTrace().protocol("COM_PROCESS_INFO");
-        case Flags.COM_CONNECT:// deprecated
-            getTrace().protocol("COM_CONNECT");
-        case Flags.COM_DEBUG:
-            getTrace().protocol("COM_DEBUG");
-        case Flags.COM_TIME:// deprecated
-            getTrace().protocol("COM_TIME");
-        case Flags.COM_DELAYED_INSERT:// deprecated
-            getTrace().protocol("COM_DELAYED_INSERT");
-        case Flags.COM_CHANGE_USER:
-            getTrace().protocol("COM_CHANGE_USER");
-        case Flags.COM_BINLOG_DUMP:
-            getTrace().protocol("COM_BINLOG_DUMP");
-        case Flags.COM_TABLE_DUMP:
-            getTrace().protocol("COM_TABLE_DUMP");
-        case Flags.COM_CONNECT_OUT:
-            getTrace().protocol("COM_CONNECT_OUT");
-        case Flags.COM_REGISTER_SLAVE:
-            getTrace().protocol("COM_REGISTER_SLAVE");
-        case Flags.COM_STMT_SEND_LONG_DATA:
-            getTrace().protocol("COM_STMT_SEND_LONG_DATA");
-        case Flags.COM_STMT_RESET:
-            getTrace().protocol("COM_STMT_CLOSE");
-        case Flags.COM_SET_OPTION:
-            getTrace().protocol("COM_STMT_RESET");
-        case Flags.COM_STMT_FETCH:
-            getTrace().protocol("COM_STMT_FETCH");
-        case Flags.COM_DAEMON: // deprecated
-            getTrace().protocol("COM_DAEMON");
-        case Flags.COM_BINLOG_DUMP_GTID:
-            getTrace().protocol("COM_BINLOG_DUMP_GTID");
-        case Flags.COM_END:
-            getTrace().protocol("COM_END");
-            throw new ProtocolProcessException(ErrorCode.ER_NOT_SUPPORTED_YET, "Command not supported yet");
-        default:
-            throw new ProtocolProcessException(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
+            case Flags.COM_INIT_DB:
+                sendOk();
+                break;
+            case Flags.COM_QUERY:
+                String query = Com_Query.loadFromPacket(packet).query;
+                getTrace().protocol("COM_QUERY").sql(query);
+                query(query);
+                break;
+            case Flags.COM_PING:
+                getTrace().protocol("COM_PING");
+                sendOk();
+                break;
+            case Flags.COM_QUIT:
+                getTrace().protocol("COM_QUIT");
+                getSession().close();
+                getProtocolTransport().close();
+                break;
+            case Flags.COM_PROCESS_KILL:
+                getTrace().protocol("COM_PROCESS_KILL");
+            case Flags.COM_STMT_PREPARE:
+                getTrace().protocol("COM_STMT_PREPARE");
+            case Flags.COM_STMT_EXECUTE:
+                getTrace().protocol("COM_STMT_EXECUTE");
+            case Flags.COM_STMT_CLOSE:
+                getTrace().protocol("COM_STMT_CLOSE");
+                break;
+            case Flags.COM_SLEEP:// deprecated
+                getTrace().protocol("COM_SLEEP");
+            case Flags.COM_FIELD_LIST:
+                getTrace().protocol("COM_FIELD_LIST");
+            case Flags.COM_CREATE_DB:
+                getTrace().protocol("COM_CREATE_DB");
+            case Flags.COM_DROP_DB:
+                getTrace().protocol("COM_DROP_DB");
+            case Flags.COM_REFRESH:
+                getTrace().protocol("COM_REFRESH");
+            case Flags.COM_SHUTDOWN:
+                getTrace().protocol("COM_SHUTDOWN");
+            case Flags.COM_STATISTICS:
+                getTrace().protocol("COM_STATISTICS");
+            case Flags.COM_PROCESS_INFO: // deprecated
+                getTrace().protocol("COM_PROCESS_INFO");
+            case Flags.COM_CONNECT:// deprecated
+                getTrace().protocol("COM_CONNECT");
+            case Flags.COM_DEBUG:
+                getTrace().protocol("COM_DEBUG");
+            case Flags.COM_TIME:// deprecated
+                getTrace().protocol("COM_TIME");
+            case Flags.COM_DELAYED_INSERT:// deprecated
+                getTrace().protocol("COM_DELAYED_INSERT");
+            case Flags.COM_CHANGE_USER:
+                getTrace().protocol("COM_CHANGE_USER");
+            case Flags.COM_BINLOG_DUMP:
+                getTrace().protocol("COM_BINLOG_DUMP");
+            case Flags.COM_TABLE_DUMP:
+                getTrace().protocol("COM_TABLE_DUMP");
+            case Flags.COM_CONNECT_OUT:
+                getTrace().protocol("COM_CONNECT_OUT");
+            case Flags.COM_REGISTER_SLAVE:
+                getTrace().protocol("COM_REGISTER_SLAVE");
+            case Flags.COM_STMT_SEND_LONG_DATA:
+                getTrace().protocol("COM_STMT_SEND_LONG_DATA");
+            case Flags.COM_STMT_RESET:
+                getTrace().protocol("COM_STMT_CLOSE");
+            case Flags.COM_SET_OPTION:
+                getTrace().protocol("COM_STMT_RESET");
+            case Flags.COM_STMT_FETCH:
+                getTrace().protocol("COM_STMT_FETCH");
+            case Flags.COM_DAEMON: // deprecated
+                getTrace().protocol("COM_DAEMON");
+            case Flags.COM_BINLOG_DUMP_GTID:
+                getTrace().protocol("COM_BINLOG_DUMP_GTID");
+            case Flags.COM_END:
+                getTrace().protocol("COM_END");
+                throw new ProtocolProcessException(ErrorCode.ER_NOT_SUPPORTED_YET, "Command not supported yet");
+            default:
+                throw new ProtocolProcessException(ErrorCode.ER_UNKNOWN_COM_ERROR, "Unknown command");
         }
     }
 
@@ -122,53 +123,54 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         logger.info("sql " + sql);
         int rs = ServerParse.parse(sql);
         switch (rs & 0xff) {
-        case ServerParse.SET:
-            processSet(sql, rs >>> 8);
-            break;
-        case ServerParse.SHOW:
-            processShow(sql, rs >>> 8);
-            break;
-        case ServerParse.SELECT:
-            processSelect(sql, rs >>> 8);
-            break;
-        case ServerParse.START:
-            processStart(sql, rs >>> 8);
-            break;
-        case ServerParse.BEGIN:
-            processBegin(sql, rs >>> 8);
-            break;
-        case ServerParse.LOAD:
-            processSavepoint(sql, rs >>> 8);
-            break;
-        case ServerParse.SAVEPOINT:
-            processSavepoint(sql, rs >>> 8);
-            break;
-        case ServerParse.USE:
-            processUse(sql, rs >>> 8);
-            break;
-        case ServerParse.COMMIT:
-            processCommit(sql, rs >>> 8);
-            break;
-        case ServerParse.ROLLBACK:
-            processRollback(sql, rs >>> 8);
-            break;
-        default:
-            execute(sql, rs);
+            case ServerParse.SET:
+                processSet(sql, rs >>> 8);
+                break;
+            case ServerParse.SHOW:
+                processShow(sql, rs >>> 8);
+                break;
+            case ServerParse.SELECT:
+                logger.info("select stmt : {}", sql);
+                processSelect(sql, rs >>> 8);
+                break;
+            case ServerParse.START:
+                processStart(sql, rs >>> 8);
+                break;
+            case ServerParse.BEGIN:
+                processBegin(sql, rs >>> 8);
+                break;
+            case ServerParse.LOAD:
+                processSavepoint(sql, rs >>> 8);
+                break;
+            case ServerParse.SAVEPOINT:
+                processSavepoint(sql, rs >>> 8);
+                break;
+            case ServerParse.USE:
+                processUse(sql, rs >>> 8);
+                break;
+            case ServerParse.COMMIT:
+                processCommit(sql, rs >>> 8);
+                break;
+            case ServerParse.ROLLBACK:
+                processRollback(sql, rs >>> 8);
+                break;
+            default:
+                execute(sql, rs);
         }
     }
 
     private void processCommit(String sql, int offset) throws Exception {
-        try {
-            getConnection().commit();
-            sendOk();
-        } catch (SQLException e) {
-            throw error(ErrorCode.ERR_HANDLE_DATA, e);
-        }
+//        try {
+//            getConnection().commit();
+//            sendOk();
+//        } catch (SQLException e) {
+//            throw error(ErrorCode.ERR_HANDLE_DATA, e);
+//        }
 
     }
 
     private void processRollback(String sql, int offset) throws Exception {
-        getConnection().rollback();
+//        getConnection().rollback();
         sendOk();
     }
 
@@ -186,18 +188,18 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         }
         ResultSet rs = null;
         List<String> schemas;
-        try {
-            rs = getConnection().getMetaData().getSchemas();
-            schemas = new ArrayList<String>();
-            while (rs.next()) {
-                schemas.add(rs.getString("SCHEMA_NAME"));
-            }
-        } finally {
-            //JdbcUtils.closeSilently(rs);
-        }
-        if (schema == null || !schemas.contains(schema)) {
-            throw error(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + schema + "'");
-        }
+//        try {
+//            rs = getConnection().getMetaData().getSchemas();
+//            schemas = new ArrayList<String>();
+//            while (rs.next()) {
+//                schemas.add(rs.getString("SCHEMA_NAME"));
+//            }
+//        } finally {
+//            JdbcUtils.closeSilently(rs);
+//        }
+//        if (schema == null || !schemas.contains(schema)) {
+//            throw error(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + schema + "'");
+//        }
         sendOk();
     }
 
@@ -212,72 +214,74 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private void processStart(String sql, int offset) throws Exception {
         switch (ServerParseStart.parse(sql, offset)) {
-        case ServerParseStart.TRANSACTION:
-            unsupported("Start TRANSACTION");
-            break;
-        default:
-            execute(sql, ServerParse.START);
+            case ServerParseStart.TRANSACTION:
+                unsupported("Start TRANSACTION");
+                break;
+            default:
+                execute(sql, ServerParse.START);
         }
 
     }
 
+    //
     public void processSet(String stmt, int offset) throws Exception {
-        Connection c = getConnection();
+//        Connection c = getConnection();
         int rs = ServerParseSet.parse(stmt, offset);
         switch (rs & 0xff) {
-        case ServerParseSet.AUTOCOMMIT_ON:
-            if (!c.getAutoCommit()) {
-                c.setAutoCommit(true);
-            }
-            sendOk();
-            break;
-        case ServerParseSet.AUTOCOMMIT_OFF: {
-            if (c.getAutoCommit()) {
-                c.setAutoCommit(false);
-            }
-            sendOk();
-            break;
-        }
-        case ServerParseSet.TX_READ_UNCOMMITTED: {
-            c.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-            sendOk();
-            break;
-        }
-        case ServerParseSet.TX_READ_COMMITTED: {
-            c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-            sendOk();
-            break;
-        }
-        case ServerParseSet.TX_REPEATED_READ: {
-            c.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            sendOk();
-            break;
-        }
-        case ServerParseSet.TX_SERIALIZABLE: {
-            c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            sendOk();
-            break;
-        }
-        case ServerParseSet.NAMES:
-            String charset = stmt.substring(rs >>> 8).trim();
-            if (getSession().setCharset(charset)) {
+            // TODO: 后端模型得到后，添加到线程本地变量
+            case ServerParseSet.AUTOCOMMIT_ON:
+//            if (!c.getAutoCommit()) {
+//                c.setAutoCommit(true);
+//            }
                 sendOk();
-            } else {
-                sendError(ErrorCode.ER_UNKNOWN_CHARACTER_SET, "Unknown charset '" + charset + "'");
+                break;
+            case ServerParseSet.AUTOCOMMIT_OFF: {
+//            if (c.getAutoCommit()) {
+//                c.setAutoCommit(false);
+//            }
+                sendOk();
+                break;
             }
-            break;
-        case ServerParseSet.CHARACTER_SET_CLIENT:
-        case ServerParseSet.CHARACTER_SET_CONNECTION:
-        case ServerParseSet.CHARACTER_SET_RESULTS:
-            CharacterSet.response(stmt, this, rs);
-            break;
-        case ServerParseSet.AT_VAR:
-            execute(stmt, ServerParse.SET);
-            break;
-        default:
-            StringBuilder s = new StringBuilder();
-            logger.warn(s.append(stmt).append(" is not executed").toString());
-            sendOk();
+            case ServerParseSet.TX_READ_UNCOMMITTED: {
+//                c.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                sendOk();
+                break;
+            }
+            case ServerParseSet.TX_READ_COMMITTED: {
+//                c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+                sendOk();
+                break;
+            }
+            case ServerParseSet.TX_REPEATED_READ: {
+//                c.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+                sendOk();
+                break;
+            }
+            case ServerParseSet.TX_SERIALIZABLE: {
+//                c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+                sendOk();
+                break;
+            }
+            case ServerParseSet.NAMES:
+                String charset = stmt.substring(rs >>> 8).trim();
+                if (getSession().setCharset(charset)) {
+                    sendOk();
+                } else {
+                    sendError(ErrorCode.ER_UNKNOWN_CHARACTER_SET, "Unknown charset '" + charset + "'");
+                }
+                break;
+            case ServerParseSet.CHARACTER_SET_CLIENT:
+            case ServerParseSet.CHARACTER_SET_CONNECTION:
+            case ServerParseSet.CHARACTER_SET_RESULTS:
+                CharacterSet.response(stmt, this, rs);
+                break;
+            case ServerParseSet.AT_VAR:
+                execute(stmt, ServerParse.SET);
+                break;
+            default:
+                StringBuilder s = new StringBuilder();
+                logger.warn(s.append(stmt).append(" is not executed").toString());
+                sendOk();
         }
     }
 
@@ -285,43 +289,42 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         ResultSet rs = null;
         try {
             switch (ServerParseShow.parse(stmt, offset)) {
-            case ServerParseShow.DATABASES:
-                DatabaseMetaData metaData = getConnection().getMetaData();
-                rs = metaData.getSchemas();
-                sendResultSet(ShowDatabases.toMySQLResultSet(rs));
-                break;
-            case ServerParseShow.CONNECTION:
-                unsupported("CONNECTION");
-                break;
-            case ServerParseShow.SLOW:
-                unsupported("SLOW");
-                break;
-            case ServerParseShow.PHYSICAL_SLOW:
-                unsupported("PHYSICAL_SLOW");
-                break;
-            case ServerParseShow.VARIABLES:
-                logger.info("enter show variables : " + stmt);
+                case ServerParseShow.DATABASES:
+//                DatabaseMetaData metaData = getConnection().getMetaData();
+//                rs = metaData.getSchemas();
+//                sendResultSet(ShowDatabases.toMySQLResultSet(rs));
+                    break;
+                case ServerParseShow.CONNECTION:
+                    unsupported("CONNECTION");
+                    break;
+                case ServerParseShow.SLOW:
+                    unsupported("SLOW");
+                    break;
+                case ServerParseShow.PHYSICAL_SLOW:
+                    unsupported("PHYSICAL_SLOW");
+                    break;
+                case ServerParseShow.VARIABLES:
+                    logger.info("enter show variables : " + stmt);
 //                sendResultSet(ShowVariables.getResultSet());
 //                ProtocolTransport transport = getProtocolTransport();
 //                ShowVariables.execute(transport);
 //                getProtocolTransport().out.writeBytes(ShowVariables.getPacket());
 
-
-                ByteBuf out = getProtocolTransport().out;
-                for(byte[] bs : ShowVariables.getPacket()){
-                    out.writeBytes(bs);
-                }
-                logger.info("return enter show variables");
-                break;
-            case ServerParseShow.SESSION_STATUS:
-            case ServerParseShow.SESSION_VARIABLES:
+                    ByteBuf out = getProtocolTransport().out;
+                    for (byte[] bs : ShowVariables.getPacket()) {
+                        out.writeBytes(bs);
+                    }
+                    logger.info("return enter show variables");
+                    break;
+                case ServerParseShow.SESSION_STATUS:
+                case ServerParseShow.SESSION_VARIABLES:
 //                sendResultSet(ShowVariables.getShowResultSet(stmt));
-                break;
-            case ServerParseShow.ENGINES:
-            	sendResultSet(ShowEngines.getResultSet());
-            	break;
-            default:
-                execute(stmt, ServerParse.SHOW);
+                    break;
+                case ServerParseShow.ENGINES:
+                    sendResultSet(ShowEngines.getResultSet());
+                    break;
+                default:
+                    execute(stmt, ServerParse.SHOW);
             }
         } finally {
             //JdbcUtils.closeSilently(rs);
@@ -329,43 +332,50 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
     }
 
     public void processSelect(String stmt, int offs) throws Exception {
+        logger.info("process select case id : {}", ServerParseSelect.parse(stmt, offs));
         switch (ServerParseSelect.parse(stmt, offs)) {
-        case ServerParseSelect.VERSION_COMMENT:
-            //TODO: bugfix
-            logger.info("run into showversion");
+            case ServerParseSelect.VERSION_COMMENT:
+                //TODO: bugfix
+                logger.info("run into showversion");
 //            sendResultSet(ShowVersion.getCommentResultSet());
-            ShowVersion.execute(getProtocolTransport());
-            logger.info("return showversion");
-            break;
-        case ServerParseSelect.DATABASE:
-            execute("SELECT SCHEMA()", ServerParse.SELECT);
-            break;
-        case ServerParseSelect.CONNECTION_ID:
-            execute("SELECT SESSION_ID()", ServerParse.SELECT);
-            break;
-        case ServerParseSelect.USER:
-            execute("SELECT USER()", ServerParse.SELECT);
-            break;
-        case ServerParseSelect.SESSION_TX_READ_ONLY:
-            sendResultSet(TxResultSet.getReadonlyResultSet(getConnection().isReadOnly()));
-            break;
-        case ServerParseSelect.SESSION_ISOLATION:
-            sendResultSet(TxResultSet.getIsolationResultSet(getConnection().getTransactionIsolation()));
-            break;
-        case ServerParseSelect.VERSION:
+                ShowVersion.execute(getProtocolTransport());
+                logger.info("return showversion");
+                break;
+            case ServerParseSelect.DATABASE:
+                execute("SELECT SCHEMA()", ServerParse.SELECT);
+                break;
+            case ServerParseSelect.CONNECTION_ID:
+                execute("SELECT SESSION_ID()", ServerParse.SELECT);
+                break;
+            case ServerParseSelect.USER:
+                execute("SELECT USER()", ServerParse.SELECT);
+                break;
+            case ServerParseSelect.SESSION_TX_READ_ONLY:
+//            sendResultSet(TxResultSet.getReadonlyResultSet(getConnection().isReadOnly()));
+                break;
+            case ServerParseSelect.SESSION_ISOLATION:
+//            sendResultSet(TxResultSet.getIsolationResultSet(getConnection().getTransactionIsolation()));
+                break;
+            case ServerParseSelect.VERSION:
 //            sendResultSet(ShowVersion.getResultSet());
-            break;
-        case ServerParseSelect.LAST_INSERT_ID:
-            execute("SELECT LAST_INSERT_ID()", ServerParse.SELECT);
-            break;
-        case ServerParseSelect.IDENTITY:
-            execute("SELECT SCOPE_IDENTITY()", ServerParse.SELECT);
-            break;
-        case ServerParseSelect.SELECT_SESSION_VARIABLES:
-            sendResultSet(SelectVariables.getResultSet(stmt));
-            break;
-        default:
-            execute(stmt, ServerParse.SELECT);
+                break;
+            case ServerParseSelect.LAST_INSERT_ID:
+                execute("SELECT LAST_INSERT_ID()", ServerParse.SELECT);
+                break;
+            case ServerParseSelect.IDENTITY:
+                execute("SELECT SCOPE_IDENTITY()", ServerParse.SELECT);
+                break;
+            case ServerParseSelect.SELECT_SESSION_VARIABLES:
+                logger.info("select session variables");
+                ByteBuf out = getProtocolTransport().out;
+                for (byte[] bs : SelectVariables.getPacket(stmt)) {
+                    out.writeBytes(bs);
+                }
+                // sendResultSet(SelectVariables.getResultSet(stmt));
+                logger.info("end of select session variables");
+                break;
+            default:
+                execute(stmt, ServerParse.SELECT);
         }
     }
 
@@ -389,33 +399,33 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         Statement stmt = null;
         ResultSet rs = null;
         switch (type) {
-        case ServerParse.SELECT:
-        // "show" as "select" query
-        // @author little-pan
-        // @since 2016-07-13
-        case ServerParse.SHOW:
-            try {
-                stmt = conn.createStatement();
-                rs = stmt.executeQuery(sql);
-                sendResultSet(rs);
-            } finally {
-                //JdbcUtils.closeSilently(stmt);
-                //JdbcUtils.closeSilently(rs);
-            }
-            break;
-        case ServerParse.SET:
-            try {
-                stmt = conn.createStatement();
-                stmt.execute(sql);
-                sendOk();
-            } finally {
-                //JdbcUtils.closeSilently(stmt);
-                //JdbcUtils.closeSilently(rs);
-            }
-            break;
+            case ServerParse.SELECT:
+                // "show" as "select" query
+                // @author little-pan
+                // @since 2016-07-13
+            case ServerParse.SHOW:
+                try {
+                    stmt = conn.createStatement();
+                    rs = stmt.executeQuery(sql);
+                    sendResultSet(rs);
+                } finally {
+                    //JdbcUtils.closeSilently(stmt);
+                    //JdbcUtils.closeSilently(rs);
+                }
+                break;
+            case ServerParse.SET:
+                try {
+                    stmt = conn.createStatement();
+                    stmt.execute(sql);
+                    sendOk();
+                } finally {
+                    //JdbcUtils.closeSilently(stmt);
+                    //JdbcUtils.closeSilently(rs);
+                }
+                break;
 
-        default:
-            unsupported(sql);
+            default:
+                unsupported(sql);
         }
     }
 
@@ -432,14 +442,14 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
     }
 
     private void unsupported(String msg) throws Exception {
-        throw error(ErrorCode.ER_UNKNOWN_COM_ERROR, 
+        throw error(ErrorCode.ER_UNKNOWN_COM_ERROR,
                 msg + " unsupported");
     }
-    
+
     private Exception error(int errno, Throwable e) {
         return new ProtocolProcessException(errno, e);
     }
-    
+
     private Exception error(int errno, String msg) {
         return new ProtocolProcessException(errno, msg);
     }
@@ -460,10 +470,9 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
     }
 
     /**
-     * @see https://dev.mysql.com/doc/internals/en/com-query-response.html
-     * 
      * @param rs
      * @throws Exception
+     * @see https://dev.mysql.com/doc/internals/en/com-query-response.html
      */
     public void sendResultSet(ResultSet rs) throws Exception {
         ResultSetMetaData metaData = rs.getMetaData();

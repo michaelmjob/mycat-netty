@@ -31,7 +31,7 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
 
     private static ThreadLocal<ProtocolTransport> transportHolder = new ThreadLocal<ProtocolTransport>();
     private static ThreadLocal<Session> sessionHolder = new ThreadLocal<Session>();
-    private static ThreadLocal<Connection> connHolder = new ThreadLocal<Connection>();
+//    private static ThreadLocal<Connection> connHolder = new ThreadLocal<Connection>();
     private static ThreadLocal<TraceableData> tdHolder = new ThreadLocal<TraceableData>();
 
     public final boolean process(ProtocolTransport transport) throws ProtocolProcessException {
@@ -40,7 +40,7 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
             tdHolder.set(new TraceableData());
             transportHolder.set(transport);
             sessionHolder.set(transport.getSession());
-            connHolder.set(transport.getSession().getEngineConnection());
+//            connHolder.set(transport.getSession().getEngineConnection());
             doProcess(transport);
         } catch (Exception ex) {
             e = ProtocolProcessException.convert(ex);
@@ -50,7 +50,7 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
             accessEndLog();
             sessionHolder.remove();
             transportHolder.remove();
-            connHolder.remove();
+//            connHolder.remove();
             tdHolder.remove();
         }
         return e == null;
@@ -67,9 +67,9 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
         return sessionHolder.get();
     }
 
-    public final Connection getConnection() {
-        return connHolder.get();
-    }
+//    public final Connection getConnection() {
+////        return connHolder.get();
+//    }
 
     public final ProtocolTransport getProtocolTransport() {
         return transportHolder.get();

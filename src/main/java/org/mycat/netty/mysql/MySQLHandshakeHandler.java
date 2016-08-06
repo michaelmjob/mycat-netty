@@ -195,9 +195,9 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
                     logger.error("wrong name+passwd , name : " + authReply.username + " ;passwd: " + authReply.authResponse);
                     return;
                 }
-                Connection connect = connectEngine(authReply);
+//                Connection connect = connectEngine(authReply);
                 session.setHandshakeResponse(authReply);
-                session.setEngineConnection(connect);
+//                session.setEngineConnection(connect);
                 session.bind(ctx.channel());
                 session.setAttachment("remoteAddress", ctx.channel().remoteAddress().toString());
                 session.setAttachment("localAddress", ctx.channel().localAddress().toString());
