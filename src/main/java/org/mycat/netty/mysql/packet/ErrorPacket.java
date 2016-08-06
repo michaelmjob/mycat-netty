@@ -24,9 +24,12 @@
 package org.mycat.netty.mysql.packet;
 
 import io.netty.buffer.ByteBuf;
+import org.mycat.netty.mysql.proto.ERR;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
 import org.mycat.netty.util.SysProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -49,6 +52,8 @@ import java.util.ArrayList;
  * @author mycat
  */
 public class ErrorPacket extends MySQLPacket {
+	private static Logger logger = LoggerFactory.getLogger(ErrorPacket.class);
+
 	public static final byte FIELD_COUNT = (byte) 0xff;
 	private static final byte SQLSTATE_MARKER = (byte) '#';
 	private static final byte[] DEFAULT_SQLSTATE = "HY000".getBytes();
@@ -118,8 +123,8 @@ public class ErrorPacket extends MySQLPacket {
 		if (message != null) {
 			System.arraycopy(message, 0, packet, offset, message.length);
 		}
-		System.out.println("ErrPacket array : " + packet);
-		System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+		logger.info("ErrPacket array : {} ", packet);
+		logger.info("packet ln : " + packet.length + ", expected len: " + size);
 		return packet;
 	}
 

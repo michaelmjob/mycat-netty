@@ -26,6 +26,8 @@ package org.mycat.netty.mysql.packet;
 import io.netty.buffer.ByteBuf;
 import org.mycat.netty.mysql.proto.Proto;
 import org.mycat.netty.util.SysProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ import java.util.List;
  * @author mycat
  */
 public class RowDataPacket extends MySQLPacket {
+	private static Logger logger = LoggerFactory.getLogger(RowDataPacket.class);
+
 	private static final byte NULL_MARK = (byte) 251;
     private static final byte EMPTY_MARK = (byte) 0;
 
@@ -128,8 +132,8 @@ public class RowDataPacket extends MySQLPacket {
 				offset += fv.length;
 			}
 		}
-		System.out.println("RowDataPacket array : " + packet);
-		System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+		logger.info("RowDataPacket array : {}", packet);
+		logger.info("packet ln : " + packet.length + ", expected len: " + size);
 		return packet;
 	}
 

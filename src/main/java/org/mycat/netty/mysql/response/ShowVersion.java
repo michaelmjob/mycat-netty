@@ -32,8 +32,8 @@ public class ShowVersion {
 
         // write header
 //        header.write(buffer);
-//        byte[] headerBytes = header.getPacket();
-        transport.getChannel().writeAndFlush(header.getPacket());
+        byte[] headerBytes = header.getPacket();
+//        transport.getChannel().writeAndFlush(header.getPacket());
 
         // write fields
         for (FieldPacket field : fields) {
@@ -51,13 +51,17 @@ public class ShowVersion {
         row.add(Versions.SERVER_VERSION);
         row.packetId = ++packetId;
 //        row.write(buffer);
-        transport.getChannel().writeAndFlush(row.getPacket());
+//        transport.getChannel().writeAndFlush(row.getPacket());
 
         // write last eof
         EOFPacket lastEof = new EOFPacket();
         lastEof.packetId = ++packetId;
-//        lastEof.write(buffer);
-        transport.getChannel().writeAndFlush(lastEof);
+        lastEof.write(transport.out);
+//        transport.getChannel().writeAndFlush(transport.out);
+
+
+//        ctx.writeAndFlush(transport.out);
+//        transport.in.release();
 
 //        System.out.println("byte[] is : " + buffer.array());
 //        try {

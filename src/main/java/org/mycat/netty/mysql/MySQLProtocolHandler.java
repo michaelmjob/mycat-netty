@@ -22,6 +22,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
+import org.mycat.netty.mysql.proto.Flags;
+import org.mycat.netty.mysql.proto.OK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,14 +70,20 @@ public class MySQLProtocolHandler extends ProtocolHandler {
         }
 
         public void run() {
+            logger.info("processor run");
             try {
                 ProtocolProcessor processor = processorFactory.getProcessor(transport);
                 processor.process(transport);
             } catch (Throwable e) {
                 logger.error("an exception happen when process request", e);
                 handleThrowable(e);
+//                ctx.writeAndFlush(transport.out);
+//                transport.in.release();
             } finally {
+                logger.info("finish return processor");
                 ctx.writeAndFlush(transport.out);
+//                success(transport.getChannel());
+//                transport.getChannel().writeAndFlush(transport.out);
                 transport.in.release();
             }
         }
@@ -89,6 +97,16 @@ public class MySQLProtocolHandler extends ProtocolHandler {
             transport.out.writeBytes(err.toPacket());
         }
 
+    }
+
+    private void success(Channel channel) {
+        logger.info("success info return form MySQLHandshakeHandler");
+        ByteBuf out = channel.alloc().buffer();
+        OK ok = new OK();
+        ok.sequenceId = 2;
+        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+        out.writeBytes(ok.toPacket());
+        channel.writeAndFlush(out);
     }
 
 }

@@ -2,8 +2,11 @@ package org.mycat.netty.mysql.packet;
 
 import io.netty.buffer.ByteBuf;
 import org.mycat.netty.ProtocolTransport;
+import org.mycat.netty.mysql.proto.EOF;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -25,6 +28,8 @@ import java.util.ArrayList;
  * Created by snow_young on 16/8/3.
  */
 public class EOFPacket extends MySQLPacket {
+    private static Logger logger = LoggerFactory.getLogger(EOFPacket.class);
+
     public static final byte FIELD_COUNT = (byte) 0xfe;
 
     public byte fieldCount = FIELD_COUNT;
@@ -60,8 +65,8 @@ public class EOFPacket extends MySQLPacket {
             System.arraycopy(field, 0, packet, offset, field.length);
             offset += field.length;
         }
-        System.out.println("EofPacket array : " + packet);
-        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+        logger.info("EofPacket array : {}", packet);
+        logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
     }
 

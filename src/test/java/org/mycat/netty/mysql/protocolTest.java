@@ -14,6 +14,7 @@ import org.junit.Test;
  */
 public class protocolTest {
     private String dbUrl = "jdbc:mysql://localhost:8090/schema_main?connectTimeout=1000";
+//    private String dbUrl = "jdbc:mysql://localhost:6100/schema_main?connectTimeout=1000";
 
     @Test
     public void loginWithoutPass() throws UnsupportedEncodingException, NoSuchAlgorithmException {

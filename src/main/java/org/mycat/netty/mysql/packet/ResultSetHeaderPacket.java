@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import org.mycat.netty.ProtocolTransport;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
@@ -31,6 +33,7 @@ import java.nio.ByteBuffer;
  * Created by snow_young on 16/8/3.
  */
 public class ResultSetHeaderPacket extends MySQLPacket {
+    private static Logger logger = LoggerFactory.getLogger(ResultSetHeaderPacket.class);
 
     public int fieldCount;
     public long extra;
@@ -81,8 +84,8 @@ public class ResultSetHeaderPacket extends MySQLPacket {
             System.arraycopy(extraBytes, 0, packet, offset, extraBytes.length);
 
         }
-        System.out.println("ResultSetHeaderPacket array : " + packet);
-        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+        logger.info("ResultSetHeaderPacket array : {}", packet);
+        logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
     }
 

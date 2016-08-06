@@ -2,6 +2,8 @@ package org.mycat.netty.mysql.packet;
 
 import io.netty.buffer.ByteBuf;
 import org.mycat.netty.mysql.proto.Proto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +12,8 @@ import java.io.InputStream;
  * Created by snow_young on 16/8/4.
  */
 public class BinaryPacket extends MySQLPacket {
+    private static Logger logger = LoggerFactory.getLogger(BinaryPacket.class);
+
     public static final byte OK = 1;
     public static final byte ERROR = 2;
     public static final byte HEADER = 3;
@@ -38,8 +42,8 @@ public class BinaryPacket extends MySQLPacket {
 
         int offset = 4;
         System.arraycopy(data, 0, packet, offset, data.length);
-        System.out.println("BinaryPacket array : " + packet);
-        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+        logger.info("BinaryPacket array : {}", packet.clone());
+        logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
 //        maybe return is important !
 //        BufferUtil.writeUB3(buffer, calcPacketSize());

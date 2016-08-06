@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import org.mycat.netty.mysql.proto.Flags;
 import org.mycat.netty.mysql.proto.Proto;
 import org.mycat.netty.util.MysqlDefs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
  * Created by snow_young on 16/8/3.
  */
 public class FieldPacket extends MySQLPacket {
+    private static Logger logger = LoggerFactory.getLogger(FieldPacket.class);
+
     private static final byte[] DEFAULT_CATALOG = "def".getBytes();
     private static final byte[] FILLER = new byte[2];
 
@@ -58,8 +62,8 @@ public class FieldPacket extends MySQLPacket {
         System.arraycopy(Proto.build_fixed_int(1, packetId), 0, packet, 3, 1);
 
         getBodyPacket(packet, 4);
-        System.out.println("Field Packet array : " + packet);
-        System.out.println("packet ln : " + packet.length + ", expected len: " + size);
+        logger.info("Field Packet array : {}", packet);
+        logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
     }
 

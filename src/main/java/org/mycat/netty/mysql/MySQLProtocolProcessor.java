@@ -7,6 +7,7 @@ import org.mycat.netty.mysql.parser.*;
 import org.mycat.netty.mysql.proto.*;
 import org.mycat.netty.mysql.respo.*;
 import org.mycat.netty.mysql.response.ShowVersion;
+import org.mycat.netty.mysql.response.ShowVariables;
 import org.mycat.netty.util.ErrorCode;
 import org.mycat.netty.util.MysqlDefs;
 import org.mycat.netty.util.ResultSetUtil;
@@ -118,7 +119,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         if (StringUtils.isNullOrEmpty(sql)) {
             throw error(ErrorCode.ER_NOT_ALLOWED_COMMAND, "Empty SQL");
         }
-
+        logger.info("sql " + sql);
         int rs = ServerParse.parse(sql);
         switch (rs & 0xff) {
         case ServerParse.SET:
@@ -299,13 +300,22 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 unsupported("PHYSICAL_SLOW");
                 break;
             case ServerParseShow.VARIABLES:
-                logger.info("enter show variables");
-                sendResultSet(ShowVariables.getResultSet());
+                logger.info("enter show variables : " + stmt);
+//                sendResultSet(ShowVariables.getResultSet());
+//                ProtocolTransport transport = getProtocolTransport();
+//                ShowVariables.execute(transport);
+//                getProtocolTransport().out.writeBytes(ShowVariables.getPacket());
+
+
+                ByteBuf out = getProtocolTransport().out;
+                for(byte[] bs : ShowVariables.getPacket()){
+                    out.writeBytes(bs);
+                }
                 logger.info("return enter show variables");
                 break;
             case ServerParseShow.SESSION_STATUS:
             case ServerParseShow.SESSION_VARIABLES:
-                sendResultSet(ShowVariables.getShowResultSet(stmt));
+//                sendResultSet(ShowVariables.getShowResultSet(stmt));
                 break;
             case ServerParseShow.ENGINES:
             	sendResultSet(ShowEngines.getResultSet());
