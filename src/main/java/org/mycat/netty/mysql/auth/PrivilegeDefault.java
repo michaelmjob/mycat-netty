@@ -61,7 +61,6 @@ public class PrivilegeDefault implements Privilege {
         return prop.getProperty(user + ".password");
     }
 
-    @Override
     public boolean checkPassword(String user, String password, String salt) {
         logger.info("check password for user {} with pass {} and salt {}", user, password, salt);
         String localPass = password(user);
