@@ -34,6 +34,7 @@ public class YamlPrivilege {
     public YamlPrivilege(){
         users = new HashMap<>();
         whitehosts = new HashMap<>();
+//        instance = this;
     }
 
     public static void load() throws Exception {
@@ -42,27 +43,6 @@ public class YamlPrivilege {
         InputStream is = XmlPrivilege.class.getResourceAsStream("/user.yaml");
         instance = yaml.loadAs(is, YamlPrivilege.class);
         logger.info("yaml privilege : {}", instance);
-
-//        write
-//        whitehosts.put("127.0.0.1", "xujianhai,user,laoshan");
-//        whitehosts.put("127.0.0.2", "xujianhai,user");
-//
-//        users.put("xujianhai", new UserConfig("xujianhai", "schema,testdb", true));
-//        users.put("user", new UserConfig("xujianhai", "schema,testdb", true));
-//        users.put("laoshan", new UserConfig("xujianhai", "schema,testdb", true));
-//
-//        File dumpFile = new File(System.getProperty("user.dir") + "/src/test/resources/user.yaml");
-//        yaml.dump(this, new FileWriter(dumpFile));
-
-
-
-
-//        Thread.currentThread().getContextClassLoader().getResource("");
-//        File file = XmlPrivilege.class.getClassLoader().getResource("/user.yaml").getFile();
-//        yaml.dump(whitehosts, new FileWriter(new OutputStreamWriter()));
-//        yaml.dump(users);
-//        logger.info("users : " + map.get("users"));
-//        logger.info("user.yaml : ", map);
     }
 
 
@@ -70,7 +50,7 @@ public class YamlPrivilege {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    private class UserConfig{
+    public static class UserConfig{
         private String password;
         private String schemas;
         private boolean readOnly;

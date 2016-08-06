@@ -22,7 +22,32 @@ public class userLoader {
 
     @Test
     public void testYAMLLoad() throws Exception {
+
+//        write
+        YamlPrivilege privilege = new YamlPrivilege();
+        whitehosts.put("127.0.0.1", "xujianhai,user,laoshan");
+        whitehosts.put("127.0.0.2", "xujianhai,user");
+
+        users.put("xujianhai", new UserConfig("xujianhai", "schema,testdb", true));
+        users.put("user", new UserConfig("xujianhai", "schema,testdb", true));
+        users.put("laoshan", new UserConfig("xujianhai", "schema,testdb", true));
+
+        File dumpFile = new File(System.getProperty("user.dir") + "/src/test/resources/user.yaml");
+        yaml.dump(this, new FileWriter(dumpFile));
+
+        Thread.currentThread().getContextClassLoader().getResource("");
+        File file = XmlPrivilege.class.getClassLoader().getResource("/user.yaml").getFile();
+        yaml.dump(whitehosts, new FileWriter(new OutputStreamWriter()));
+        yaml.dump(users);
+        logger.info("users : " + map.get("users"));
+        logger.info("user.yaml : ", map);
+
+
+
         YamlPrivilege.load();
+
+
+
     }
 
     public void testTOMLLoad(){
