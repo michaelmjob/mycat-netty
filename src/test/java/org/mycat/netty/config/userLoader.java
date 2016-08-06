@@ -2,6 +2,7 @@ package org.mycat.netty.config;
 
 import org.junit.Test;
 import org.mycat.netty.mysql.auth.XmlPrivilege;
+import org.mycat.netty.mysql.auth.YamlPrivilege;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,14 +15,14 @@ public class userLoader {
 
 
 
-    @Test
+//    @Test
     public void testXMLLoad() throws Exception {
         new XmlPrivilege().load();
     }
 
-
-    public void testYAMLLoad(){
-
+    @Test
+    public void testYAMLLoad() throws Exception {
+        YamlPrivilege.load();
     }
 
     public void testTOMLLoad(){

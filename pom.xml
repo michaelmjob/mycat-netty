@@ -137,6 +137,18 @@
     </dependency>
 
     <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>1.15</version>
+    </dependency>
+
+    <!--<dependency>-->
+      <!--<groupId>com.moandjiezana.toml</groupId>-->
+      <!--<artifactId>toml4j</artifactId>-->
+      <!--<version>0.7.1</version>-->
+    <!--</dependency>-->
+
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.16.4</version>

@@ -25,7 +25,6 @@
             <host host="127.0.0.1" user="xujianhai,user,laoshan"/>
             <host host="127.0.0.2" user="xujianhai"/>
         </whitehost>
-        <blacklist check="false"></blacklist>
     </quarantine>
 
 </guard:user>

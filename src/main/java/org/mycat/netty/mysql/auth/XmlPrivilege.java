@@ -14,12 +14,13 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.yaml.snakeyaml.Yaml;
+import sun.util.spi.XmlPropertiesProvider;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,8 +94,6 @@ public class XmlPrivilege {
                 }
             }
         }
-
-
     }
 
     public void loadQuarantine(Element root) {
@@ -114,17 +113,6 @@ public class XmlPrivilege {
             // TODO: ensure user exists
             whitehosts.put(host, user);
         }
-
-//        NodeList blacklist = root.getElementsByTagName("blacklist");
-//        for(int i = 0; i < blacklist.getLength(); i++) {
-//            Node node = blacklist.item(i);
-//            if(node instanceof Node){
-//                Element e = (Element) node;
-//                String check = e.getAttribute("check");
-//                // set check
-//                logger.info("check : " + check);
-//            }
-//        }
     }
 
     public void loadSystem(Element root) {

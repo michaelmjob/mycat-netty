@@ -15,8 +15,6 @@
         host CDATA #REQUIRED
         user CDATA #REQUIRED
 >
-<!--<!ELEMENT blacklist (property*)>-->
-<!--<!ATTLIST blacklist check NMTOKEN #REQUIRED>-->
 
 <!ELEMENT property ANY>
 <!ATTLIST property name NMTOKEN #REQUIRED>
