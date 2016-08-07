@@ -26,7 +26,8 @@ public class YamlPrivilege extends AbstractPrivilege implements Source, Privileg
     public void load() throws Exception {
         Yaml yaml = new Yaml();
         InputStream is = XmlPrivilege.class.getResourceAsStream("/user.yaml");
-        yaml.loadAs(is, YamlPrivilege.class);
+        AbstractPrivilege privilege = yaml.loadAs(is, YamlPrivilege.class);
+        this.setUsers(privilege.getUsers());
         logger.info("yaml privilege user: {}", this.users);
         logger.info("yaml privilege whitehost: {}", this.whitehosts);
     }
