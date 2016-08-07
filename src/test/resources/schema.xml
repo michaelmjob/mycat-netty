@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE guard:schema SYSTEM "/schema.dtd">
+<guard:schema xmlns:guard="http://snow4young.org/">
+    <schema name="frontdb0" sqlMaxLimit="100">
+
+        <!-- class 使用动态加载策略 -->
+        <table name="tb0">
+            <partition class="org.mycat.netty.partition.PartitionByMonth">
+                <property name="dateFormat">yyyy-MM-dd</property>
+                <property name="sBeginDate">2015-01-01</property>
+            </partition>
+
+            <datasource>
+                <node datanode="d0" database="db0"/>
+                <node datanode="d1" database="db1"/>
+            </datasource>
+        </table>
+
+        <tablegroup>
+
+            <tables>
+                <table name="tb1"/>
+                <table name="tb2"/>
+            </tables>
+
+            <partition class="org.mycat.netty.partition.PartitionByLong">
+                <property name="partitionCount">2</property>
+                <property name="partitionLength">512</property>
+            </partition>
+
+            <datasource>
+                <node datanode="d0" database="db2"/>
+                <node datanode="d1" database="db3"/>
+            </datasource>
+
+        </tablegroup>
+
+
+    </schema>
+
+
+    <!-- 添加负载均衡策略 balance rr wrr ltr-->
+    <!-- 读策略 readtype : 是否走写库 -->
+    <!-- dbdriver : com.mysql.jdbc.driver -->
+    <datanode name="d0" balance="rr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin">
+        <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <heartbeat>select user()</heartbeat>
+    </datanode>
+
+    <datanode name="d1" balance="wrr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin">
+        <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <heartbeat>select user()</heartbeat>
+    </datanode>
+
+
+</guard:schema>
