@@ -34,16 +34,40 @@ public class userLoader {
 //
 //        privilege.getUsers().clear();
 //        privilege.getWhitehosts().clear();
+
+
+
+
+        //write to xml
+        //        convert to Document
+//        String fileName = "";
+//        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+//        factory.setNamespaceAware(false);
+//        factory.setValidating(false);
+//        DocumentBuilder builder = factory.newDocumentBuilder();
+//        builder.setEntityResolver(new IgnoreDTDEntityResolver());
+//        Document xmldoc = builder.parse(fileName);
+//        Element whiteHost = (Element) xmldoc.getElementsByTagName("whitehost").item(0);
+//        Element quarantine = (Element) xmldoc.getElementsByTagName("quarantine").item(0);
+//
+//        if(quarantine == null){
+//            quarantine = xmldoc.createElement("quarantine");
+//            Element root = xmldoc.getDocumentElement();
+//            if(whiteHost == null){
+//                whiteHost = xmldoc.createElement("host");
+//                quarantine.appendChild(whiteHost);
+//            }
+//        }
     }
 
     @Test
     public void testXMLLoad() throws Exception {
-        XmlPrivilege.load();
+        new XmlPrivilege().load();
     }
 
     @Test
     public void testYAMLLoad() throws Exception {
-        YamlPrivilege.load();
+        new YamlPrivilege().load();
     }
 
     public void testTOMLLoad(){

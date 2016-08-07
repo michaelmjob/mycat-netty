@@ -116,8 +116,6 @@ public class XMLSchemaLoader {
 //                                            nodeNode.getAttribute("database")));
 //                }
 
-
-
                 tableConfig.setName(name);
                 instance.getSchemaConfig().getTables().add(tableConfig);
             }

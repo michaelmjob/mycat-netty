@@ -19,7 +19,8 @@ import io.mycat.netty.ProtocolHandler;
 import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.Session;
 import io.mycat.netty.mysql.auth.Privilege;
-import io.mycat.netty.mysql.auth.PrivilegeDefault;
+import io.mycat.netty.mysql.auth.PrivilegeFactory;
+import io.mycat.netty.mysql.auth.XmlPrivilege;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.Constants;
 import io.mycat.netty.util.SysProperties;
@@ -53,7 +54,9 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
     private final AtomicLong connIdGenerator = new AtomicLong(0);
     private final AttributeKey<MySQLSession> TMP_SESSION_KEY = AttributeKey.valueOf("_AUTHTMP_SESSION_KEY");
     private static final String SEED_KEY = "seed";
-    private Privilege privilege = PrivilegeDefault.getPrivilege();
+//    private Privilege privilege = PropPrivilege.getPrivilege();
+//    private XmlPrivilege privilege = XmlPrivilege.getPrivilege();
+    private Privilege privilege = PrivilegeFactory.TRUE_PRIVILEGE;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {

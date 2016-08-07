@@ -16,42 +16,19 @@ import java.util.Map;
  * singleton
  */
 @Data
-public class YamlPrivilege {
+public class YamlPrivilege extends AbstractPrivilege implements Source, Privilege{
     private static final Logger logger = LoggerFactory.getLogger(YamlPrivilege.class);
-    private static YamlPrivilege instance;
-
-    // host -> userlist with ','
-//    private static  Map<String, String> whitehosts ;
-    private Map<String, String> whitehosts;
-//            = new HashMap<>();
-    // name -> password, schemas
-//    private static Map<String, UserConfig> users ;
-    private Map<String, UserConfig> users ;
-//        = new HashMap<>();
-
 
     public YamlPrivilege(){
-        whitehosts = new HashMap<>();
-        users = new HashMap<>();
-        instance = this;
+        super();
     }
 
-    public static void load() throws Exception {
-        // save to yaml
+    public void load() throws Exception {
         Yaml yaml = new Yaml();
         InputStream is = XmlPrivilege.class.getResourceAsStream("/user.yaml");
         yaml.loadAs(is, YamlPrivilege.class);
-        logger.info("yaml privilege : {}", instance);
+        logger.info("yaml privilege user: {}", this.users);
+        logger.info("yaml privilege whitehost: {}", this.whitehosts);
     }
 
-
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UserConfig{
-        private String password;
-        private String schemas;
-        private boolean readOnly;
-    }
 }

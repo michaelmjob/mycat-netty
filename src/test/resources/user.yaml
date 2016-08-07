@@ -1,4 +1,3 @@
-!!org.mycat.netty.mysql.auth.YamlPrivilege
 users:
   laoshan: {password: xujianhai, readOnly: true, schemas: 'schema,testdb'}
   user: {password: xujianhai, readOnly: true, schemas: 'schema,testdb'}

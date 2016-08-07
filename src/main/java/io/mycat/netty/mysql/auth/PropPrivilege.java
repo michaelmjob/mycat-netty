@@ -2,6 +2,7 @@ package io.mycat.netty.mysql.auth;
 
 import io.mycat.netty.util.StringUtil;
 import io.mycat.netty.util.SecurityUtil;
+import io.mycat.netty.util.SysProperties;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,33 +14,15 @@ import java.util.Properties;
 /**
  * Created by snow_young on 16/7/17.
  */
-public class PrivilegeDefault implements Privilege {
+public class PropPrivilege implements Privilege, Source {
     
-    private static final Logger logger = LoggerFactory.getLogger(PrivilegeDefault.class);
-        
-    private static final Privilege TRUE_PRIVILEGE = new Privilege(){
+    private static final Logger logger = LoggerFactory.getLogger(PropPrivilege.class);
 
-        public boolean userExists(String user) {
-            return true;
-        }
+    private Properties prop;
 
-        public boolean schemaExists(String user, String schema) {
-            return true;
-        }
+    public PropPrivilege(){};
 
-        public String password(String user) {
-            return null;
-        }
-
-        public boolean checkPassword(String user, String password, String salt) {
-            return true;
-        }
-    };
-
-
-    private final Properties prop;
-
-    private PrivilegeDefault(Properties users) {
+    public PropPrivilege(Properties users) {
         this.prop = users;
     }
 
@@ -78,25 +61,19 @@ public class PrivilegeDefault implements Privilege {
         return false;
     }
 
-    //TODO: refactor here
-    public static Privilege getPrivilege() {
-//        String path = SysProperties.SERVERUSER_CONFIG_LOCATION;
-        String path = "./";
-//        InputStream source = Utils.getResourceAsStream(path);
-        InputStream source = null;
+    @Override
+    public void load() throws Exception {
+        InputStream source = PropPrivilege.class.getResourceAsStream("user.properties");
         if(source == null) {
-            logger.info("Can't load privilege config from {}, using ", path);
-            return TRUE_PRIVILEGE;
+            logger.error("Can't load privilege config from user.properties");
+            System.exit(-1);
         }
         try {
-            logger.info("using privilege config from {}" , path);
             Properties prop = new Properties();
             prop.load(source);
-            return new PrivilegeDefault(prop);
         } catch (Exception e) {
-            logger.info("error load privilege config from " + path, e);
-            return TRUE_PRIVILEGE;
+            logger.info("error load privilege config from user.properties", e);
+            System.exit(-1);
         }
-    
     }
 }
