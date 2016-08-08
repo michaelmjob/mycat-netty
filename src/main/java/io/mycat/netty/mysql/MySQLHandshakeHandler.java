@@ -55,8 +55,8 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
     private final AttributeKey<MySQLSession> TMP_SESSION_KEY = AttributeKey.valueOf("_AUTHTMP_SESSION_KEY");
     private static final String SEED_KEY = "seed";
 //    private Privilege privilege = PropPrivilege.getPrivilege();
-//    private XmlPrivilege privilege = XmlPrivilege.getPrivilege();
-    private Privilege privilege = PrivilegeFactory.TRUE_PRIVILEGE;
+    private Privilege privilege = PrivilegeFactory.getPrivilege("file_addr");
+//    private Privilege privilege = PrivilegeFactory.TRUE_PRIVILEGE;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -195,7 +195,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
                         (String) session.getAttachment(SEED_KEY))) {
                     error(ErrorCode.ER_ACCESS_DENIED_ERROR,
                             "Access denied for user '" + authReply.username + "'");
-                    logger.error("wrong name+passwd , name : " + authReply.username + " ;passwd: " + authReply.authResponse);
+                    logger.error("wrong name+passwd , name :{}, passwd: {} ", authReply.username, authReply.authResponse);
                     return;
                 }
 //                Connection connect = connectEngine(authReply);
@@ -217,7 +217,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         }
         
         public void error(int errno, String msg) {
-            logger.info("error mesg : " + msg);
+            logger.info("error msg : " + msg);
             transport.out.clear();
             ERR err = new ERR();
             err.errorCode = errno;
