@@ -15,42 +15,10 @@ import org.junit.rules.ExpectedException;
 /**
  * Created by snow_young on 16/8/5.
  */
-public class protocolTest {
+public class LoginTest {
 
 //    @Rule
 //    public ExpectedException thrown= ExpectedException.none();
-
-
-//    @Test
-//    public void loginWithoutPass() throws UnsupportedEncodingException, NoSuchAlgorithmException {
-//        String dbUrl = "jdbc:mysql://localhost:8090/schema_main?connectTimeout=1000";
-//        try {
-//            Class.forName("com.mysql.jdbc.Driver");
-//        } catch (ClassNotFoundException e) {
-//            System.out.println("找不到驱动程序类 ，加载驱动失败！");
-//            e.printStackTrace();
-//        }
-//
-//        String username = "root";
-//        String password = "root";
-//        // test success
-//        Connection con = null;
-//        try {
-//            con = DriverManager.getConnection(dbUrl, username, password);
-//        } catch (SQLException se) {
-//            System.out.println("数据库连接失败！");
-//            se.printStackTrace();
-//            Assert.assertTrue(false);
-//        } finally {
-//            if (con != null) {
-//                try {
-//                    con.close();
-//                } catch (SQLException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//    }
 
     @Test
     public void testLoginWithPassSucceess() {

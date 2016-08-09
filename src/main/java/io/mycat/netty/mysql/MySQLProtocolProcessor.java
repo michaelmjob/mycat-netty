@@ -289,6 +289,11 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         try {
             switch (ServerParseShow.parse(stmt, offset)) {
                 case ServerParseShow.DATABASES:
+                    ByteBuf out = getProtocolTransport().out;
+                    for (byte[] bs : io.mycat.netty.mysql.response.ShowVariables.getPacket()) {
+                        out.writeBytes(bs);
+                    }
+                    logger.info("return enter show databases");
 //                DatabaseMetaData metaData = getConnection().getMetaData();
 //                rs = metaData.getSchemas();
 //                sendResultSet(ShowDatabases.toMySQLResultSet(rs));
