@@ -1,8 +1,13 @@
 package io.mycat.netty.mysql.proto;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 
 public class HandshakeResponse extends Packet {
+    private static final Logger logger = LoggerFactory.getLogger(HandshakeResponse.class);
+
     public long capabilityFlags = Flags.CLIENT_PROTOCOL_41;
     public long maxPacketSize = 0;
     public long characterSet = 0;
@@ -34,6 +39,7 @@ public class HandshakeResponse extends Packet {
         ArrayList<byte[]> payload = new ArrayList<byte[]>();
         
         if ((this.capabilityFlags & Flags.CLIENT_PROTOCOL_41) != 0) {
+            logger.info("CLIENT_PROTOCOL_41 false");
             payload.add( Proto.build_fixed_int(4, this.capabilityFlags));
             payload.add( Proto.build_fixed_int(4, this.maxPacketSize));
             payload.add( Proto.build_fixed_int(1, this.characterSet));
@@ -64,6 +70,7 @@ public class HandshakeResponse extends Packet {
             }
         }
         else {
+            logger.info("CLIENT_PROTOCOL_41 true");
             payload.add( Proto.build_fixed_int(2, this.capabilityFlags));
             payload.add( Proto.build_fixed_int(3, this.maxPacketSize));
             payload.add( Proto.build_null_str(this.username));
@@ -89,6 +96,7 @@ public class HandshakeResponse extends Packet {
         proto.offset -= 2;
         
         if (obj.hasCapabilityFlag(Flags.CLIENT_PROTOCOL_41)) {
+            logger.info("CLIENT_PROTOCOL_41 true");
             obj.capabilityFlags = proto.get_fixed_int(4);
             obj.maxPacketSize = proto.get_fixed_int(4);
             obj.characterSet = proto.get_fixed_int(1);
@@ -121,6 +129,7 @@ public class HandshakeResponse extends Packet {
             }
         }
         else {
+            logger.info("CLIENT_PROTOCOL_41 false");
             obj.capabilityFlags = proto.get_fixed_int(2);
             obj.maxPacketSize = proto.get_fixed_int(3);
             obj.username = proto.get_null_str();
@@ -132,7 +141,7 @@ public class HandshakeResponse extends Packet {
             else
                 obj.authResponse = proto.get_eop_str();
         }
-        
+        logger.info("handshake response : {}", obj);
         return obj;
     }
 }
