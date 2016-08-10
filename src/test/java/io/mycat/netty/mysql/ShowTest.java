@@ -123,9 +123,26 @@ public class ShowTest {
         }
     }
 
+    // show tables;
+    //  SHOW TABLES FROM  mydb;
+//    show tables like 'my_%';
+//    show columns from mytable;
+//    describe mytable;
+//    show create table mytable;
+//    SHOW CHARACTER SET WHERE `Default collation` LIKE '%japanese%';
+//     SHOW CHARACTER SET WHERE Maxlen > 1;
 //    @Test
 //    public void testShowTables(){
 //
 //    }
+
+    @Test
+    public void testShowFullTables(){
+
+    }
+
+
+
+
 
 }

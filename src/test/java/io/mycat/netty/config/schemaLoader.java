@@ -15,6 +15,6 @@ public class schemaLoader {
 
     @Test
     public void testXmlLoader() throws ParserConfigurationException, SAXException, IOException {
-        XMLSchemaLoader.load();
+        new XMLSchemaLoader().load();
     }
 }

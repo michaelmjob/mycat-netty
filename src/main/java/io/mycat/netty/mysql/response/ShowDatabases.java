@@ -5,6 +5,7 @@ import io.mycat.netty.mysql.MySQLSession;
 import io.mycat.netty.mysql.auth.Privilege;
 import io.mycat.netty.mysql.auth.PrivilegeFactory;
 import io.mycat.netty.mysql.packet.*;
+import io.mycat.netty.util.StringUtil;
 import org.apache.commons.codec.binary.StringUtils;
 
 import java.nio.ByteBuffer;
@@ -47,7 +48,7 @@ public class ShowDatabases {
         for(String database : databases){
             RowDataPacket row= new RowDataPacket(FIELD_COUNT);
             // charset in sessionContext
-            row.add(StringUtils.newString(database.getBytes(), sessiion.getCharset()).getBytes());
+            row.add(StringUtil.encode(database, sessiion.getCharset()));
             row.packetId = ++packetId;
             result.add(row.getPacket());
         }

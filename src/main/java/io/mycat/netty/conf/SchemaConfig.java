@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/7.
@@ -15,9 +17,8 @@ import java.util.List;
 public class SchemaConfig {
     private static final Logger logger = LoggerFactory.getLogger(SchemaConfig.class);
 
-    private List<TableConfig> tables;
+//    private List<TableConfig> tables;
+    Map<String, TableConfig> tables;
 
-    public SchemaConfig(){
-        tables = new ArrayList<>();
-    }
+    public SchemaConfig(){ tables = new HashMap<>();}
 }

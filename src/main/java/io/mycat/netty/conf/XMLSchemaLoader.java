@@ -1,5 +1,7 @@
 package io.mycat.netty.conf;
 
+import ch.qos.logback.core.joran.spi.XMLUtil;
+import io.mycat.netty.mysql.auth.XmlUtils;
 import io.mycat.netty.router.partition.Partition;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -13,13 +15,16 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import javax.management.modelmbean.XMLParseException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/7.
@@ -27,29 +32,29 @@ import java.util.List;
 @Data
 public class XMLSchemaLoader {
     private static final Logger logger = LoggerFactory.getLogger(XMLSchemaLoader.class);
-    private static XMLSchemaLoader instance = new XMLSchemaLoader();
-    private SchemaConfig schemaConfig;
+
+    private Map<String, SchemaConfig> schemaConfigs;
     private DataSource datasource;
 
     public XMLSchemaLoader(){
-        schemaConfig = new SchemaConfig();
+        schemaConfigs =  new HashMap<>();
         datasource = new DataSource();
     }
 
-    public static void load() throws IOException, SAXException, ParserConfigurationException {
+    public void load() throws IOException, SAXException, ParserConfigurationException {
         InputStream dtd = XMLSchemaLoader.class.getResourceAsStream("/schema.dtd");
         InputStream xml = XMLSchemaLoader.class.getResourceAsStream("/schema.xml");
         assert dtd != null;
         assert xml != null;
 
-        Element root = getDocument(dtd, xml).getDocumentElement();
+        Element root = XmlUtils.getDocument(dtd, xml).getDocumentElement();
 
         loadDatasource(root);
         loadSchema(root);
 
         logger.info("===================================================================");
         logger.info("===================================================================");
-        logger.info("instance : {}", instance);
+        logger.info("instance : {}", this);
 
         logger.info("===================================================================");
     }
@@ -83,10 +88,12 @@ public class XMLSchemaLoader {
         return nodes;
     }
 
-    public static void loadSchema(Element root){
+    public void loadSchema(Element root){
         NodeList schemaNodes = root.getElementsByTagName("schema");
         for(int i = 0; i < schemaNodes.getLength(); i++){
             Element schemaNode = (Element)schemaNodes.item(i);
+            String schemaName = schemaNode.getAttribute("name");
+            getSchemaConfigs().put(schemaName, new SchemaConfig());
             NodeList tableNodes = schemaNode.getElementsByTagName("table");
             NodeList tablegroupNodes = schemaNode.getElementsByTagName("tablegroup");
 
@@ -103,21 +110,13 @@ public class XMLSchemaLoader {
                 if(!tableNode.getParentNode().getNodeName().equals("schema")){
                     continue;
                 }
+
                 getPartition(tableNode);
 
                 tableConfig.setDatasource(getNodes(tableNode));
-//                NodeList Nodes = ((Element)tableNode.getElementsByTagName("datasource").item(0))
-//                                                                            .getElementsByTagName("node");
-//                for(int h = 0 ; h < Nodes.getLength(); h++){
-//                    Element nodeNode = (Element) Nodes.item(i);
-//                    tableConfig.getDatasource().add(
-//                                    new TableConfig.Node(
-//                                            nodeNode.getAttribute("databode"),
-//                                            nodeNode.getAttribute("database")));
-//                }
 
                 tableConfig.setName(name);
-                instance.getSchemaConfig().getTables().add(tableConfig);
+                getSchemaConfigs().get(schemaName).getTables().put(name, tableConfig);
             }
 
             for(int j = 0 ; j < tablegroupNodes.getLength(); j++){
@@ -128,14 +127,14 @@ public class XMLSchemaLoader {
                 List<TableConfig.Node> nodes = getNodes(tablegroupNode);
                 for(int h = 0; h < subTableNodes.getLength(); h++){
                     String name = ((Element)subTableNodes.item(h)).getAttribute("name");
-                    instance.getSchemaConfig().getTables().add(new TableConfig(name, null, nodes));
+                    getSchemaConfigs().get(schemaName).getTables().put(name, new TableConfig(name, null, nodes));
                 }
             }
         }
     }
 
 
-    public static void loadDatasource(Element root){
+    public void loadDatasource(Element root){
         NodeList datanodeNodes = root.getElementsByTagName("datanode");
         for(int i = 0; i < datanodeNodes.getLength(); i++){
             Node node = datanodeNodes.item(i);
@@ -173,40 +172,9 @@ public class XMLSchemaLoader {
                 }
 //                logger.info("index : {}, datanode: {}", i, datanode);
                 datanode.setReadhost(readhosts);
-                instance.getDatasource().getDatanodes().add(datanode);
+                getDatasource().getDatanodes().add(datanode);
             }
         }
-    }
-
-
-
-    public static Document getDocument(final InputStream dtd, InputStream xml) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(true);
-        factory.setNamespaceAware(false);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        // 处理xml文件中的entity读取
-        builder.setEntityResolver((publicId, systemId) -> {
-            return new InputSource(dtd);
-        });
-        builder.setErrorHandler(new ErrorHandler() {
-            @Override
-            public void warning(SAXParseException exception) throws SAXException {
-                logger.error("parse warnging :  {}", exception);
-            }
-
-            @Override
-            public void error(SAXParseException exception) throws SAXException {
-                logger.error("parse error :  {}", exception);
-            }
-
-            @Override
-            public void fatalError(SAXParseException exception) throws SAXException {
-                logger.error("parse fatal error :  {}", exception);
-            }
-        });
-
-        return builder.parse(xml);
     }
 
 }
