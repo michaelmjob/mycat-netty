@@ -65,9 +65,9 @@ public abstract class AbstractPrivilege implements Privilege{
         return false;
     }
 
-    public List<String> getSchemas(String user){
-        UserConfig userConfig = users.get(user);
-        return Arrays.asList(userConfig.getSchemas().split(","));
+    public Collection<String> getSchemas(String user){
+        List<String> neddSchemas =  new ArrayList<String>();
+        return users.get(user).getSortedSchemas();
     }
 
 
@@ -78,7 +78,19 @@ public abstract class AbstractPrivilege implements Privilege{
     public static class UserConfig {
         private String password;
         private String schemas;
+//        private Set<String> schemas;
         private boolean readOnly;
+
+        private Set<String> sortedSchemas;
+
+        public UserConfig(String password, String schemas, boolean readOnly){
+            this.password = password;
+            this.schemas = schemas;
+            this.readOnly = readOnly;
+
+            this.sortedSchemas = new TreeSet(Arrays.asList(this.schemas.split(",")));
+            logger.info("treeset schemas : {}", this.sortedSchemas);
+        }
 
     }
 }

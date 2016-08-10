@@ -1,5 +1,6 @@
 package io.mycat.netty.mysql.auth;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -15,5 +16,5 @@ public interface Privilege {
     
     boolean checkPassword(String user, String password, String salt);
 
-    List<String> getSchemas(String user);
+    Collection<String> getSchemas(String user);
 }

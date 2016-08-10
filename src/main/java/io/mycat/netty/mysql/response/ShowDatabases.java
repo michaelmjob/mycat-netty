@@ -1,5 +1,7 @@
 package io.mycat.netty.mysql.response;
 
+import io.mycat.netty.Session;
+import io.mycat.netty.mysql.MySQLSession;
 import io.mycat.netty.mysql.auth.Privilege;
 import io.mycat.netty.mysql.auth.PrivilegeFactory;
 import io.mycat.netty.mysql.packet.*;
@@ -28,7 +30,7 @@ public class ShowDatabases {
 
     // params should be sessionContext
     // add charset encoding
-    public static ArrayList<byte[]> getPacket(String user){
+    public static ArrayList<byte[]> getPacket(Session sessiion){
         ArrayList<byte[]> result = new ArrayList<>();
 
         result.add(header.getPacket());
@@ -41,11 +43,11 @@ public class ShowDatabases {
         byte packetId = eof.packetId;
 
         // 获取当前用户所能够看到的数据库信息
-        List<String> databases = PrivilegeFactory.getPrivilege().getSchemas(user);
+        Collection<String> databases = PrivilegeFactory.getPrivilege().getSchemas(sessiion.getUser());
         for(String database : databases){
             RowDataPacket row= new RowDataPacket(FIELD_COUNT);
             // charset in sessionContext
-            row.add(StringUtils.newString(database.getBytes(), "utf-8").getBytes());
+            row.add(StringUtils.newString(database.getBytes(), sessiion.getCharset()).getBytes());
             row.packetId = ++packetId;
             result.add(row.getPacket());
         }

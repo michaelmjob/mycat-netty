@@ -1,5 +1,5 @@
 users:
   laoshan: {password: xujianhai, readOnly: true, schemas: 'schema,testdb'}
-  user: {password: xujianhai, readOnly: true, schemas: 'schema,testdb'}
-  xujianhai: {password: xujianhai, readOnly: true, schemas: 'schema,testdb'}
+  user: {password: xujianhai, readOnly: true, schemas: 'why,schema,testdb,'}
+  xujianhai: {password: xujianhai, readOnly: true, schemas: 'why,schema,testdb,oshit'}
 whitehosts: {127.0.0.2: 'xujianhai,user', 127.0.0.1: 'xujianhai,user,laoshan'}

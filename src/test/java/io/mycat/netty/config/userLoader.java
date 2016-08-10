@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Created by snow_young on 16/8/6.
+ * 测试用户配置文件的加载
  */
 
 public class userLoader {
