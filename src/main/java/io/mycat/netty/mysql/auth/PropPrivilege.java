@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -59,6 +60,11 @@ public class PropPrivilege implements Privilege, Source {
             logger.info("validateUserPassword error", e);
         }
         return false;
+    }
+
+    @Override
+    public List<String> getSchemas(String user) {
+        return Arrays.asList(prop.getProperty(user+".password").split(","));
     }
 
     @Override

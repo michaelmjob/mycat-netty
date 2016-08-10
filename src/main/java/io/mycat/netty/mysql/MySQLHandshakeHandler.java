@@ -53,7 +53,11 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
     private final AtomicLong connIdGenerator = new AtomicLong(0);
     private final AttributeKey<MySQLSession> TMP_SESSION_KEY = AttributeKey.valueOf("_AUTHTMP_SESSION_KEY");
     private static final String SEED_KEY = "seed";
-    private Privilege privilege = PrivilegeFactory.getPrivilege("file_addr");
+    // todo : move to config run
+    static{
+        PrivilegeFactory.loadPrivilege("");
+    }
+    private Privilege privilege = PrivilegeFactory.getPrivilege();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {

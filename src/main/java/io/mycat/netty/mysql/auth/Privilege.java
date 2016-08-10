@@ -1,5 +1,7 @@
 package io.mycat.netty.mysql.auth;
 
+import java.util.List;
+
 /**
  * Created by snow_young on 16/7/17.
  */
@@ -12,4 +14,6 @@ public interface Privilege {
     String password(String user);
     
     boolean checkPassword(String user, String password, String salt);
+
+    List<String> getSchemas(String user);
 }

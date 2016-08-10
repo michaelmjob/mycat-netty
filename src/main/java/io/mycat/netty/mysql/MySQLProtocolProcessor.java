@@ -286,17 +286,15 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     public void processShow(String stmt, int offset) throws Exception {
         ResultSet rs = null;
+
+        ByteBuf out = getProtocolTransport().out;
         try {
             switch (ServerParseShow.parse(stmt, offset)) {
                 case ServerParseShow.DATABASES:
-                    ByteBuf out = getProtocolTransport().out;
-                    for (byte[] bs : io.mycat.netty.mysql.response.ShowVariables.getPacket()) {
+                    for (byte[] bs : io.mycat.netty.mysql.response.ShowDatabases.getPacket("xujianhai")) {
                         out.writeBytes(bs);
                     }
                     logger.info("return enter show databases");
-//                DatabaseMetaData metaData = getConnection().getMetaData();
-//                rs = metaData.getSchemas();
-//                sendResultSet(ShowDatabases.toMySQLResultSet(rs));
                     break;
                 case ServerParseShow.CONNECTION:
                     unsupported("CONNECTION");
@@ -309,12 +307,6 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                     break;
                 case ServerParseShow.VARIABLES:
                     logger.info("enter show variables : " + stmt);
-//                sendResultSet(ShowVariables.getResultSet());
-//                ProtocolTransport transport = getProtocolTransport();
-//                ShowVariables.execute(transport);
-//                getProtocolTransport().out.writeBytes(ShowVariables.getPacket());
-
-                    ByteBuf out = getProtocolTransport().out;
                     for (byte[] bs : io.mycat.netty.mysql.response.ShowVariables.getPacket()) {
                         out.writeBytes(bs);
                     }

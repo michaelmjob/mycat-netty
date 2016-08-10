@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -12,6 +13,8 @@ import java.util.Properties;
 public class PrivilegeFactory {
     private static final Logger logger = LoggerFactory.getLogger(PrivilegeFactory.class);
 
+    // todo: refactor privilege, prop privilege is diffrent
+    private static volatile Privilege privilege;
     public static final Privilege TRUE_PRIVILEGE = new Privilege(){
 
         public boolean userExists(String user) {
@@ -29,9 +32,11 @@ public class PrivilegeFactory {
         public boolean checkPassword(String user, String password, String salt) {
             return true;
         }
+
+        public List<String> getSchemas(String user) { return null; }
     };
 
-    public static Privilege getPrivilege(String file){
+    public static void loadPrivilege(String file){
         // seek config file
         XmlPrivilege xmlPrivilege = new XmlPrivilege();
         try {
@@ -39,6 +44,13 @@ public class PrivilegeFactory {
         } catch (Exception e) {
             logger.info("load file[{}] with xml occurs error", file, e);
         }
-        return xmlPrivilege;
+
+        privilege = xmlPrivilege;
     }
+
+    public static Privilege getPrivilege(){
+        return privilege;
+    }
+
+
 }

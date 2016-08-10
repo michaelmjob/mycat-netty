@@ -10,10 +10,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by snow_young on 16/8/7.
@@ -68,15 +65,20 @@ public abstract class AbstractPrivilege implements Privilege{
         return false;
     }
 
+    public List<String> getSchemas(String user){
+        UserConfig userConfig = users.get(user);
+        return Arrays.asList(userConfig.getSchemas().split(","));
+    }
+
 
     // TODO: change schemas structure implementation with set
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class UserConfig{
+    public static class UserConfig {
         private String password;
         private String schemas;
         private boolean readOnly;
-    }
 
+    }
 }
