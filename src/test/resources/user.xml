@@ -4,7 +4,7 @@
 <guard:user xmlns:guard="http://snow4young.org/">
     <user name="xujianhai">
         <property name="password">xujianhai</property>
-        <property name="schemas">schema,testdb</property>
+        <property name="schemas">schema,testdb,frontdb0</property>
         <property name="readOnly">true</property>
     </user>
 

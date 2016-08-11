@@ -319,6 +319,12 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 case ServerParseShow.ENGINES:
                     sendResultSet(ShowEngines.getResultSet());
                     break;
+                case ServerParseShow.TABLES:
+                    for (byte[] bs : io.mycat.netty.mysql.response.ShowTables.getPacket(getSession(), stmt)) {
+                        out.writeBytes(bs);
+                    }
+                    logger.info("return enter show tables");
+                    break;
                 default:
                     execute(stmt, ServerParse.SHOW);
             }

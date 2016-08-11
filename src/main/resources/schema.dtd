@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!ELEMENT guard:schema (schema*, datanode*)>
+<!ATTLIST guard:schema xmlns:guard CDATA #FIXED "http://snow4young.org/">
+
+<!ELEMENT schema (table*, tablegroup*)>
+<!ATTLIST schema
+        name NMTOKEN #REQUIRED
+        sqlMaxLimit CDATA #IMPLIED>
+
+<!-- partition function : name class params(properties)-->
+<!ELEMENT table (datasource, partition)>
+<!ATTLIST table
+        name CDATA #REQUIRED
+        >
+<!ELEMENT datasource (node*)>
+<!ELEMENT node ANY>
+<!ATTLIST node
+        datanode CDATA #REQUIRED
+        database CDATA #REQUIRED
+        >
+<!ELEMENT partition (property*)>
+<!ATTLIST partition
+        class CDATA #REQUIRED
+        >
+<!ELEMENT property ANY>
+<!ATTLIST property
+        name CDATA #REQUIRED
+        >
+
+
+<!ELEMENT tablegroup (tables, datasource, partition)>
+<!ELEMENT tables (table*)>
+
+
+<!-- datanode -->
+<!ELEMENT datanode (writehost, readhost+, heartbeat)>
+<!ATTLIST datanode
+        name CDATA #REQUIRED
+        balance CDATA #REQUIRED
+        maxconn CDATA #REQUIRED
+        minconn CDATA #REQUIRED
+        readtype CDATA #REQUIRED
+        dbtype CDATA #REQUIRED
+        dbdriver CDATA #REQUIRED
+        >
+<!ELEMENT writehost ANY>
+<!ATTLIST writehost
+        url CDATA #REQUIRED
+        user CDATA #REQUIRED
+        password CDATA #REQUIRED
+        >
+<!ELEMENT readhost ANY>
+<!ATTLIST readhost
+        url CDATA #REQUIRED
+        user CDATA #REQUIRED
+        password CDATA #REQUIRED
+        >
+<!ELEMENT heartbeat ANY>

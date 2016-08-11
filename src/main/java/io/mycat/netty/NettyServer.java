@@ -15,6 +15,7 @@
  */
 package io.mycat.netty;
 
+import io.mycat.netty.conf.Configuration;
 import io.mycat.netty.util.ExtendableThreadPoolExecutor;
 import io.mycat.netty.util.Threads;
 import io.mycat.netty.util.SysProperties;
@@ -62,9 +63,10 @@ public abstract class NettyServer {
 //            if (!StringUtils.isNullOrEmpty(args.configFile)) {
 //                System.setProperty("ddal.engineConfigLocation", args.configFile);
 //            }
-            logger.info("{} server init ddal-engine from {}", getServerName(), SysProperties.ENGINE_CONFIG_LOCATION);
-            Properties prop = new Properties();
-            logger.info("{} server ddal-engine inited.", getServerName());
+
+            Configuration.init();
+//            logger.info("{} server init ddal-engine from {}", getServerName(), SysProperties.ENGINE_CONFIG_LOCATION);
+//            logger.info("{} server ddal-engine inited.", getServerName());
         } catch (Exception e) {
             logger.error("Exception happen when init ddal-engine ", e);
             if (e instanceof RuntimeException) {
