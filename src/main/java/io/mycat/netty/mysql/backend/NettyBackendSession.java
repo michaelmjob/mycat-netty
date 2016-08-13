@@ -115,7 +115,6 @@ public class NettyBackendSession implements BackendSession{
 
     }
 
-
     // ===================================== for login =====================================
     private static long initClientFlags(){
         int flag = 0;
@@ -171,15 +170,14 @@ public class NettyBackendSession implements BackendSession{
                 if(channelFuture.isSuccess()){
                     if(channelFuture.isSuccess()){
                         NettyBackendSession.this.serverChannel = channelFuture.channel();
-                        logger.info("connect success");
+                        logger.info("tcp connect success");
                     }else{
                         logger.error("initial connection failed!");
                     }
-                    NettyBackendSession.this.countDownLatch.countDown();
                 }
             }
         });
-        waitChannel(3000);
+        waitChannel(10000);
     }
 
     public byte[] authenticate() {

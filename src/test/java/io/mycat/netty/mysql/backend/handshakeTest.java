@@ -2,6 +2,8 @@ package io.mycat.netty.mysql.backend;
 
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.packet.HandshakePacket;
+import io.mycat.netty.mysql.packet.RowDataPacket;
+import io.mycat.netty.mysql.proto.RowPacket;
 import io.netty.channel.Channel;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -28,12 +30,6 @@ public class handshakeTest {
 
         session.initConnect();
 
-        // should add countdownLatch for conn initialize
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         logger.info("begin show databases");
         session.sendQueryCmd("show databases");
@@ -43,6 +39,14 @@ public class handshakeTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        for(RowDataPacket row : session.getResultSetPacket().getRows()){
+            logger.info("rows");
+            for(byte[] field : row.fieldValues){
+                logger.info("field : {}", field);
+            }
+        }
+
 
         logger.info("finish connect");
 

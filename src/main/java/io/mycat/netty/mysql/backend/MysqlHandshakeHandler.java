@@ -41,7 +41,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(final ChannelHandlerContext channelHandlerContext, Object msg){
         logger.info("mysql handshake handler channel read");
 
-//        ByteBuf out = channelHandlerContext.alloc().buffer();
         ByteBuf out = this.session.getServerChannel().alloc().buffer();
 
         //  这里的协议解析有点问题
@@ -58,9 +57,9 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
             case OkPacket.FIELD_COUNT:
                 // 0x00
                 logger.info("authenticate success");
+                this.session.getCountDownLatch().countDown();
                 logger.info("fire channel from handshake");
                 channelHandlerContext.pipeline().remove(this);
-//                channelHandlerContext.fireChannelRead(msg);
                 break;
             case ErrorPacket.FIELD_COUNT:
                 // 0xff
@@ -75,11 +74,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 if(handshakePacket == null){
                     // receive handshake packet
                     processHandShake(packet);
-//                    session.authenticate();
-
-//                    out.writeBytes(session.authenticate());
-//                    channelHandlerContext.writeAndFlush(out);
-
 
                     out.writeBytes(session.authenticate());
                     this.session.getServerChannel().writeAndFlush(out);
@@ -89,17 +83,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 }
                 break;
         }
-    }
-
-    private void auth323(byte packetId){
-        Reply323Packet packet = new Reply323Packet();
-        packet.packetId = ++packetId;
-        String pass = this.session.getPassword();
-        if(pass != null && pass.length() > 0){
-            byte[] seed = this.session.getHandshake().seed;
-            packet.seed = SecurityUtil.scramble323(pass, new String(seed)).getBytes();
-        }
-        this.session.sendBytes(packet.getPacket());
     }
 
     private void processHandShake(byte[] data){
@@ -120,8 +103,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
         }
 
     }
-
-
 
     // need to drop all resource.
     @Override

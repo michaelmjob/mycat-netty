@@ -50,21 +50,10 @@ public class MysqlResponseHandler extends ChannelInboundHandlerAdapter {
                 // 有多个包需要读取
                 logger.info("channel read packet: mysql response handler : {}", data);
                 // select result
-//                ResultSetHeaderPacket header = new ResultSetHeaderPacket();
-//                header.read(data);
                 this.session.getResultSetPacket().read(data);
         }
         if(this.session.getResultSetPacket().isFinished()){
             logger.info("all finished");
-            for(RowDataPacket row : session.getResultSetPacket().getRows()){
-                for(byte[] rowData : row.fieldValues) {
-                    try {
-                        logger.info("row info : {}", new String(rowData, this.session.getCharset()));
-                    } catch (UnsupportedEncodingException e) {
-                        logger.error("string change fail", e);
-                    }
-                }
-            }
         }
         logger.info("finish channel write");
     }
