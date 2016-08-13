@@ -40,16 +40,12 @@ public class handshakeTest {
             e.printStackTrace();
         }
 
-        for(RowDataPacket row : session.getResultSetPacket().getRows()){
-            logger.info("rows");
-            for(byte[] field : row.fieldValues){
-                logger.info("field : {}", field);
-            }
-        }
-
-
-        logger.info("finish connect");
-
-
+//        for(RowDataPacket row : session.getResultSetPacket().getRows()){
+//            logger.info("rows");
+//            for(byte[] field : row.fieldValues){
+//                logger.info("field : {}", field);
+//            }
+//        }
+        logger.info("finish connect : {}", session.getResultSetPacket().getPacket());
     }
 }

@@ -1,14 +1,11 @@
 package io.mycat.netty.mysql.backend;
 
 import io.mycat.netty.conf.Capabilities;
-import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.MySQLProtocolDecoder;
 import io.mycat.netty.mysql.packet.AuthPacket;
 import io.mycat.netty.mysql.packet.CommandPacket;
 import io.mycat.netty.mysql.packet.HandshakePacket;
 import io.mycat.netty.mysql.packet.MySQLPacket;
-import io.mycat.netty.mysql.proto.Handshake;
-import io.mycat.netty.mysql.proto.HandshakeResponse;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.util.SecurityUtil;
 import io.mycat.netty.util.TimeUtil;
@@ -27,7 +24,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.SocketHandler;
 
 /**
  * Created by snow_young on 16/8/12.
@@ -160,7 +156,7 @@ public class NettyBackendSession implements BackendSession{
                         ChannelPipeline p = socketChannel.pipeline();
                         p.addLast(new MySQLProtocolDecoder(),
                                   new MysqlHandshakeHandler(NettyBackendSession.this),
-                                  new MysqlResponseHandler(NettyBackendSession.this));
+                                  new MysqlBackendProtocolHandler(NettyBackendSession.this));
                     }
                 });
         ChannelFuture f = b.connect(this.host, this.port);

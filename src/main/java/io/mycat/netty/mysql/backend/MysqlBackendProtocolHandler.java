@@ -17,12 +17,12 @@ import java.io.UnsupportedEncodingException;
 /**
  * Created by snow_young on 16/8/12.
  */
-public class MysqlResponseHandler extends ChannelInboundHandlerAdapter {
+public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(MysqlHandshakeHandler.class);
 
     NettyBackendSession session = null;
 
-    public MysqlResponseHandler(NettyBackendSession session) {
+    public MysqlBackendProtocolHandler(NettyBackendSession session) {
         this.session = session;
     }
 
@@ -47,8 +47,6 @@ public class MysqlResponseHandler extends ChannelInboundHandlerAdapter {
                 logger.info("mysql response handler receive error packet");
                 break;
             default:
-                // 有多个包需要读取
-                logger.info("channel read packet: mysql response handler : {}", data);
                 // select result
                 this.session.getResultSetPacket().read(data);
         }
