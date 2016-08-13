@@ -62,7 +62,8 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         logger.info("MySQLHandshakeHandler channel Active");
-        
+
+        // maybe leak here
         ByteBuf out = ctx.alloc().buffer();
         Handshake handshake = new Handshake();
         handshake.sequenceId = 0;
@@ -90,6 +91,8 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         temp.setHandshake(handshake);
         temp.setAttachment(SEED_KEY, handshake.challenge1);
         ctx.attr(TMP_SESSION_KEY).set(temp);
+
+        logger.info("prepare flush authentication, mysql handshake handler : {}", handshake);
         out.writeBytes(handshake.toPacket());
         ctx.writeAndFlush(out);
     
@@ -97,8 +100,9 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        logger.info("channel read {}", msg);
+        logger.info("receive authentication, channel read {}", msg);
 
+        // handshake should remove here if authenticate success
         ProtocolTransport transport = new ProtocolTransport(ctx.channel(), (ByteBuf) msg);
         if(transport.getSession() == null) {
             userExecutor.execute(new AuthTask(ctx, transport));

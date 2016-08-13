@@ -45,22 +45,6 @@ public class BinaryPacket extends MySQLPacket {
         logger.info("BinaryPacket array : {}", packet.clone());
         logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
-//        maybe return is important !
-//        BufferUtil.writeUB3(buffer, calcPacketSize());
-//        buffer.put(packetId);
-//        buffer = c.writeToBuffer(data, buffer);
-//        return buffer;
-
-//        self implement
-//        int size = calcPacketSize();
-//        byte[] packet = new byte[size+4];
-//        System.arraycopy(Proto.build_fixed_int(3, size), 0, packet, 0, 3);
-//        System.arraycopy(Proto.build_fixed_int(1, packetId), 0, packet, 3, 1);
-//        int offset = 4;
-//
-//        System.arraycopy(data, 0, packet, offset, data.length);
-//        offset += data.length;
-//        return packet;
     }
 
     @Override

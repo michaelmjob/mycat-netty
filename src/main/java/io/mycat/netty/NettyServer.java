@@ -60,13 +60,7 @@ public abstract class NettyServer {
 
         logger.info("nettyServer init");
         try {
-//            if (!StringUtils.isNullOrEmpty(args.configFile)) {
-//                System.setProperty("ddal.engineConfigLocation", args.configFile);
-//            }
-
             Configuration.init();
-//            logger.info("{} server init ddal-engine from {}", getServerName(), SysProperties.ENGINE_CONFIG_LOCATION);
-//            logger.info("{} server ddal-engine inited.", getServerName());
         } catch (Exception e) {
             logger.error("Exception happen when init ddal-engine ", e);
             if (e instanceof RuntimeException) {

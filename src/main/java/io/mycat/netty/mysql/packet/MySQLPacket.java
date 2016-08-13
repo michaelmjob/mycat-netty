@@ -168,9 +168,7 @@ public abstract class MySQLPacket {
 //    }
 
 
-    public byte[] getPacket() {
-        throw new UnsupportedOperationException();
-    }
+    public abstract byte[] getPacket();
 
     public void write(ByteBuf buf){ throw new UnsupportedOperationException(); };
 

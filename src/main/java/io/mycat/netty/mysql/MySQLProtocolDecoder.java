@@ -42,6 +42,7 @@ public class MySQLProtocolDecoder extends ByteToMessageDecoder {
             // The length field was not received yet - return.
             // This method will be invoked again when more packets are
             // received and appended to the buffer.
+            logger.info("byate is too short, less than 4 :  {}", in.readableBytes());
             return;
         }
         // The length field is in the buffer.
@@ -59,6 +60,7 @@ public class MySQLProtocolDecoder extends ByteToMessageDecoder {
             // received and appended to the buffer.
             // Reset to the marked position to read the length field again
             // next time.
+            logger.info("byte length is not xiangfu");
             in.resetReaderIndex();
             return;
         }
@@ -66,6 +68,7 @@ public class MySQLProtocolDecoder extends ByteToMessageDecoder {
         ByteBuf frame = in.resetReaderIndex().readSlice(frameLength + 4).retain();
         // Successfully decoded a frame. Add the decoded frame.
         out.add(frame);
+        logger.info("protocol decode success");
     }
 
     /**
