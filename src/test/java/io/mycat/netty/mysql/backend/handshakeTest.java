@@ -28,13 +28,21 @@ public class handshakeTest {
 
         session.initConnect();
 
+        // should add countdownLatch for conn initialize
         try {
-            Thread.sleep(50000);
+            Thread.sleep(20000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        session.send
+        logger.info("begin show databases");
+        session.sendQueryCmd("show databases");
+
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         logger.info("finish connect");
 

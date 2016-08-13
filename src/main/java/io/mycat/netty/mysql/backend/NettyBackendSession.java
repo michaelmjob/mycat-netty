@@ -1,13 +1,19 @@
 package io.mycat.netty.mysql.backend;
 
 import io.mycat.netty.conf.Capabilities;
+import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.MySQLProtocolDecoder;
 import io.mycat.netty.mysql.packet.AuthPacket;
+import io.mycat.netty.mysql.packet.CommandPacket;
 import io.mycat.netty.mysql.packet.HandshakePacket;
+import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.proto.Handshake;
 import io.mycat.netty.mysql.proto.HandshakeResponse;
+import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.util.SecurityUtil;
+import io.mycat.netty.util.TimeUtil;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -17,6 +23,7 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +38,7 @@ public class NettyBackendSession implements BackendSession{
     private static final Logger logger = LoggerFactory.getLogger(NettyBackendSession.class);
 
     private static NioEventLoopGroup eventLoop = new NioEventLoopGroup(8);
+    public static final int DEFAULT_BUFFER_SIZE = 16384;
 
     private static final long CLIENT_FLAGS = initClientFlags();
     private volatile long lastTime;
@@ -61,12 +69,12 @@ public class NettyBackendSession implements BackendSession{
 
     private volatile long since = System.currentTimeMillis();
 
+    private ResultSetPacket resultSetPacket = new ResultSetPacket();
+
     public NettyBackendSession(String host, int port){
         this.host = host;
         this.port = port;
     }
-
-
 
     // so, what aboud aboundant failures
     private void waitChannel(int loginTimeout){
@@ -86,8 +94,26 @@ public class NettyBackendSession implements BackendSession{
         this.serverChannel.writeAndFlush(bytes);
     }
 
+    // select/insert/delete/update
+    public void sendQueryCmd(String query){
+        CommandPacket packet = new  CommandPacket();
+        packet.packetId = 0;
+        packet.command = MySQLPacket.COM_QUERY;
+        try{
+            packet.arg = query.getBytes(charset);
+        }catch(UnsupportedEncodingException e){
+            logger.error("get bytes from query occurs error", e);
+            throw new RuntimeException(e);
+        }
+        lastTime = TimeUtil.currentTimeMillis();
 
+//        this.serverChannel.alloc().buffer();
+        ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
+        out.writeBytes(packet.getPacket());
+        this.serverChannel.writeAndFlush(out);
+        logger.info("send bytes for query : {}", query);
 
+    }
 
 
     // ===================================== for login =====================================
@@ -133,7 +159,9 @@ public class NettyBackendSession implements BackendSession{
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline p = socketChannel.pipeline();
-                        p.addLast(new MySQLProtocolDecoder(), new MysqlHandshakeHandler(NettyBackendSession.this), new MysqlResponseHandler());
+                        p.addLast(new MySQLProtocolDecoder(),
+                                  new MysqlHandshakeHandler(NettyBackendSession.this),
+                                  new MysqlResponseHandler(NettyBackendSession.this));
                     }
                 });
         ChannelFuture f = b.connect(this.host, this.port);

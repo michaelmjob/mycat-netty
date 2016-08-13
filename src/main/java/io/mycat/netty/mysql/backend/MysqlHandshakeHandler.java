@@ -41,7 +41,8 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(final ChannelHandlerContext channelHandlerContext, Object msg){
         logger.info("mysql handshake handler channel read");
 
-        ByteBuf out = channelHandlerContext.alloc().buffer();
+//        ByteBuf out = channelHandlerContext.alloc().buffer();
+        ByteBuf out = this.session.getServerChannel().alloc().buffer();
 
         //  这里的协议解析有点问题
         //  channelHandlerContext.
@@ -59,7 +60,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 logger.info("authenticate success");
                 logger.info("fire channel from handshake");
                 channelHandlerContext.pipeline().remove(this);
-                channelHandlerContext.fireChannelRead(msg);
+//                channelHandlerContext.fireChannelRead(msg);
                 break;
             case ErrorPacket.FIELD_COUNT:
                 // 0xff
@@ -75,8 +76,13 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                     // receive handshake packet
                     processHandShake(packet);
 //                    session.authenticate();
+
+//                    out.writeBytes(session.authenticate());
+//                    channelHandlerContext.writeAndFlush(out);
+
+
                     out.writeBytes(session.authenticate());
-                    channelHandlerContext.writeAndFlush(out);
+                    this.session.getServerChannel().writeAndFlush(out);
                     in.release();
                     logger.info("finish mysql handshake handler channel read, send authentication");
                     break;
