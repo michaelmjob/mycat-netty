@@ -80,13 +80,16 @@
     <!-- dbdriver : com.mysql.jdbc.driver -->
     <datanode name="d0" balance="rr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin">
         <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
-        <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai" weight="1"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai" weight="2"/>
         <heartbeat>select user()</heartbeat>
     </datanode>
 
     <datanode name="d1" balance="wrr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin">
         <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
-        <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai" weight="1"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai" weight="1"/>
+        <readhost url="localhost:3306" user="xujianhai" password="xujianhai" weight="1"/>
         <heartbeat>select user()</heartbeat>
     </datanode>
 

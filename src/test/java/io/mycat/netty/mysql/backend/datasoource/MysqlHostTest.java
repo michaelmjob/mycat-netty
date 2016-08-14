@@ -61,10 +61,11 @@ public class MysqlHostTest {
 
     @Test
     public void testGetConn(){
-        Host host = new MysqlHost(hostConfig, datanodeConfig, true, "mydb");
+//        Host host = new MysqlHost(hostConfig, datanodeConfig, true, "mydb");
+        Host host = new MysqlHost(hostConfig, datanodeConfig, true);
 
         try {
-            host.init();
+            host.init("mydb");
         } catch (InterruptedException e) {
             logger.error("init error for host", e);
             Assert.assertTrue(false);
@@ -74,6 +75,7 @@ public class MysqlHostTest {
         int size = host.getConMap().getSchemaConQueue("mydb").getConnQueue(true).size();
 
         logger.info("host size  : {}", size);
+        Assert.assertEquals(10, size);
 
 //        ResponseHandler handler = new ResponseHandler() {
 //            @Override
@@ -107,4 +109,10 @@ public class MysqlHostTest {
 //        final ResponseHandler handler)
 
     }
+
+
+
+
+
+
 }

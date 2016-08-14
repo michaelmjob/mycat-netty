@@ -159,9 +159,12 @@ public class XMLSchemaLoader {
                 NodeList readhostNodes = e.getElementsByTagName("readhost");
                 for(int j = 0; j < readhostNodes.getLength(); j++){
                     Element readhostNode = (Element) readhostNodes.item(j);
-                    readhosts.add(new DataSourceConfig.HostConfig(readhostNode.getAttribute("url"),
+                    readhosts.add(new DataSourceConfig.HostConfig(
+                                                        readhostNode.getAttribute("url"),
                                                         readhostNode.getAttribute("user"),
-                                                        readhostNode.getAttribute("password"), true));
+                                                        readhostNode.getAttribute("password"),
+                                                        true,
+                                                        Integer.parseInt(readhostNode.getAttribute("weight"))));
                 }
 //                logger.info("index : {}, datanode: {}", i, datanode);
                 datanode.setReadhost(readhosts);

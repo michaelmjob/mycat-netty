@@ -1,11 +1,13 @@
 package io.mycat.netty.mysql.backend;
 
+import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.MySQLHandshakeHandler;
 import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.mysql.proto.Handshake;
 import io.mycat.netty.mysql.proto.Packet;
 import io.mycat.netty.util.SecurityUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -25,6 +27,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 
     // try attributeKey
     NettyBackendSession session = null;
+//    ByteBuf out = null;
 
     public MysqlHandshakeHandler(NettyBackendSession session){
         this.session = session;
@@ -40,8 +43,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
     public void channelRead(final ChannelHandlerContext channelHandlerContext, Object msg){
         logger.info("mysql handshake handler channel read");
 
-        ByteBuf out = this.session.getServerChannel().alloc().buffer();
-
         //  这里的协议解析有点问题
         //  channelHandlerContext.
         ByteBuf in = (ByteBuf)msg;
@@ -56,10 +57,13 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
             case OkPacket.FIELD_COUNT:
                 // 0x00
                 logger.info("authenticate success");
-                this.session.getCountDownLatch().countDown();
                 OkPacket ok = new OkPacket();
                 ok.read(packet);
+//                if(!this.out.release()){
+//                    logger.error("release buffer failed", this);
+//                }
                 session.getResponseHandler().okResponse(ok, session);
+                this.session.getCountDownLatch().countDown();
                 channelHandlerContext.pipeline().remove(this);
                 break;
             case ErrorPacket.FIELD_COUNT:
@@ -68,6 +72,13 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 err.read(packet);
                 String errMsg = new String (err.message);
                 logger.error("cant't connect to mysql server, errmsg:" + errMsg + " "+this.session);
+
+//                if(!this.out.release()){
+//                    logger.error("release buffer failed", this);
+//                }
+                session.getResponseHandler().errorResponse(err, session);
+                this.session.getCountDownLatch().countDown();
+
                 break;
             default:
                 // begin to uthenticate
@@ -75,9 +86,13 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 if(handshakePacket == null){
                     // receive handshake packet
                     processHandShake(packet);
-
+                    // why error here
+//                    this.out = this.session.getServerChannel().alloc().buffer();
+                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
                     out.writeBytes(session.authenticate());
+                    this.session.getServerChannel();
                     this.session.getServerChannel().writeAndFlush(out);
+//                    this.session.getServerChannel().writeAndFlush(session.authenticate());
                     in.release();
                     logger.info("finish mysql handshake handler channel read, send authentication");
                     break;
@@ -105,12 +120,17 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error("error caught", cause);
+        System.exit(-1);
+    }
+
     // need to drop all resource.
     @Override
     public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception{
         logger.info("mysql handshake handler channel read channel inactive");
         super.channelInactive(channelHandlerContext);
     }
-
 
 }

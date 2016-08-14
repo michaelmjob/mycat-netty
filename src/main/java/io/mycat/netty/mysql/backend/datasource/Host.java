@@ -1,7 +1,6 @@
 package io.mycat.netty.mysql.backend.datasource;
 
 import io.mycat.netty.conf.DataSourceConfig;
-import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.handler.ConnectionHeartBeatHandler;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
@@ -20,7 +19,8 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by snow_young on 16/8/14.
  *
- * for read or write
+ * represent a real node providing many database operation,
+ * for read or write, u should know : one node may have many databases;
  */
 // TODO: ADD HEARTBEAT ACTION
 @Data
@@ -29,7 +29,7 @@ public abstract class Host {
 
     // schema name,
     private String name;
-    private String dbname;
+//    private String dbname;
 
     // conMap : used in other
     private ConMap conMap = new ConMap();
@@ -49,15 +49,15 @@ public abstract class Host {
     DataSourceConfig.DatanodeConfig datanodeConfig;
 
     public Host(DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
-                boolean isReadNode, String dbname){
+                boolean isReadNode){
         this.hostConfig = hostConfig;
         this.datanodeConfig = dataNodeConfig;
         heartbeat = this.createHeartBeat();
         this.name = hostConfig.getUrl();
-        this.dbname = dbname;
+//        this.dbname = dbname;
     }
 
-    public void init() throws InterruptedException {
+    public void init(String dbname) throws InterruptedException {
         CountDownLatch count = new CountDownLatch(this.getDatanodeConfig().getMinconn());
         for(int i = 0 ; i < this.getDatanodeConfig().getMinconn(); i++){
 //             create connection
@@ -72,7 +72,7 @@ public abstract class Host {
                     @Override
                     public void okResponse(OkPacket packet, NettyBackendSession session) {
                         // 默认初始化的时候放入 自动提交的队列
-                        Host.this.conMap.getSchemaConQueue(Host.this.dbname).getConnQueue(true).add(session);
+                        Host.this.conMap.getSchemaConQueue(dbname).getConnQueue(true).add(session);
                         count.countDown();
                     }
 

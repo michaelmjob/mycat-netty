@@ -55,5 +55,6 @@
         url CDATA #REQUIRED
         user CDATA #REQUIRED
         password CDATA #REQUIRED
+        weight CDATA #REQUIRED
         >
 <!ELEMENT heartbeat ANY>

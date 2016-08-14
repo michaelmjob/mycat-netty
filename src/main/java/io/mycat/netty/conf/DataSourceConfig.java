@@ -61,6 +61,7 @@ public class DataSourceConfig {
         private String user;
         private String password;
         private boolean readType;
+        private int weight;
     }
 
 }
