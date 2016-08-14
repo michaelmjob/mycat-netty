@@ -63,12 +63,10 @@ public class MysqlHostTest {
     public void testGetConn(){
         Host host = new MysqlHost(hostConfig, datanodeConfig, true, "mydb");
 
-        host.init();
-
         try {
-            Thread.sleep(10000);
+            host.init();
         } catch (InterruptedException e) {
-            logger.info("thread sleep for init conn error", e);
+            logger.error("init error for host", e);
             Assert.assertTrue(false);
         }
 

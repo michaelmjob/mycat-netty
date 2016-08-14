@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -55,7 +57,8 @@ public abstract class Host {
         this.dbname = dbname;
     }
 
-    public void init(){
+    public void init() throws InterruptedException {
+        CountDownLatch count = new CountDownLatch(this.getDatanodeConfig().getMinconn());
         for(int i = 0 ; i < this.getDatanodeConfig().getMinconn(); i++){
 //             create connection
             try {
@@ -70,6 +73,7 @@ public abstract class Host {
                     public void okResponse(OkPacket packet, NettyBackendSession session) {
                         // 默认初始化的时候放入 自动提交的队列
                         Host.this.conMap.getSchemaConQueue(Host.this.dbname).getConnQueue(true).add(session);
+                        count.countDown();
                     }
 
                     @Override
@@ -83,6 +87,7 @@ public abstract class Host {
                 System.exit(-1);
             }
         }
+        count.await();
     }
 
     public void getConnection(String schema, boolean autocommit,
