@@ -1,11 +1,9 @@
 package io.mycat.netty.mysql.backend;
 
+import com.sun.tools.internal.ws.wscompile.ErrorReceiver;
 import io.mycat.netty.conf.Capabilities;
 import io.mycat.netty.mysql.MySQLProtocolDecoder;
-import io.mycat.netty.mysql.packet.AuthPacket;
-import io.mycat.netty.mysql.packet.CommandPacket;
-import io.mycat.netty.mysql.packet.HandshakePacket;
-import io.mycat.netty.mysql.packet.MySQLPacket;
+import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.util.SecurityUtil;
 import io.mycat.netty.util.TimeUtil;
@@ -38,7 +36,6 @@ public class NettyBackendSession implements BackendSession{
 
     private static final long CLIENT_FLAGS = initClientFlags();
     private volatile long lastTime;
-    private volatile String schema = null;
     private volatile String oldSchema;
     private volatile boolean borrowed = false;
     private volatile boolean modifiedSQLExcluded = false;
@@ -66,6 +63,19 @@ public class NettyBackendSession implements BackendSession{
     private volatile long since = System.currentTimeMillis();
 
     private ResultSetPacket resultSetPacket = new ResultSetPacket();
+    private OkPacket okPacket = null;
+    private ErrorPacket errorPacket = null;
+
+    // should invole responeHandler
+    public void setOkPacket(byte[] ok){
+        this.okPacket = new OkPacket();
+        this.okPacket.read(ok);
+    }
+
+    public void setErrorPacket(byte[] data){
+        this.errorPacket = new ErrorPacket();
+        this.errorPacket.read(data);
+    }
 
     public NettyBackendSession(String host, int port){
         this.host = host;
@@ -83,11 +93,19 @@ public class NettyBackendSession implements BackendSession{
 
     @Override
     public String getCurrentDB() {
-        return null;
+        return this.currentDB;
     }
 
     public void sendBytes(byte[] bytes){
-        this.serverChannel.writeAndFlush(bytes);
+        ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
+        out.writeBytes(bytes);
+        this.serverChannel.writeAndFlush(out);
+    }
+
+    public void sendPacket(MySQLPacket packet){
+        ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
+        out.writeBytes(packet.getPacket());
+        this.serverChannel.writeAndFlush(out);
     }
 
     // select/insert/delete/update
@@ -103,12 +121,10 @@ public class NettyBackendSession implements BackendSession{
         }
         lastTime = TimeUtil.currentTimeMillis();
 
-//        this.serverChannel.alloc().buffer();
         ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
         out.writeBytes(packet.getPacket());
         this.serverChannel.writeAndFlush(out);
         logger.info("send bytes for query : {}", query);
-
     }
 
     // ===================================== for login =====================================
@@ -189,7 +205,8 @@ public class NettyBackendSession implements BackendSession{
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e.getMessage());
         }
-        packet.database = schema;
+//        packet.database = schema;
+        packet.database = this.currentDB;
 
         logger.info("netty backend session begin to authenticate ");
 

@@ -1,5 +1,6 @@
 package io.mycat.netty.mysql.backend.handler;
 
+import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.OkPacket;

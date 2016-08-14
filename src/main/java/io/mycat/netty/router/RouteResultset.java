@@ -1,10 +1,13 @@
 package io.mycat.netty.router;
 
+import lombok.Data;
+
 import java.io.Serializable;
 
 /**
  * Created by snow_young on 16/8/12.
  */
+@Data
 public class RouteResultset implements Serializable{
     private String statement;
     private int sqlType;
@@ -16,6 +19,7 @@ public class RouteResultset implements Serializable{
         this.statement = statement;
         this.sqlType = sqlType;
     }
+
 
 
 }

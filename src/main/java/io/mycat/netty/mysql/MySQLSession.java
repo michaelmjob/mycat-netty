@@ -21,6 +21,8 @@ import io.mycat.netty.mysql.proto.Handshake;
 import io.mycat.netty.mysql.proto.HandshakeResponse;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import lombok.Data;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ import java.util.Map;
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
  *
  */
+@Data
 public class MySQLSession implements Session {
 
     private Channel channel;
@@ -41,6 +44,16 @@ public class MySQLSession implements Session {
     private int charsetIndex;
     public String username;
     public String schema;
+
+    private boolean autocommit = true;
+    // maybe error!
+    private ChannelHandlerContext ctx;
+
+    public boolean isClosed(){
+        return !this.channel.isOpen() ||
+                !this.channel.isActive() ||
+                !this.channel.isWritable();
+    }
 
     /**
      * @return the sessionId

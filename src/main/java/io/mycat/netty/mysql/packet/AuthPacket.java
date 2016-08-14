@@ -114,7 +114,7 @@ public class AuthPacket extends MySQLPacket{
         }else{
             // NULL END type
             byte[] databaseData = database.getBytes();
-            System.arraycopy(databaseData, 0, packet, offset, packet.length);
+            System.arraycopy(databaseData, 0, packet, offset, databaseData.length);
             offset += databaseData.length;
             packet[offset++] = 0;
         }

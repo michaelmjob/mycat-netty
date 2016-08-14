@@ -31,7 +31,8 @@ public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
         logger.info("mysql response handler active, ");
     }
 
-    // insert/update/delete/select
+    // insert/update/delete
+    // select for resultset
     @Override
     public void channelRead(final ChannelHandlerContext channelHandlerContext, Object msg) {
         logger.info("mysql response handler channel read");
@@ -39,11 +40,14 @@ public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
         byte[] data = new byte[buffer.readableBytes()];
         buffer.readBytes(data);
         byte type = Packet.getType(data);
+        logger.info("type: {}, data: {}", type, data);
         switch (type){
             case OkPacket.FIELD_COUNT:
+                this.session.setOkPacket(data);
                 logger.info("mysql response handler receive OK PACKET");
                 break;
             case ErrorPacket.FIELD_COUNT:
+                this.session.setErrorPacket(data);
                 logger.info("mysql response handler receive error packet");
                 break;
             default:
