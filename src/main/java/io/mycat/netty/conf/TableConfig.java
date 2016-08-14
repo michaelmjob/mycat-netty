@@ -39,8 +39,4 @@ public class TableConfig {
         private String datanode;
         private String database;
     }
-
-
-
-
 }

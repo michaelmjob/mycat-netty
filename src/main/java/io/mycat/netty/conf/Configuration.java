@@ -1,6 +1,5 @@
 package io.mycat.netty.conf;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -31,7 +30,7 @@ public class Configuration {
         return schemaLoader.getSchemaConfigs();
     }
 
-    public static DataSource getDataSource(){
+    public static DataSourceConfig getDataSource(){
         return schemaLoader.getDatasource();
     }
 

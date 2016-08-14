@@ -1,5 +1,7 @@
 package io.mycat.netty.router;
 
+import io.mycat.netty.mysql.backend.NettyBackendSession;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,7 @@ import java.util.Comparator;
 /**
  * Created by snow_young on 16/8/12.
  */
+//@Data
 public class RouteResultsetNode implements Serializable, Comparator<RouteResultsetNode>{
     private static final Logger logger = LoggerFactory.getLogger(RouteResultsetNode.class);
 
@@ -16,21 +19,27 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
 
     private String dataNodeName;
     private String statement;
-    private int sqlType;
 
     // 是否强制走master
     private Boolean canRunSlave = true;
 
+    private boolean canRunInReadDB = false;
+    // 添加负载均衡标志
+    // boolean hasBalanceFlag = ??
 
-    public RouteResultsetNode(String dataNodeName, int sqlType, String statement){
+    private NettyBackendSession backendSession;
+
+
+    public RouteResultsetNode(String dataNodeName, String statement){
         this.dataNodeName = dataNodeName;
-        this.sqlType = sqlType;
         this.statement = statement;
     }
 
+    //
+    public void getBackendSession(){
+        // get real node fro nodeName
 
-
-
+    }
 
     @Override
     public int compare(RouteResultsetNode o1, RouteResultsetNode o2) {

@@ -3,6 +3,7 @@ package io.mycat.netty.mysql.backend;
 import com.sun.tools.internal.ws.wscompile.ErrorReceiver;
 import io.mycat.netty.conf.Capabilities;
 import io.mycat.netty.mysql.MySQLProtocolDecoder;
+import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.util.SecurityUtil;
@@ -22,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by snow_young on 16/8/12.
@@ -66,6 +68,16 @@ public class NettyBackendSession implements BackendSession{
     private OkPacket okPacket = null;
     private ErrorPacket errorPacket = null;
 
+    private boolean isClosed;
+    private AtomicBoolean isQuit;
+
+    private ResponseHandler responseHandler;
+
+
+    public boolean isClosedOrQuit() {
+        return isClosed() || isQuit.get();
+    }
+
     // should invole responeHandler
     public void setOkPacket(byte[] ok){
         this.okPacket = new OkPacket();
@@ -80,6 +92,12 @@ public class NettyBackendSession implements BackendSession{
     public NettyBackendSession(String host, int port){
         this.host = host;
         this.port = port;
+
+        this.isQuit = new AtomicBoolean(false);
+    }
+
+    public void setUrl(String url){
+
     }
 
     // so, what aboud aboundant failures

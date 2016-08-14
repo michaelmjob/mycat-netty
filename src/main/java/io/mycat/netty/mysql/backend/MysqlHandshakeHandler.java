@@ -30,7 +30,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
         this.session = session;
     }
 
-
     @Override
     public void channelActive(ChannelHandlerContext channelHandlerContext){
         logger.info("mysql handshake handler channel active");
@@ -49,16 +48,18 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
         byte[] packet = new byte[in.readableBytes()];
         in.readBytes(packet);
 
-        logger.info("packet : {}", packet);
+//        logger.info("packet : {}", packet);
         // 根据类型进行判断
-        logger.info("type : " + Packet.getType(packet));
+//        logger.info("type : " + Packet.getType(packet));
         HandshakePacket handshakePacket;
         switch(Packet.getType(packet)){
             case OkPacket.FIELD_COUNT:
                 // 0x00
                 logger.info("authenticate success");
                 this.session.getCountDownLatch().countDown();
-                logger.info("fire channel from handshake");
+                OkPacket ok = new OkPacket();
+                ok.read(packet);
+                session.getResponseHandler().okResponse(ok, session);
                 channelHandlerContext.pipeline().remove(this);
                 break;
             case ErrorPacket.FIELD_COUNT:
@@ -94,7 +95,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 
         int charsetIndex = (int) (handshake.serverCharsetIndex & 0xff);
         String charset = io.mycat.netty.mysql.packet.CharsetUtil.getCharset(charsetIndex);
-        logger.info("charset Index : {}, charset: {}", charsetIndex, charset);
+//        logger.info("charset Index : {}, charset: {}", charsetIndex, charset);
         if(charset != null){
             this.session.setCharsetIndex(charsetIndex);
             this.session.setCharset(charset);

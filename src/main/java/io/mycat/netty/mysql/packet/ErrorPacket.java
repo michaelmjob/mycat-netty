@@ -117,8 +117,8 @@ public class ErrorPacket extends MySQLPacket {
 		if (message != null) {
 			System.arraycopy(message, 0, packet, offset, message.length);
 		}
-		logger.info("ErrPacket array : {} ", packet);
-		logger.info("packet ln : " + packet.length + ", expected len: " + size);
+//		logger.info("ErrPacket array : {} ", packet);
+//		logger.info("packet ln : " + packet.length + ", expected len: " + size);
 		return packet;
 	}
 

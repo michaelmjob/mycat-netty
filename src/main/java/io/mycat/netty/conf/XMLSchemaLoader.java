@@ -1,23 +1,15 @@
 package io.mycat.netty.conf;
 
-import ch.qos.logback.core.joran.spi.XMLUtil;
 import io.mycat.netty.mysql.auth.XmlUtils;
 import io.mycat.netty.router.partition.Partition;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
-import javax.management.modelmbean.XMLParseException;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,11 +26,11 @@ public class XMLSchemaLoader {
     private static final Logger logger = LoggerFactory.getLogger(XMLSchemaLoader.class);
 
     private Map<String, SchemaConfig> schemaConfigs;
-    private DataSource datasource;
+    private DataSourceConfig datasource;
 
     public XMLSchemaLoader(){
         schemaConfigs =  new HashMap<>();
-        datasource = new DataSource();
+        datasource = new DataSourceConfig();
     }
 
     public void load() throws IOException, SAXException, ParserConfigurationException {
@@ -141,9 +133,9 @@ public class XMLSchemaLoader {
             if(node instanceof Element){
                 Element e = (Element)node;
 
-                DataSource.Datanode datanode = new DataSource.Datanode();
-                DataSource.Host writehost= new DataSource.Host();
-                List<DataSource.Host> readhosts = new ArrayList<>();
+                DataSourceConfig.DatanodeConfig datanode = new DataSourceConfig.DatanodeConfig();
+                DataSourceConfig.HostConfig writehost= new DataSourceConfig.HostConfig();
+                List<DataSourceConfig.HostConfig> readhosts = new ArrayList<>();
 
                 // name="d0" balance="rr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin"
                 datanode.setName(e.getAttribute("name"));
@@ -161,14 +153,15 @@ public class XMLSchemaLoader {
                 writehost.setUrl(writehostNode.getAttribute("url"));
                 writehost.setUser(writehostNode.getAttribute("user"));
                 writehost.setPassword(writehostNode.getAttribute("password"));
+                writehost.setReadType(false);
                 datanode.setWritehost(writehost);
 
                 NodeList readhostNodes = e.getElementsByTagName("readhost");
                 for(int j = 0; j < readhostNodes.getLength(); j++){
                     Element readhostNode = (Element) readhostNodes.item(j);
-                    readhosts.add(new DataSource.Host(  readhostNode.getAttribute("url"),
+                    readhosts.add(new DataSourceConfig.HostConfig(readhostNode.getAttribute("url"),
                                                         readhostNode.getAttribute("user"),
-                                                        readhostNode.getAttribute("password")));
+                                                        readhostNode.getAttribute("password"), true));
                 }
 //                logger.info("index : {}, datanode: {}", i, datanode);
                 datanode.setReadhost(readhosts);

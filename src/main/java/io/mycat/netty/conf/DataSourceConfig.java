@@ -16,26 +16,23 @@ import java.util.List;
  *      <heartbeat>select user()</heartbeat>
  *  </datanode>
  *
- *
- *
- *
- *
  * Created by snow_young on 16/8/7.
  */
 @Data
 @AllArgsConstructor
-public class DataSource {
-    private static final Logger logger = LoggerFactory.getLogger(DataSource.class);
+public class DataSourceConfig {
+    private static final Logger logger = LoggerFactory.getLogger(DataSourceConfig.class);
 
-    private List<Datanode> datanodes;
+    private List<DatanodeConfig> datanodes;
 
-    public DataSource(){
+    public DataSourceConfig(){
         datanodes = new ArrayList<>();
     }
 
+    //
     @Data
     @AllArgsConstructor
-    public static class Datanode{
+    public static class DatanodeConfig {
         private String name;
         //TODO: should enum
         private String balance;
@@ -46,12 +43,12 @@ public class DataSource {
         // should be enum
         private String dbtype;
         private String dbdriver;
-        private Host writehost;
-        private List<Host> readhost;
+        private HostConfig writehost;
+        private List<HostConfig> readhost;
 
-        public Datanode(){
+        public DatanodeConfig(){
             readhost = new ArrayList<>();
-            writehost = new Host();
+            writehost = new HostConfig();
         }
 
     }
@@ -59,10 +56,11 @@ public class DataSource {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class Host{
+    public static class HostConfig {
         private String url;
         private String user;
         private String password;
+        private boolean readType;
     }
 
 }

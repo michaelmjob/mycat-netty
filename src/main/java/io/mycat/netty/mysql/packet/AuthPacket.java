@@ -118,8 +118,8 @@ public class AuthPacket extends MySQLPacket{
             offset += databaseData.length;
             packet[offset++] = 0;
         }
-        logger.info("AuthPacket array : {}", packet);
-        logger.info("packet ln : " + packet.length + ", expected len: " + size);
+//        logger.info("AuthPacket array : {}", packet);
+//        logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
     }
 
