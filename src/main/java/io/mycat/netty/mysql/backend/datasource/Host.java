@@ -107,6 +107,8 @@ public abstract class Host {
             } else { // create connection
                 logger.info("no idle connection in pool,create new connection for "
                         + this.name + " of schema " + schema);
+                // should add connection get handler
+                //
                 createNewConnection(schema, autocommit, handler);
             }
         }
@@ -129,6 +131,7 @@ public abstract class Host {
         queue.incExecuteCount();
         conn.setLastTime(System.currentTimeMillis()); // 每次取连接的时候，更新下lasttime，防止在前端连接检查的时候，关闭连接，导致sql执行失败
 //        handler.connectionAcquired(conn);
+        conn.setResponseHandler(handler);
         return conn;
     }
 

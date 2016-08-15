@@ -1,10 +1,13 @@
 package io.mycat.netty.mysql.backend.datasource;
 
 import io.mycat.netty.conf.DataSourceConfig;
+import io.mycat.netty.mysql.backend.handler.ResponseHandler;
+import io.mycat.netty.router.RouteResultsetNode;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -110,6 +113,31 @@ public class DataSource {
                 System.exit(-1);
             }
         }
+    }
+
+    public void getConnection(String schema, boolean autoCommit, RouteResultsetNode node,
+                              ResponseHandler responseHandler){
+//        checkRequest(schema);
+        logger.info("rrs runOnSlave {}", node.isCanRunInReadDB());
+        if(node.isCanRunInReadDB()){
+            // 不是写类型的操作
+            // 添加balance
+            Host host = getReadHosts()[0];
+            try {
+                host.getConnection(schema, autoCommit, responseHandler);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            // 写操作
+            Host host = getWriteHost();
+            try {
+                host.getConnection(schema, autoCommit, responseHandler);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 }
 

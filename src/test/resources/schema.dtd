@@ -8,8 +8,9 @@
         name NMTOKEN #REQUIRED
         sqlMaxLimit CDATA #IMPLIED>
 
-<!-- partition function : name class params(properties)-->
-<!ELEMENT table (datasource, partition)>
+<!-- partition function : name class params(properties) -->
+<!-- should refactor the structure, table is conflicted -->
+<!ELEMENT table (datasource*, partition*)>
 <!ATTLIST table
         name CDATA #REQUIRED
         >

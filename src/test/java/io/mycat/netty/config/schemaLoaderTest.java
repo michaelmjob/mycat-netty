@@ -11,7 +11,7 @@ import java.io.IOException;
  * Created by snow_young on 16/8/7.
  * 测试数据库配置文件的加载
  */
-public class schemaLoader {
+public class schemaLoaderTest {
 
     @Test
     public void testXmlLoader() throws ParserConfigurationException, SAXException, IOException {

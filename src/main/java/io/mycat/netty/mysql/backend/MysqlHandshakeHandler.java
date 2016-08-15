@@ -88,9 +88,11 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                     processHandShake(packet);
                     // why error here
 //                    this.out = this.session.getServerChannel().alloc().buffer();
-                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
+//                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
+                    ByteBuf out = Unpooled.buffer(SystemConfig.HANDSHAKE_BUFFER_SIZE);
                     out.writeBytes(session.authenticate());
-                    this.session.getServerChannel();
+                    this.session.getServerChannel().isOpen();
+                    // often null
                     this.session.getServerChannel().writeAndFlush(out);
 //                    this.session.getServerChannel().writeAndFlush(session.authenticate());
                     in.release();

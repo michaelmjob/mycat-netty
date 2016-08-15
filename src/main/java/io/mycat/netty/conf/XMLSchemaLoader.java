@@ -60,20 +60,20 @@ public class XMLSchemaLoader {
         return null;
     }
 
-    public static List<TableConfig.Node> getNodes(Element root){
+    public static List<TableConfig.NodeConfig> getNodes(Element root){
 //        NodeList Nodes = ((Element)tableNode.getElementsByTagName("datasource").item(0))
 //                .getElementsByTagName("node");
 
-        List<TableConfig.Node> nodes = new ArrayList<>();
+        List<TableConfig.NodeConfig> nodes = new ArrayList<>();
         NodeList Nodes = ((Element)root.getElementsByTagName("datasource").item(0))
                 .getElementsByTagName("node");
         for(int h = 0 ; h < Nodes.getLength(); h++){
             Element nodeNode = (Element) Nodes.item(h);
 //            tableConfig.getDatasource().add(
-//                    new TableConfig.Node(
+//                    new TableConfig.NodeConfig(
 //                            nodeNode.getAttribute("databode"),
 //                            nodeNode.getAttribute("database")));
-            nodes.add(new TableConfig.Node(
+            nodes.add(new TableConfig.NodeConfig(
                     nodeNode.getAttribute("datanode"),
                     nodeNode.getAttribute("database")));
         }
@@ -116,7 +116,7 @@ public class XMLSchemaLoader {
                 NodeList subTableNodes = ((Element)tablegroupNode.getElementsByTagName("tables").item(0))
                                                                         .getElementsByTagName("table");
                 getPartition(tablegroupNode);
-                List<TableConfig.Node> nodes = getNodes(tablegroupNode);
+                List<TableConfig.NodeConfig> nodes = getNodes(tablegroupNode);
                 for(int h = 0; h < subTableNodes.getLength(); h++){
                     String name = ((Element)subTableNodes.item(h)).getAttribute("name");
                     getSchemaConfigs().get(schemaName).getTables().put(name, new TableConfig(name, null, nodes));

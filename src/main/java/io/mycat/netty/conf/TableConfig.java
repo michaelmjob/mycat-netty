@@ -28,14 +28,14 @@ import java.util.List;
 public class TableConfig {
     private String name;
     private Partition partition;
-    private List<Node> datasource;
+    private List<NodeConfig> datasource;
 
 
 
     @AllArgsConstructor
     @NoArgsConstructor
     @Data
-    public static class Node{
+    public static class NodeConfig {
         private String datanode;
         private String database;
     }

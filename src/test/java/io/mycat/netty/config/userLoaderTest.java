@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
  * 测试用户配置文件的加载
  */
 
-public class userLoader {
-    private static final Logger logger = LoggerFactory.getLogger(userLoader.class);
+public class userLoaderTest {
+    private static final Logger logger = LoggerFactory.getLogger(userLoaderTest.class);
 
     @Before
     public void setUp()throws Exception {
