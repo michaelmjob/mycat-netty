@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -58,6 +59,7 @@ public abstract class Host {
     }
 
     public void init(String dbname) throws InterruptedException {
+        logger.info("prepare init connection for dbname {}", dbname);
         CountDownLatch count = new CountDownLatch(this.getDatanodeConfig().getMinconn());
         for(int i = 0 ; i < this.getDatanodeConfig().getMinconn(); i++){
 //             create connection
@@ -72,6 +74,7 @@ public abstract class Host {
                     @Override
                     public void okResponse(OkPacket packet, NettyBackendSession session) {
                         // 默认初始化的时候放入 自动提交的队列
+                        logger.info("放入池子里");
                         Host.this.conMap.getSchemaConQueue(dbname).getConnQueue(true).add(session);
                         count.countDown();
                     }
@@ -87,7 +90,14 @@ public abstract class Host {
                 System.exit(-1);
             }
         }
-        count.await();
+        // 添加 tryInitConn ?
+        try {
+            count.await(5000 * this.getDatanodeConfig().getMinconn(), TimeUnit.MILLISECONDS);
+        }catch (InterruptedException e){
+            logger.info("init connect for host with dbname : {}", dbname);
+            throw e;
+        }
+        logger.info("finish init connection for dbname {}", dbname);
     }
 
     public void getConnection(String schema, boolean autocommit,

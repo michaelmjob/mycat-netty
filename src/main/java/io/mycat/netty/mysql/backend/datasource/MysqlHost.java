@@ -4,6 +4,8 @@ import io.mycat.netty.conf.DataSourceConfig;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -11,6 +13,7 @@ import java.io.IOException;
  * Created by snow_young on 16/8/14.
  */
 public class MysqlHost extends Host{
+    private static final Logger logger = LoggerFactory.getLogger(MysqlHost.class);
 
 //    private final MySQLConnectionFactory factory;
 
@@ -43,6 +46,7 @@ public class MysqlHost extends Host{
         // blocking method
         // TODO: add async method
         session.initConnect();
+        logger.info("connect success");
     }
 
 //    @Override

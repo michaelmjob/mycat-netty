@@ -15,13 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * Created by snow_young on 16/8/12.
  * should test carefully.
  */
 // shareable 的实现方式，是单例的意思吗？
-//@ChannelHandler.Sharable
 public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
     private static final Logger logger = LoggerFactory.getLogger(MysqlHandshakeHandler.class);
 
@@ -30,12 +30,16 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //    ByteBuf out = null;
 
     public MysqlHandshakeHandler(NettyBackendSession session){
+        logger.info("handshake init");
         this.session = session;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext channelHandlerContext){
         logger.info("mysql handshake handler channel active");
+        logger.info("channel active count : " +this.session.getCountDownLatch().getCount());
+//        this.session.wait();
+//        this.session.getCountDownLatch().countDown();
     }
 
     // 服务端会发送数据过来，需要进行解析。
@@ -63,7 +67,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //                    logger.error("release buffer failed", this);
 //                }
                 session.getResponseHandler().okResponse(ok, session);
-                this.session.getCountDownLatch().countDown();
+//                this.session.getCountDownLatch().countDown();
                 channelHandlerContext.pipeline().remove(this);
                 break;
             case ErrorPacket.FIELD_COUNT:
@@ -77,11 +81,12 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //                    logger.error("release buffer failed", this);
 //                }
                 session.getResponseHandler().errorResponse(err, session);
-                this.session.getCountDownLatch().countDown();
-
+//                this.session.getCountDownLatch().countDown();
                 break;
             default:
                 // begin to uthenticate
+                // but here is session!
+                assert !Objects.isNull(this.session);
                 handshakePacket = this.session.getHandshake();
                 if(handshakePacket == null){
                     // receive handshake packet
@@ -91,6 +96,25 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
                     ByteBuf out = Unpooled.buffer(SystemConfig.HANDSHAKE_BUFFER_SIZE);
                     out.writeBytes(session.authenticate());
+                    assert !Objects.isNull(this.session);
+                    // serverchannel is null
+
+                    // bugfix the serverChannel is abnormal
+                    try {
+                        logger.info("wait for serverchannel success");
+                        logger.info("wait count : " + this.session.getCountDownLatch().getCount());
+                        this.session.getCountDownLatch().await();
+                        logger.info("wait for serverchannel success yes");
+                    } catch (InterruptedException e) {
+                        logger.info("wait for server channel failed", e);
+                    }
+                    if(Objects.isNull(this.session.getServerChannel())){
+                        logger.info("serverChannel is null");
+                        return;
+                    }
+
+
+                    assert !Objects.isNull(this.session.getServerChannel());
                     this.session.getServerChannel().isOpen();
                     // often null
                     this.session.getServerChannel().writeAndFlush(out);

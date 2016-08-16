@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @NoArgsConstructor
 @Data
-public class NettyBackendSession implements BackendSession{
+public class NettyBackendSession implements BackendSession {
     private static final Logger logger = LoggerFactory.getLogger(NettyBackendSession.class);
 
     private static NioEventLoopGroup eventLoop = new NioEventLoopGroup(8);
@@ -79,32 +79,34 @@ public class NettyBackendSession implements BackendSession{
     }
 
     // should invole responeHandler
-    public void setOkPacket(byte[] ok){
+    public void setOkPacket(byte[] ok) {
         this.okPacket = new OkPacket();
         this.okPacket.read(ok);
     }
 
-    public void setErrorPacket(byte[] data){
+    public void setErrorPacket(byte[] data) {
         this.errorPacket = new ErrorPacket();
         this.errorPacket.read(data);
     }
 
-    public NettyBackendSession(String host, int port){
+    public NettyBackendSession(String host, int port) {
         this.host = host;
         this.port = port;
 
         this.isQuit = new AtomicBoolean(false);
     }
 
-    public void setUrl(String url){
+    public void setUrl(String url) {
 
     }
 
     // so, what aboud aboundant failures
-    private void waitChannel(int loginTimeout){
-        try{
+    private void waitChannel(int loginTimeout) {
+        try {
+            logger.info("wait countDownLatch");
             this.countDownLatch.await(loginTimeout, TimeUnit.MILLISECONDS);
-        }catch (InterruptedException e) {
+            logger.info("wait countDownLatch success");
+        } catch (InterruptedException e) {
             logger.error("connect error : wait channel interrupted", e);
         }
     }
@@ -114,26 +116,26 @@ public class NettyBackendSession implements BackendSession{
         return this.currentDB;
     }
 
-    public void sendBytes(byte[] bytes){
+    public void sendBytes(byte[] bytes) {
         ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
         out.writeBytes(bytes);
         this.serverChannel.writeAndFlush(out);
     }
 
-    public void sendPacket(MySQLPacket packet){
+    public void sendPacket(MySQLPacket packet) {
         ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
         out.writeBytes(packet.getPacket());
         this.serverChannel.writeAndFlush(out);
     }
 
     // select/insert/delete/update
-    public void sendQueryCmd(String query){
-        CommandPacket packet = new  CommandPacket();
+    public void sendQueryCmd(String query) {
+        CommandPacket packet = new CommandPacket();
         packet.packetId = 0;
         packet.command = MySQLPacket.COM_QUERY;
-        try{
+        try {
             packet.arg = query.getBytes(charset);
-        }catch(UnsupportedEncodingException e){
+        } catch (UnsupportedEncodingException e) {
             logger.error("get bytes from query occurs error", e);
             throw new RuntimeException(e);
         }
@@ -146,7 +148,7 @@ public class NettyBackendSession implements BackendSession{
     }
 
     // ===================================== for login =====================================
-    private static long initClientFlags(){
+    private static long initClientFlags() {
         int flag = 0;
         flag |= Capabilities.CLIENT_LONG_PASSWORD;
         flag |= Capabilities.CLIENT_FOUND_ROWS;
@@ -155,8 +157,7 @@ public class NettyBackendSession implements BackendSession{
         // flag |= Capabilities.CLIENT_NO_SCHEMA;
         boolean usingCompress = false;
 //        boolean usingCompress=MycatServer.getInstance().getConfig().getSystem().getUseCompression()==1 ;
-        if(usingCompress)
-        {
+        if (usingCompress) {
             flag |= Capabilities.CLIENT_COMPRESS;
         }
         flag |= Capabilities.CLIENT_ODBC;
@@ -176,7 +177,7 @@ public class NettyBackendSession implements BackendSession{
 
     }
 
-    public void initConnect(){
+    public void initConnect() {
         Bootstrap b = new Bootstrap();
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -189,24 +190,25 @@ public class NettyBackendSession implements BackendSession{
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline p = socketChannel.pipeline();
                         p.addLast(new MySQLProtocolDecoder(),
-                                  new MysqlHandshakeHandler(NettyBackendSession.this),
-                                  new MysqlBackendProtocolHandler(NettyBackendSession.this));
+                                new MysqlHandshakeHandler(NettyBackendSession.this),
+                                new MysqlBackendProtocolHandler(NettyBackendSession.this));
                     }
                 });
         ChannelFuture f = b.connect(this.host, this.port);
         f.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                if(channelFuture.isSuccess()){
-                    if(channelFuture.isSuccess()){
-                        NettyBackendSession.this.serverChannel = channelFuture.channel();
-                        logger.info("tcp connect success");
-                    }else{
-                        logger.error("initial connection failed!");
-                    }
+                if (channelFuture.isSuccess()) {
+                    NettyBackendSession.this.serverChannel = channelFuture.channel();
+                    logger.info("tcp connect to mysql success");
+                } else {
+                    logger.error("initial connection failed!");
                 }
+                NettyBackendSession.this.countDownLatch.countDown();
+                logger.info("countdownLatch has been solved");
             }
         });
+//        waitChannel(3000);
         waitChannel(10000);
     }
 
@@ -263,7 +265,7 @@ public class NettyBackendSession implements BackendSession{
 //                + ", modifiedSQLExecuted=" + modifiedSQLExecuted + "]";
     }
 
-    public static class Builder{
+    public static class Builder {
 
     }
 
