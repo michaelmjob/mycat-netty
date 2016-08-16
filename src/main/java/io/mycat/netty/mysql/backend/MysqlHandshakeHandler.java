@@ -91,7 +91,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 if(handshakePacket == null){
                     // receive handshake packet
                     processHandShake(packet);
-                    // why error here
 //                    this.out = this.session.getServerChannel().alloc().buffer();
 //                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
                     ByteBuf out = Unpooled.buffer(SystemConfig.HANDSHAKE_BUFFER_SIZE);
@@ -100,27 +99,29 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                     // serverchannel is null
 
                     // bugfix the serverChannel is abnormal
-                    try {
-                        logger.info("wait for serverchannel success");
-                        logger.info("wait count : " + this.session.getCountDownLatch().getCount());
-                        this.session.getCountDownLatch().await();
-                        logger.info("wait for serverchannel success yes");
-                    } catch (InterruptedException e) {
-                        logger.info("wait for server channel failed", e);
-                    }
-                    if(Objects.isNull(this.session.getServerChannel())){
-                        logger.info("serverChannel is null");
-                        return;
-                    }
+                    logger.info("wait count : " + this.session.getCountDownLatch().getCount());
+                    channelHandlerContext.channel().writeAndFlush(out);
 
-
-                    assert !Objects.isNull(this.session.getServerChannel());
-                    this.session.getServerChannel().isOpen();
-                    // often null
-                    this.session.getServerChannel().writeAndFlush(out);
-//                    this.session.getServerChannel().writeAndFlush(session.authenticate());
-                    in.release();
-                    logger.info("finish mysql handshake handler channel read, send authentication");
+//                    try {
+//                        logger.info("wait for serverchannel success");
+//                        logger.info("wait count : " + this.session.getCountDownLatch().getCount());
+//                        this.session.getCountDownLatch().await();
+//                        logger.info("wait for serverchannel success yes");
+//                    } catch (InterruptedException e) {
+//                        logger.info("wait for server channel failed", e);
+//                    }
+//                    if(Objects.isNull(this.session.getServerChannel())){
+//                        logger.info("serverChannel is null");
+//                        return;
+//                    }
+//
+//
+//                    assert !Objects.isNull(this.session.getServerChannel());
+//                    // often null
+//                    this.session.getServerChannel().writeAndFlush(out);
+////                    this.session.getServerChannel().writeAndFlush(session.authenticate());
+//                    in.release();
+//                    logger.info("finish mysql handshake handler channel read, send authentication");
                     break;
                 }
                 break;
@@ -131,6 +132,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
         HandshakePacket handshake = new HandshakePacket();
         handshake.read(data);
 
+        logger.info("data : {}", data);
         this.session.setHandshake(handshake);
         this.session.setConnectionId(handshake.threadId);
 
