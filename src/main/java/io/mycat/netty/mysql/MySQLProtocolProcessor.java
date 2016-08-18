@@ -33,12 +33,14 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         ByteBuf buffer = transport.in;
         byte[] packet = new byte[buffer.readableBytes()];
         buffer.readBytes(packet);
-        setSequenceId(Packet.getSequenceId(packet));
+//        setSequenceId(Packet.getSequenceId(packet));
+        this.mysqlSession.setSequenceId(Packet.getSequenceId(packet));
+
         byte type = Packet.getType(packet);
         logger.info("type : {}", type);
         switch (type) {
             case Flags.COM_INIT_DB:
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             case Flags.COM_QUERY:
                 String query = Com_Query.loadFromPacket(packet).query;
@@ -47,7 +49,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 break;
             case Flags.COM_PING:
                 getTrace().protocol("COM_PING");
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             case Flags.COM_QUIT:
                 getTrace().protocol("COM_QUIT");
@@ -172,7 +174,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private void processRollback(String sql, int offset) throws Exception {
 //        getConnection().rollback();
-        sendOk();
+        this.mysqlSession.sendOk();
     }
 
     private void processUse(String sql, int offset) throws Exception {
@@ -201,7 +203,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 //        if (schema == null || !schemas.contains(schema)) {
 //            throw error(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + schema + "'");
 //        }
-        sendOk();
+        this.mysqlSession.sendOk();
     }
 
     private void processBegin(String sql, int offset) throws Exception {
@@ -234,13 +236,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 //            if (!c.getAutoCommit()) {
 //                c.setAutoCommit(true);
 //            }
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             case ServerParseSet.AUTOCOMMIT_OFF: {
 //            if (c.getAutoCommit()) {
 //                c.setAutoCommit(false);
 //            }
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             }
             case ServerParseSet.TX_READ_UNCOMMITTED: {
@@ -250,7 +252,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             }
             case ServerParseSet.TX_READ_COMMITTED: {
 //                c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             }
             case ServerParseSet.TX_REPEATED_READ: {
@@ -260,13 +262,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             }
             case ServerParseSet.TX_SERIALIZABLE: {
 //                c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-                sendOk();
+                this.mysqlSession.sendOk();
                 break;
             }
             case ServerParseSet.NAMES:
                 String charset = stmt.substring(rs >>> 8).trim();
                 if (getSession().setCharset(charset)) {
-                    sendOk();
+                    this.mysqlSession.sendOk();
                 } else {
                     sendError(ErrorCode.ER_UNKNOWN_CHARACTER_SET, "Unknown charset '" + charset + "'");
                 }
@@ -275,7 +277,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             case ServerParseSet.CHARACTER_SET_CONNECTION:
             case ServerParseSet.CHARACTER_SET_RESULTS:
                 logger.info("server parse set character set results");
-                CharacterSet.response(stmt, this, rs);
+                CharacterSet.response(stmt, this.mysqlSession, rs);
                 break;
             case ServerParseSet.AT_VAR:
                 execute(stmt, ServerParse.SET);
@@ -283,7 +285,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             default:
                 StringBuilder s = new StringBuilder();
                 logger.warn(s.append(stmt).append(" is not executed").toString());
-                sendOk();
+                this.mysqlSession.sendOk();
         }
     }
 
@@ -428,7 +430,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 try {
                     stmt = conn.createStatement();
                     stmt.execute(sql);
-                    sendOk();
+                    this.mysqlSession.sendOk();
                 } finally {
                     //JdbcUtils.closeSilently(stmt);
                     //JdbcUtils.closeSilently(rs);

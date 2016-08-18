@@ -2,6 +2,9 @@ package io.mycat.netty.mysql;
 
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
+import io.mycat.netty.mysql.proto.ERR;
+import io.mycat.netty.mysql.proto.Flags;
+import io.mycat.netty.mysql.proto.OK;
 import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
 import io.mycat.netty.util.SysProperties;

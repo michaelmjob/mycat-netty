@@ -16,10 +16,9 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.ProtocolTransport;
+import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.CharsetUtil;
 import io.mycat.netty.Session;
-import io.mycat.netty.mysql.proto.Handshake;
-import io.mycat.netty.mysql.proto.HandshakeResponse;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,6 +53,7 @@ public class MySQLSession implements Session {
 
     private boolean autocommit = true;
 
+    private long sequenceId;
 
     public boolean isClosed(){
         return !this.channel.isOpen() ||
@@ -74,6 +74,34 @@ public class MySQLSession implements Session {
         this.transport.in.release();
     }
 
+    public void sendError(int errno, String msg) {
+        ERR err = new ERR();
+        err.sequenceId = getNextSequenceId();
+        err.errorCode = errno;
+        err.errorMessage = msg;
+
+        this.transport.out.writeBytes(err.toPacket());
+        this.ctx.writeAndFlush(this.transport.out);
+        this.transport.in.release();
+//        getProtocolTransport().out.writeBytes(err.toPacket());
+    }
+
+    public void sendOk() {
+        OK ok = new OK();
+        ok.sequenceId = getNextSequenceId();
+        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+        this.transport.out.writeBytes(ok.toPacket());
+        this.ctx.writeAndFlush(this.transport.out);
+        this.transport.in.release();
+    }
+
+    private long getNextSequenceId() {
+        return ++this.sequenceId;
+    }
+
+    public void setSequenceId(long sequenceId){
+        this.sequenceId = sequenceId;
+    }
 
     /**
      * @return the sessionId
@@ -192,4 +220,7 @@ public class MySQLSession implements Session {
     public int getCharsetIndex() {
         return this.charsetIndex;
     }
+
+
+
 }
