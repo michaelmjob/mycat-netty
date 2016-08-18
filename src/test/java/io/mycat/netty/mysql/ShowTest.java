@@ -86,43 +86,43 @@ public class ShowTest {
 //        }
 //    }
 
-//    @Test
-//    public void testShowDatabases(){
-//        try {
-//            Class.forName("com.mysql.jdbc.Driver");
-//        } catch (ClassNotFoundException e) {
-//            System.out.println("找不到驱动程序类 ，加载驱动失败！");
-//            e.printStackTrace();
-//            Assert.assertTrue(false);
-//        }
-//
-//        Connection conn = null;
-//        try {
-//            conn = DriverManager.getConnection(dbUrl, username, password);
-//            Statement stmt = conn.createStatement();
-//            ResultSet result = stmt.executeQuery("SHOW DATABASES");
-//
-//            System.out.println("show databases");
-//            while(result.next()){
-//                System.out.println(result.getString(1));
-////                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
-//            }
-//
-//        } catch (SQLException se) {
-//            System.out.println("数据库连接失败！");
-//            se.printStackTrace();
-//            Assert.assertTrue(false);
-//        } finally {
-//            if (conn != null) {
-//                try {
-//                    conn.close();
-//                } catch (SQLException e) {
-//                    e.printStackTrace();
-//                    Assert.assertTrue(false);
-//                }
-//            }
-//        }
-//    }
+    @Test
+    public void testShowDatabases(){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("找不到驱动程序类 ，加载驱动失败！");
+            e.printStackTrace();
+            Assert.assertTrue(false);
+        }
+
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(dbUrl, username, password);
+            Statement stmt = conn.createStatement();
+            ResultSet result = stmt.executeQuery("SHOW DATABASES");
+
+            System.out.println("show databases");
+            while(result.next()){
+                System.out.println(result.getString(1));
+//                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
+            }
+
+        } catch (SQLException se) {
+            System.out.println("数据库连接失败！");
+            se.printStackTrace();
+            Assert.assertTrue(false);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    Assert.assertTrue(false);
+                }
+            }
+        }
+    }
 
     // show tables;
     //  SHOW TABLES FROM  mydb;
@@ -137,68 +137,68 @@ public class ShowTest {
 //
 //    }
 
-    @Test
-    public void testShowFullTables(){
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            System.out.println("找不到驱动程序类 ，加载驱动失败！");
-            e.printStackTrace();
-            Assert.assertTrue(false);
-        }
-
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(dbUrl, username, password);
-            Statement stmt = conn.createStatement();
-            ResultSet result = stmt.executeQuery("SHOW TABLES");
-
-            System.out.println("show tables");
-            while(result.next()){
-                System.out.println(result.getString(1));
-//                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
-            }
-
-            System.out.println("show tables from frontdb0");
-            stmt = conn.createStatement();
-            result = stmt.executeQuery("SHOW TABLES FROM frontdb0");
-            while(result.next()){
-                System.out.println(result.getString(1));
-//                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
-            }
-
-
-            System.out.println("show tables from frontdb0 like 'tb%'");
-            stmt = conn.createStatement();
-            result = stmt.executeQuery("show tables from frontdb0 like 'tb%'");
-            while(result.next()){
-                System.out.println(result.getString(1));
-//                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
-            }
-
-            System.out.println("show tables like 'tb%'");
-            result = stmt.executeQuery("show tables like 'tb%'");
-            while(result.next()){
-                System.out.println(result.getString(1));
-//                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
-            }
-
-
-        } catch (SQLException se) {
-            System.out.println("数据库操作失败！");
-            se.printStackTrace();
-            Assert.assertTrue(false);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    Assert.assertTrue(false);
-                }
-            }
-        }
-    }
+//    @Test
+//    public void testShowFullTables(){
+//        try {
+//            Class.forName("com.mysql.jdbc.Driver");
+//        } catch (ClassNotFoundException e) {
+//            System.out.println("找不到驱动程序类 ，加载驱动失败！");
+//            e.printStackTrace();
+//            Assert.assertTrue(false);
+//        }
+//
+//        Connection conn = null;
+//        try {
+//            conn = DriverManager.getConnection(dbUrl, username, password);
+//            Statement stmt = conn.createStatement();
+//            ResultSet result = stmt.executeQuery("SHOW TABLES");
+//
+//            System.out.println("show tables");
+//            while(result.next()){
+//                System.out.println(result.getString(1));
+////                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
+//            }
+//
+//            System.out.println("show tables from frontdb0");
+//            stmt = conn.createStatement();
+//            result = stmt.executeQuery("SHOW TABLES FROM frontdb0");
+//            while(result.next()){
+//                System.out.println(result.getString(1));
+////                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
+//            }
+//
+//
+//            System.out.println("show tables from frontdb0 like 'tb%'");
+//            stmt = conn.createStatement();
+//            result = stmt.executeQuery("show tables from frontdb0 like 'tb%'");
+//            while(result.next()){
+//                System.out.println(result.getString(1));
+////                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
+//            }
+//
+//            System.out.println("show tables like 'tb%'");
+//            result = stmt.executeQuery("show tables like 'tb%'");
+//            while(result.next()){
+//                System.out.println(result.getString(1));
+////                Assert.assertEquals("should equal", variables.get(result.getString(1)), result.getString(2));
+//            }
+//
+//
+//        } catch (SQLException se) {
+//            System.out.println("数据库操作失败！");
+//            se.printStackTrace();
+//            Assert.assertTrue(false);
+//        } finally {
+//            if (conn != null) {
+//                try {
+//                    conn.close();
+//                } catch (SQLException e) {
+//                    e.printStackTrace();
+//                    Assert.assertTrue(false);
+//                }
+//            }
+//        }
+//    }
 
 
 

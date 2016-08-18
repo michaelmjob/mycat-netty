@@ -107,6 +107,8 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         if(transport.getSession() == null) {
             userExecutor.execute(new AuthTask(ctx, transport));
         } else {
+            // handshake success, remove self;
+            ctx.pipeline().remove(this);
             ctx.fireChannelRead(msg);
         }
     }

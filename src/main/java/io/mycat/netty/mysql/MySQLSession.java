@@ -15,6 +15,7 @@
  */
 package io.mycat.netty.mysql;
 
+import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.util.CharsetUtil;
 import io.mycat.netty.Session;
 import io.mycat.netty.mysql.proto.Handshake;
@@ -25,7 +26,9 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.Data;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,6 +39,10 @@ import java.util.Map;
 public class MySQLSession implements Session {
 
     private Channel channel;
+    // maybe error!
+    private ChannelHandlerContext ctx;
+    private ProtocolTransport transport;
+
     private Handshake handshake;
     private HandshakeResponse handshakeResponse;
     private Connection engineConnection;
@@ -46,14 +53,27 @@ public class MySQLSession implements Session {
     public String schema;
 
     private boolean autocommit = true;
-    // maybe error!
-    private ChannelHandlerContext ctx;
+
 
     public boolean isClosed(){
         return !this.channel.isOpen() ||
                 !this.channel.isActive() ||
                 !this.channel.isWritable();
     }
+
+
+    public void writeAndFlush(byte[] bytes){
+
+    }
+
+    public void writeAndFlush(List<byte[]> bs){
+        for (byte[] bt : bs) {
+            this.transport.out.writeBytes(bt);
+        }
+        this.ctx.writeAndFlush(this.transport.out);
+        this.transport.in.release();
+    }
+
 
     /**
      * @return the sessionId

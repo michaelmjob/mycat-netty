@@ -15,12 +15,14 @@
  */
 package io.mycat.netty;
 
+import io.mycat.netty.mysql.MySQLSession;
+
 /**
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
  *
  */
 public interface ProtocolProcessor {
 
-    boolean process(ProtocolTransport transport) throws ProtocolProcessException;
+    boolean process(ProtocolTransport transport, MySQLSession session) throws ProtocolProcessException;
     
 }

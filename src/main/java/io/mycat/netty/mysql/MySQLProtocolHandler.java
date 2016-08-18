@@ -27,6 +27,8 @@ import io.mycat.netty.mysql.proto.OK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 /**
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
  *
@@ -46,12 +48,14 @@ public class MySQLProtocolHandler extends ProtocolHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         Channel channel = ctx.channel();
-        Session session = channel.attr(Session.CHANNEL_SESSION_KEY).get();
+//        Session session = channel.attr(Session.CHANNEL_SESSION_KEY).get();
+       MySQLSession session = (MySQLSession) channel.attr(Session.CHANNEL_SESSION_KEY).get();
+        assert !Objects.isNull(session);
         if(session == null) {
             throw new IllegalStateException("It is a bug.");
         } else {
             ProtocolTransport transport = new ProtocolTransport(channel, buf);
-            userExecutor.execute(new HandleTask(ctx, transport));
+            userExecutor.execute(new HandleTask(ctx, transport, session));
         }
         
     }
@@ -63,31 +67,42 @@ public class MySQLProtocolHandler extends ProtocolHandler {
     class HandleTask implements Runnable {
         private ChannelHandlerContext ctx;
         private ProtocolTransport transport;
+        private MySQLSession mysqlSession;
 
-        HandleTask(ChannelHandlerContext ctx, ProtocolTransport transport) {
+        HandleTask(ChannelHandlerContext ctx, ProtocolTransport transport, MySQLSession session) {
             this.ctx = ctx;
             this.transport = transport;
+            this.mysqlSession = session;
+//            this.mysqlSession = new MySQLSession();
+            this.mysqlSession.setTransport(transport);
+            this.mysqlSession.setCtx(ctx);
         }
 
         public void run() {
             logger.info("processor run");
             try {
                 ProtocolProcessor processor = processorFactory.getProcessor(transport);
-                processor.process(transport);
+                processor.process(transport, mysqlSession);
+//                ctx.writeAndFlush(transport.out);
+//                transport.in.release();
             } catch (Throwable e) {
                 logger.error("an exception happen when process request", e);
                 handleThrowable(e);
-//                ctx.writeAndFlush(transport.out);
-//                transport.in.release();
-            } finally {
-                logger.info("finish return processor");
+
                 ctx.writeAndFlush(transport.out);
-//                success(transport.getChannel());
-//                transport.getChannel().writeAndFlush(transport.out);
                 transport.in.release();
             }
+
+//            finally {
+//                logger.info("finish return processor");
+//                ctx.writeAndFlush(transport.out);
+//                transport.in.release();
+
+//                success(transport.getChannel());
+//                transport.getChannel().writeAndFlush(transport.out);
+//            }
         }
-        
+
         public void handleThrowable(Throwable e) {
             transport.out.clear();
             ProtocolProcessException convert = ProtocolProcessException.convert(e);

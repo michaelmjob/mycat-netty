@@ -1,6 +1,7 @@
 package io.mycat.netty.mysql.backend.datasource;
 
 import io.mycat.netty.conf.DataSourceConfig;
+import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.router.RouteResultsetNode;
 import lombok.Data;
@@ -115,26 +116,28 @@ public class DataSource {
         }
     }
 
-    public void getConnection(String schema, boolean autoCommit, RouteResultsetNode node,
+    public NettyBackendSession getConnection(String schema, boolean autoCommit, RouteResultsetNode node,
                               ResponseHandler responseHandler){
 //        checkRequest(schema);
         logger.info("rrs runOnSlave {}", node.isCanRunInReadDB());
         if(node.isCanRunInReadDB()){
             // 不是写类型的操作
-            // 添加balance
+            // TODO: 添加balance
             Host host = getReadHosts()[0];
             try {
-                host.getConnection(schema, autoCommit, responseHandler);
+                return host.getConnection(schema, autoCommit, responseHandler);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("get connection for schema[{}] with autocommit[{}] failed", schema, autoCommit, e);
+                return null;
             }
         }else{
             // 写操作
             Host host = getWriteHost();
             try {
-                host.getConnection(schema, autoCommit, responseHandler);
+                return host.getConnection(schema, autoCommit, responseHandler);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("get connection for schema[{}] with autocommit[{}] failed", schema, autoCommit, e);
+                return null;
             }
         }
 

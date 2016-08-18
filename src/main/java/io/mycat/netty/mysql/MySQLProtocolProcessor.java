@@ -26,8 +26,10 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(MySQLProtocolProcessor.class);
 
-    protected void doProcess(ProtocolTransport transport) throws Exception {
+    private MySQLSession mysqlSession ;
 
+    protected void doProcess(ProtocolTransport transport,  MySQLSession session) throws Exception {
+        this.mysqlSession = session;
         ByteBuf buffer = transport.in;
         byte[] packet = new byte[buffer.readableBytes()];
         buffer.readBytes(packet);
@@ -272,6 +274,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             case ServerParseSet.CHARACTER_SET_CLIENT:
             case ServerParseSet.CHARACTER_SET_CONNECTION:
             case ServerParseSet.CHARACTER_SET_RESULTS:
+                logger.info("server parse set character set results");
                 CharacterSet.response(stmt, this, rs);
                 break;
             case ServerParseSet.AT_VAR:
@@ -291,10 +294,16 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         try {
             switch (ServerParseShow.parse(stmt, offset)) {
                 case ServerParseShow.DATABASES:
-                    for (byte[] bs : io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession())) {
-                        out.writeBytes(bs);
-                    }
+
+                    // 如果transport专门处理io， session处理什么？ 保留相关信息？
+                    ArrayList<byte[]> showdata = io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession());
+
+                    this.mysqlSession.writeAndFlush(showdata);
+//                    for (byte[] bs : io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession())) {
+//                        out.writeBytes(bs);
+//                    }
                     logger.info("return enter show databases");
+
                     break;
                 case ServerParseShow.CONNECTION:
                     unsupported("CONNECTION");
@@ -307,9 +316,8 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                     break;
                 case ServerParseShow.VARIABLES:
                     logger.info("enter show variables : " + stmt);
-                    for (byte[] bs : io.mycat.netty.mysql.response.ShowVariables.getPacket()) {
-                        out.writeBytes(bs);
-                    }
+                    ArrayList<byte[]> showVariables = io.mycat.netty.mysql.response.ShowVariables.getPacket();
+                    this.mysqlSession.writeAndFlush(showVariables);
                     logger.info("return enter show variables");
                     break;
                 case ServerParseShow.SESSION_STATUS:
@@ -320,9 +328,8 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                     sendResultSet(ShowEngines.getResultSet());
                     break;
                 case ServerParseShow.TABLES:
-                    for (byte[] bs : io.mycat.netty.mysql.response.ShowTables.getPacket(getSession(), stmt)) {
-                        out.writeBytes(bs);
-                    }
+                    List<byte[]> showTabels = io.mycat.netty.mysql.response.ShowTables.getPacket(getSession(), stmt);
+                    this.mysqlSession.writeAndFlush(showTabels);
                     logger.info("return enter show tables");
                     break;
                 default:
@@ -369,10 +376,12 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 break;
             case ServerParseSelect.SELECT_SESSION_VARIABLES:
                 logger.info("select session variables");
-                ByteBuf out = getProtocolTransport().out;
-                for (byte[] bs : SelectVariables.getPacket(stmt)) {
-                    out.writeBytes(bs);
-                }
+                List<byte[]> selectVariables = SelectVariables.getPacket(stmt);
+                this.mysqlSession.writeAndFlush(selectVariables);
+//                ByteBuf out = getProtocolTransport().out;
+//                for (byte[] bs : SelectVariables.getPacket(stmt)) {
+//                    out.writeBytes(bs);
+//                }
                 // sendResultSet(SelectVariables.getResultSet(stmt));
                 logger.info("end of select session variables");
                 break;

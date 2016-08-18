@@ -2,6 +2,7 @@ package io.mycat.netty.mysql.backend;
 
 import io.mycat.netty.mysql.MySQLSession;
 import io.mycat.netty.mysql.MysqlSessionContext;
+import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class SQLTest {
     @Test
     public void update(){
         // 假设这是路由的结果
-        RouteResultset nodes = new RouteResultset("update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'");
+        RouteResultset nodes = new RouteResultset("update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'", MySQLPacket.COM_DEBUG);
         RouteResultsetNode node = new RouteResultsetNode("d0", "update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'");
         RouteResultsetNode[] nodearr = new RouteResultsetNode[1];
         nodearr[0] = node;

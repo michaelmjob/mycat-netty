@@ -101,13 +101,15 @@ public class NettyBackendSession implements BackendSession {
     }
 
     // so, what aboud aboundant failures
-    private void waitChannel(int loginTimeout) {
+    private boolean waitChannel(int loginTimeout) {
         try {
             logger.info("wait countDownLatch");
             this.countDownLatch.await(loginTimeout, TimeUnit.MILLISECONDS);
             logger.info("wait countDownLatch success");
+            return true;
         } catch (InterruptedException e) {
             logger.error("connect error : wait channel interrupted", e);
+            return false;
         }
     }
 
@@ -177,7 +179,8 @@ public class NettyBackendSession implements BackendSession {
 
     }
 
-    public void initConnect() {
+    // what aboud init and create!!
+    public boolean initConnect() {
         Bootstrap b = new Bootstrap();
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -209,7 +212,7 @@ public class NettyBackendSession implements BackendSession {
             }
         });
 //        waitChannel(3000);
-        waitChannel(10000);
+        return waitChannel(1000);
     }
 
     public byte[] authenticate() {

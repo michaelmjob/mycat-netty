@@ -58,6 +58,7 @@ public abstract class Host {
 //        this.dbname = dbname;
     }
 
+    // create connection fro dbname but with autocommit only
     public void init(String dbname) throws InterruptedException {
         logger.info("prepare init connection for dbname {}", dbname);
         CountDownLatch count = new CountDownLatch(this.getDatanodeConfig().getMinconn());
@@ -92,7 +93,7 @@ public abstract class Host {
         }
         // 添加 tryInitConn ?
         try {
-            count.await(5000 * this.getDatanodeConfig().getMinconn(), TimeUnit.MILLISECONDS);
+            count.await(1000 * this.getDatanodeConfig().getMinconn(), TimeUnit.MILLISECONDS);
         }catch (InterruptedException e){
             logger.info("init connect for host with dbname : {}", dbname);
             throw e;
@@ -100,14 +101,14 @@ public abstract class Host {
         logger.info("finish init connection for dbname {}", dbname);
     }
 
-    public void getConnection(String schema, boolean autocommit,
+    public NettyBackendSession getConnection(String schema, boolean autocommit,
                               ResponseHandler handler)
             throws IOException {
         // conMap 是记录所有数据库的连接
         NettyBackendSession con = this.conMap.tryTakeCon(schema, autocommit);
         if (con != null) {
             markConTaken(con, handler, schema);
-            return;
+            return con;
         } else {
             int activeCons = this.getActiveCount();// 当前最大活动连接
             if (activeCons + 1 > this.getDatanodeConfig().getMaxconn()) {// 下一个连接大于最大连接数
@@ -119,7 +120,7 @@ public abstract class Host {
                         + this.name + " of schema " + schema);
                 // should add connection get handler
                 //
-                createNewConnection(schema, autocommit, handler);
+                return createNewConnection(schema, autocommit, handler);
             }
         }
     }
@@ -133,6 +134,8 @@ public abstract class Host {
                                         String schema) {
 
         conn.setBorrowed(true);
+        // 不用切换数据库吗?
+        // TODO: add database change test
         if (!conn.getCurrentDB().equals(schema)) {
             // need do schema syn in before sql send
             conn.setCurrentDB(schema);
@@ -146,7 +149,7 @@ public abstract class Host {
     }
 
 
-    public abstract void createNewConnection(String dbname, boolean autoCommit, ResponseHandler handler) throws IOException;
+    public abstract NettyBackendSession createNewConnection(String dbname, boolean autoCommit, ResponseHandler handler) throws IOException;
 
     public abstract DBHeartbeat createHeartBeat();
 }

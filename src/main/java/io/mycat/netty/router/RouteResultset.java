@@ -15,10 +15,17 @@ public class RouteResultset implements Serializable{
     private RouteResultsetNode[] nodes;
 
     private boolean canRunSlave = false;
+    private final int sqlType;
+    private String primaryKey;
+    private int limitStart;
+    private int limitSize;
+    private boolean autocommit = true;
 
-    public RouteResultset(String statement){
+    public RouteResultset(String statement, int sqlType){
         this.statement = statement;
+        this.sqlType = sqlType;
     }
+
 
 
 }

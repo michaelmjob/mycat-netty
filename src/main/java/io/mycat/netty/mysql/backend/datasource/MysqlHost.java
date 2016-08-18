@@ -26,7 +26,7 @@ public class MysqlHost extends Host{
     // 需要放到connMap
     // 每一次操作结束的时候，需要放到conMap
     @Override
-    public void createNewConnection(String schema, boolean autocommit, ResponseHandler handler) throws IOException {
+    public NettyBackendSession createNewConnection(String schema, boolean autocommit, ResponseHandler handler) throws IOException {
         // 创建连接
         NettyBackendSession session = new NettyBackendSession();
 
@@ -45,8 +45,12 @@ public class MysqlHost extends Host{
 
         // blocking method
         // TODO: add async method
-        session.initConnect();
-        logger.info("connect success");
+        //TODO: what if init failed, return null
+        if(session.initConnect()) {
+            logger.info("connect success");
+            return session;
+        }
+        return null;
     }
 
 //    @Override

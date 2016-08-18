@@ -21,6 +21,11 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     @Getter
     private String statement;
 
+    private int sqlType;
+
+    private int limitStart;
+    private int limitSize;
+
     // 是否强制走master
     @Getter
     private Boolean canRunSlave = true;
@@ -36,6 +41,7 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     public RouteResultsetNode(String dataNodeName, String statement){
         this.dataNodeName = dataNodeName;
         this.statement = statement;
+        this.sqlType = sqlType;
     }
 
     //
