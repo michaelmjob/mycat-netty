@@ -23,6 +23,6 @@ import io.mycat.netty.mysql.MySQLSession;
  */
 public interface ProtocolProcessor {
 
-    boolean process(ProtocolTransport transport, MySQLSession session) throws ProtocolProcessException;
+    boolean process(MySQLSession session) throws ProtocolProcessException;
     
 }

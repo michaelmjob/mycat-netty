@@ -12,6 +12,7 @@ public class MySQLProcessorFactory implements ProcessorFactory {
         protocolProcessor = new MySQLProtocolProcessor();
     }
 
+    // something err,refactor here
     public ProtocolProcessor getProcessor(ProtocolTransport trans) {
         return protocolProcessor;
     }

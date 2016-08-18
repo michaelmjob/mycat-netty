@@ -48,8 +48,8 @@ public class MySQLProtocolHandler extends ProtocolHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         ByteBuf buf = (ByteBuf) msg;
         Channel channel = ctx.channel();
-//        Session session = channel.attr(Session.CHANNEL_SESSION_KEY).get();
-       MySQLSession session = (MySQLSession) channel.attr(Session.CHANNEL_SESSION_KEY).get();
+        // refactor : get Session
+        MySQLSession session = (MySQLSession) channel.attr(Session.CHANNEL_SESSION_KEY).get();
         assert !Objects.isNull(session);
         if(session == null) {
             throw new IllegalStateException("It is a bug.");
@@ -65,15 +65,10 @@ public class MySQLProtocolHandler extends ProtocolHandler {
      * TODO: JAVA8
      */
     class HandleTask implements Runnable {
-        private ChannelHandlerContext ctx;
-        private ProtocolTransport transport;
         private MySQLSession mysqlSession;
 
         HandleTask(ChannelHandlerContext ctx, ProtocolTransport transport, MySQLSession session) {
-            this.ctx = ctx;
-            this.transport = transport;
             this.mysqlSession = session;
-//            this.mysqlSession = new MySQLSession();
             this.mysqlSession.setTransport(transport);
             this.mysqlSession.setCtx(ctx);
         }
@@ -81,47 +76,31 @@ public class MySQLProtocolHandler extends ProtocolHandler {
         public void run() {
             logger.info("processor run");
             try {
-                ProtocolProcessor processor = processorFactory.getProcessor(transport);
-                processor.process(transport, mysqlSession);
-//                ctx.writeAndFlush(transport.out);
-//                transport.in.release();
+                // protocolProcessor 大量使用线程本地变量
+                ProtocolProcessor processor = processorFactory.getProcessor(null);
+                processor.process(mysqlSession);
             } catch (Throwable e) {
                 logger.error("an exception happen when process request", e);
                 handleThrowable(e);
-
-                ctx.writeAndFlush(transport.out);
-                transport.in.release();
             }
-
-//            finally {
-//                logger.info("finish return processor");
-//                ctx.writeAndFlush(transport.out);
-//                transport.in.release();
-
-//                success(transport.getChannel());
-//                transport.getChannel().writeAndFlush(transport.out);
-//            }
         }
 
         public void handleThrowable(Throwable e) {
-            transport.out.clear();
             ProtocolProcessException convert = ProtocolProcessException.convert(e);
             ERR err = new ERR();
             err.errorCode = convert.getErrorCode();
             err.errorMessage = convert.getMessage();
-            transport.out.writeBytes(err.toPacket());
+            this.mysqlSession.writeAndFlush(err);
         }
-
     }
 
-    private void success(Channel channel) {
-        logger.info("success info return form MySQLHandshakeHandler");
-        ByteBuf out = channel.alloc().buffer();
-        OK ok = new OK();
-        ok.sequenceId = 2;
-        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
-        out.writeBytes(ok.toPacket());
-        channel.writeAndFlush(out);
-    }
-
+//    private void success(Channel channel) {
+//        logger.info("success info return form MySQLHandshakeHandler");
+//        ByteBuf out = channel.alloc().buffer();
+//        OK ok = new OK();
+//        ok.sequenceId = 2;
+//        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+//        out.writeBytes(ok.toPacket());
+//        channel.writeAndFlush(out);
+//    }
 }

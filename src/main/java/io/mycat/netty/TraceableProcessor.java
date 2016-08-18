@@ -25,23 +25,25 @@ import java.io.Serializable;
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
  *
  */
+// 线程本地版本！
+// 多线程使用同一个对象，使用线程本地变量进行了隔离
+// 需要进行一次对比，如果每次都new出一个对象，会发生什么！
 public abstract class TraceableProcessor implements ProtocolProcessor {
 
     private static final Logger accessLogger = LoggerFactory.getLogger("AccessLogger");
 
     private static ThreadLocal<ProtocolTransport> transportHolder = new ThreadLocal<ProtocolTransport>();
-    private static ThreadLocal<Session> sessionHolder = new ThreadLocal<Session>();
+    private static ThreadLocal<MySQLSession> sessionHolder = new ThreadLocal<MySQLSession>();
 //    private static ThreadLocal<Connection> connHolder = new ThreadLocal<Connection>();
     private static ThreadLocal<TraceableData> tdHolder = new ThreadLocal<TraceableData>();
 
-    public final boolean process(ProtocolTransport transport, MySQLSession session) throws ProtocolProcessException {
+    public final boolean process(MySQLSession session) throws ProtocolProcessException {
         ProtocolProcessException e = null;
         try {
             tdHolder.set(new TraceableData());
-            transportHolder.set(transport);
-            sessionHolder.set(transport.getSession());
+            sessionHolder.set(session);
 //            connHolder.set(transport.getSession().getEngineConnection());
-            doProcess(transport, session);
+            doProcess(session);
         } catch (Exception ex) {
             e = ProtocolProcessException.convert(ex);
             getTrace().errorCode(e.errorCode).errorMsg(e.getMessage());
@@ -57,13 +59,13 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
 
     }
 
-    protected abstract void doProcess(ProtocolTransport transport, MySQLSession session) throws Exception;
+    protected abstract void doProcess(MySQLSession session) throws Exception;
 
     public final TraceableData getTrace() {
         return tdHolder.get();
     }
 
-    public final Session getSession() {
+    public final MySQLSession getSession() {
         return sessionHolder.get();
     }
 

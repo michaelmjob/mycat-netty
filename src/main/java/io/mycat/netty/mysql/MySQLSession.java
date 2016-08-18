@@ -20,6 +20,7 @@ import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.CharsetUtil;
 import io.mycat.netty.Session;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Data;
@@ -61,9 +62,27 @@ public class MySQLSession implements Session {
                 !this.channel.isWritable();
     }
 
+    public byte[] read(){
+        ByteBuf buffer = transport.in;
+        byte[] packet = new byte[buffer.readableBytes()];
+        buffer.readBytes(packet);
+        this.setSequenceId(Packet.getSequenceId(packet));
+        return packet;
+    }
+
 
     public void writeAndFlush(byte[] bytes){
 
+    }
+
+    public void writeAndFlush(ERR err){
+       this.transport.out.clear();
+        this.writeAndFlush(err.toPacket());
+    }
+
+    public void writeAndFlush(ByteBuf bytes){
+        this.ctx.writeAndFlush(bytes);
+        this.transport.in.release();
     }
 
     public void writeAndFlush(List<byte[]> bs){

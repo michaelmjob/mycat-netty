@@ -26,21 +26,21 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(MySQLProtocolProcessor.class);
 
-    private MySQLSession mysqlSession ;
+//    private.getSession().mysqlSession ;
 
-    protected void doProcess(ProtocolTransport transport,  MySQLSession session) throws Exception {
-        this.mysqlSession = session;
-        ByteBuf buffer = transport.in;
-        byte[] packet = new byte[buffer.readableBytes()];
-        buffer.readBytes(packet);
-//        setSequenceId(Packet.getSequenceId(packet));
-        this.mysqlSession.setSequenceId(Packet.getSequenceId(packet));
+    protected void doProcess(MySQLSession session) throws Exception {
+//        this.getSession().= session;
+        ByteBuf buffer = session.getTransport().in;
+//        byte[] packet = new byte[buffer.readableBytes()];
+//        buffer.readBytes(packet);
+//        this.getSession().setSequenceId(Packet.getSequenceId(packet));
 
+        byte[] packet = session.read();
         byte type = Packet.getType(packet);
         logger.info("type : {}", type);
         switch (type) {
             case Flags.COM_INIT_DB:
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             case Flags.COM_QUERY:
                 String query = Com_Query.loadFromPacket(packet).query;
@@ -49,7 +49,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 break;
             case Flags.COM_PING:
                 getTrace().protocol("COM_PING");
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             case Flags.COM_QUIT:
                 getTrace().protocol("COM_QUIT");
@@ -174,7 +174,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private void processRollback(String sql, int offset) throws Exception {
 //        getConnection().rollback();
-        this.mysqlSession.sendOk();
+        this.getSession().sendOk();
     }
 
     private void processUse(String sql, int offset) throws Exception {
@@ -203,7 +203,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 //        if (schema == null || !schemas.contains(schema)) {
 //            throw error(ErrorCode.ER_BAD_DB_ERROR, "Unknown database '" + schema + "'");
 //        }
-        this.mysqlSession.sendOk();
+        this.getSession().sendOk();
     }
 
     private void processBegin(String sql, int offset) throws Exception {
@@ -236,13 +236,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 //            if (!c.getAutoCommit()) {
 //                c.setAutoCommit(true);
 //            }
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             case ServerParseSet.AUTOCOMMIT_OFF: {
 //            if (c.getAutoCommit()) {
 //                c.setAutoCommit(false);
 //            }
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             }
             case ServerParseSet.TX_READ_UNCOMMITTED: {
@@ -252,7 +252,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             }
             case ServerParseSet.TX_READ_COMMITTED: {
 //                c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             }
             case ServerParseSet.TX_REPEATED_READ: {
@@ -262,13 +262,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             }
             case ServerParseSet.TX_SERIALIZABLE: {
 //                c.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
                 break;
             }
             case ServerParseSet.NAMES:
                 String charset = stmt.substring(rs >>> 8).trim();
                 if (getSession().setCharset(charset)) {
-                    this.mysqlSession.sendOk();
+                    this.getSession().sendOk();
                 } else {
                     sendError(ErrorCode.ER_UNKNOWN_CHARACTER_SET, "Unknown charset '" + charset + "'");
                 }
@@ -277,7 +277,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             case ServerParseSet.CHARACTER_SET_CONNECTION:
             case ServerParseSet.CHARACTER_SET_RESULTS:
                 logger.info("server parse set character set results");
-                CharacterSet.response(stmt, this.mysqlSession, rs);
+                CharacterSet.response(stmt, this.getSession(), rs);
                 break;
             case ServerParseSet.AT_VAR:
                 execute(stmt, ServerParse.SET);
@@ -285,14 +285,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             default:
                 StringBuilder s = new StringBuilder();
                 logger.warn(s.append(stmt).append(" is not executed").toString());
-                this.mysqlSession.sendOk();
+                this.getSession().sendOk();
         }
     }
 
     public void processShow(String stmt, int offset) throws Exception {
         ResultSet rs = null;
 
-        ByteBuf out = getProtocolTransport().out;
         try {
             switch (ServerParseShow.parse(stmt, offset)) {
                 case ServerParseShow.DATABASES:
@@ -300,7 +299,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                     // 如果transport专门处理io， session处理什么？ 保留相关信息？
                     ArrayList<byte[]> showdata = io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession());
 
-                    this.mysqlSession.writeAndFlush(showdata);
+                    this.getSession().writeAndFlush(showdata);
 //                    for (byte[] bs : io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession())) {
 //                        out.writeBytes(bs);
 //                    }
@@ -319,7 +318,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 case ServerParseShow.VARIABLES:
                     logger.info("enter show variables : " + stmt);
                     ArrayList<byte[]> showVariables = io.mycat.netty.mysql.response.ShowVariables.getPacket();
-                    this.mysqlSession.writeAndFlush(showVariables);
+                    this.getSession().writeAndFlush(showVariables);
                     logger.info("return enter show variables");
                     break;
                 case ServerParseShow.SESSION_STATUS:
@@ -331,7 +330,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                     break;
                 case ServerParseShow.TABLES:
                     List<byte[]> showTabels = io.mycat.netty.mysql.response.ShowTables.getPacket(getSession(), stmt);
-                    this.mysqlSession.writeAndFlush(showTabels);
+                    this.getSession().writeAndFlush(showTabels);
                     logger.info("return enter show tables");
                     break;
                 default:
@@ -379,7 +378,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
             case ServerParseSelect.SELECT_SESSION_VARIABLES:
                 logger.info("select session variables");
                 List<byte[]> selectVariables = SelectVariables.getPacket(stmt);
-                this.mysqlSession.writeAndFlush(selectVariables);
+                this.getSession().writeAndFlush(selectVariables);
 //                ByteBuf out = getProtocolTransport().out;
 //                for (byte[] bs : SelectVariables.getPacket(stmt)) {
 //                    out.writeBytes(bs);
@@ -430,7 +429,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 try {
                     stmt = conn.createStatement();
                     stmt.execute(sql);
-                    this.mysqlSession.sendOk();
+                    this.getSession().sendOk();
                 } finally {
                     //JdbcUtils.closeSilently(stmt);
                     //JdbcUtils.closeSilently(rs);
