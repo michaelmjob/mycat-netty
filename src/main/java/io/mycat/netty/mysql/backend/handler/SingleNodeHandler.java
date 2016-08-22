@@ -21,7 +21,7 @@ import java.util.Objects;
 public class SingleNodeHandler implements ResponseHandler{
     private static final Logger logger = LoggerFactory.getLogger(SingleNodeHandler.class);
 
-
+    // whether need to have a packet id, 单节点的packetId的意义不大
     private RouteResultset rrs;
     private RouteResultsetNode node;
     private MysqlSessionContext mysqlSessionContext;
@@ -35,21 +35,33 @@ public class SingleNodeHandler implements ResponseHandler{
     }
 
 
+    // TODO: refactor, remove session
     @Override
     public void errorResponse(ErrorPacket packet, NettyBackendSession session) {
         // context!!
-        this.mysqlSessionContext.getFrontSession().getChannel().writeAndFlush(packet.getPacket());
-
-//        session.getBackendSession().sendBytes(packet.getPacket());
+        // TODO: mark log
+//        String user = this.mysqlSessionContext.getFrontSession().getUsername();
+//        String host = this.mysqlSessionContext.getFrontSession().getHost();
+//        int port = this.mysqlSessionContext.getFrontSession().getPort();
+//        log.error("execute  sql err : {} , con: {} from frontend: {}/{}/{}", packet.message, user,
+//          host, port);
+        this.mysqlSessionContext.getFrontSession().writeAndFlush(packet.getPacket());
     }
 
     @Override
     public void okResponse(OkPacket packet, NettyBackendSession session) {
+        // TODO : 需要判断前端连接是否释放掉了！
+        // TODO : 判断相应的语句是否属于执行完就释放的
+        // TODO : check whether need to reset sequenceId
+//        packet.packetId = this.mysqlSessionContext.getFrontSession().getSequenceId();
+
+        this.mysqlSessionContext.getFrontSession().writeAndFlush(packet.getPacket());
 //        session.getBackendSession().sendBytes(packet.getPacket());
     }
 
     @Override
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
+        this.mysqlSessionContext.getFrontSession().writeAndFlush(resultSetPacket.getPacket());
 //        session.getBackendSession().sendBytes(resultSetPacket.getPacket());
     }
 }

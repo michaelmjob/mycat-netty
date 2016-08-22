@@ -1,8 +1,6 @@
 package io.mycat.netty.mysql.respo;
 
-import io.mycat.netty.mysql.MySQLProtocolProcessor;
-import io.mycat.netty.mysql.MySQLSession;
-import io.mycat.netty.mysql.MysqlSessionContext;
+import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.parser.ServerParseSet;
 import io.mycat.netty.util.ErrorCode;
 import io.mycat.netty.util.StringUtil;
@@ -18,7 +16,7 @@ public class CharacterSet {
     private static final Logger logger = LoggerFactory.getLogger(CharacterSet.class);
 
     // ?!
-    public static void response(String stmt, MySQLSession session, int rs) {
+    public static void response(String stmt, MysqlFrontendSession session, int rs) {
         if (-1 == stmt.indexOf(',')) {
             /* 单个属性 */
             oneSetResponse(stmt, session, rs);
@@ -29,7 +27,7 @@ public class CharacterSet {
     }
 
     //
-    private static void oneSetResponse(String stmt, MySQLSession session, int rs) {
+    private static void oneSetResponse(String stmt, MysqlFrontendSession session, int rs) {
         if ((rs & 0xff) == ServerParseSet.CHARACTER_SET_CLIENT) {
             /* 忽略client属性设置 */
             session.sendOk();
@@ -50,7 +48,7 @@ public class CharacterSet {
         }
     }
 
-    private static void multiSetResponse(String stmt, MySQLSession session, int rs) {
+    private static void multiSetResponse(String stmt, MysqlFrontendSession session, int rs) {
         String charResult = "null";
         String charConnection = "null";
         String[] sqlList = StringUtil.split(stmt, ',', false);
@@ -114,7 +112,7 @@ public class CharacterSet {
         }
     }
 
-    private static void setCharset(String charset, MySQLSession session) {
+    private static void setCharset(String charset, MysqlFrontendSession session) {
         if ("null".equalsIgnoreCase(charset)) {
             /* 忽略字符集为null的属性设置 */
             session.sendOk();

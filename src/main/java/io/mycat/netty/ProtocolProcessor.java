@@ -15,7 +15,7 @@
  */
 package io.mycat.netty;
 
-import io.mycat.netty.mysql.MySQLSession;
+import io.mycat.netty.mysql.MysqlFrontendSession;
 
 /**
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
@@ -23,6 +23,6 @@ import io.mycat.netty.mysql.MySQLSession;
  */
 public interface ProtocolProcessor {
 
-    boolean process(MySQLSession session) throws ProtocolProcessException;
+    boolean process(MysqlFrontendSession session) throws ProtocolProcessException;
     
 }

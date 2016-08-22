@@ -20,7 +20,6 @@ import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.Session;
 import io.mycat.netty.mysql.auth.Privilege;
 import io.mycat.netty.mysql.auth.PrivilegeFactory;
-import io.mycat.netty.mysql.auth.XmlPrivilege;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.Constants;
 import io.mycat.netty.util.SysProperties;
@@ -51,7 +50,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
     private static final Logger logger = LoggerFactory.getLogger(MySQLHandshakeHandler.class);
     
     private final AtomicLong connIdGenerator = new AtomicLong(0);
-    private final AttributeKey<MySQLSession> TMP_SESSION_KEY = AttributeKey.valueOf("_AUTHTMP_SESSION_KEY");
+    private final AttributeKey<MysqlFrontendSession> TMP_SESSION_KEY = AttributeKey.valueOf("_AUTHTMP_SESSION_KEY");
     private static final String SEED_KEY = "seed";
     // todo : move to config run
     static{
@@ -87,7 +86,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         handshake.removeCapabilityFlag(Flags.CLIENT_REMEMBER_OPTIONS);
 
 
-        MySQLSession temp = new MySQLSession();
+        MysqlFrontendSession temp = new MysqlFrontendSession();
         temp.setHandshake(handshake);
         temp.setAttachment(SEED_KEY, handshake.challenge1);
         ctx.attr(TMP_SESSION_KEY).set(temp);
@@ -175,7 +174,7 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         public void run() {
             // maybe error
             logger.info("auth task is running");
-            MySQLSession session = ctx.attr(TMP_SESSION_KEY).getAndRemove();
+            MysqlFrontendSession session = ctx.attr(TMP_SESSION_KEY).getAndRemove();
             HandshakeResponse authReply = null;
             try {
                 byte[] packet = new byte[transport.in.readableBytes()];

@@ -1,7 +1,6 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.ProtocolProcessException;
-import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.mysql.parser.*;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.mysql.respo.CharacterSet;
@@ -26,14 +25,8 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(MySQLProtocolProcessor.class);
 
-//    private.getSession().mysqlSession ;
-
-    protected void doProcess(MySQLSession session) throws Exception {
-//        this.getSession().= session;
+    protected void doProcess(MysqlFrontendSession session) throws Exception {
         ByteBuf buffer = session.getTransport().in;
-//        byte[] packet = new byte[buffer.readableBytes()];
-//        buffer.readBytes(packet);
-//        this.getSession().setSequenceId(Packet.getSequenceId(packet));
 
         byte[] packet = session.read();
         byte type = Packet.getType(packet);

@@ -36,7 +36,7 @@ import java.util.Map;
  *
  */
 @Data
-public class MySQLSession implements Session {
+public class MysqlFrontendSession implements Session {
 
     private Channel channel;
     // maybe error!
@@ -114,7 +114,7 @@ public class MySQLSession implements Session {
         this.transport.in.release();
     }
 
-    private long getNextSequenceId() {
+    public long getNextSequenceId() {
         return ++this.sequenceId;
     }
 

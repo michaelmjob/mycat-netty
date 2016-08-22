@@ -1,14 +1,10 @@
 package io.mycat.netty.mysql.response;
 
 import io.mycat.netty.Session;
-import io.mycat.netty.mysql.MySQLSession;
-import io.mycat.netty.mysql.auth.Privilege;
 import io.mycat.netty.mysql.auth.PrivilegeFactory;
 import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.util.StringUtil;
-import org.apache.commons.codec.binary.StringUtils;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 /**

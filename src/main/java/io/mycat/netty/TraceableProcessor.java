@@ -15,7 +15,7 @@
  */
 package io.mycat.netty;
 
-import io.mycat.netty.mysql.MySQLSession;
+import io.mycat.netty.mysql.MysqlFrontendSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +33,11 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
     private static final Logger accessLogger = LoggerFactory.getLogger("AccessLogger");
 
     private static ThreadLocal<ProtocolTransport> transportHolder = new ThreadLocal<ProtocolTransport>();
-    private static ThreadLocal<MySQLSession> sessionHolder = new ThreadLocal<MySQLSession>();
+    private static ThreadLocal<MysqlFrontendSession> sessionHolder = new ThreadLocal<MysqlFrontendSession>();
 //    private static ThreadLocal<Connection> connHolder = new ThreadLocal<Connection>();
     private static ThreadLocal<TraceableData> tdHolder = new ThreadLocal<TraceableData>();
 
-    public final boolean process(MySQLSession session) throws ProtocolProcessException {
+    public final boolean process(MysqlFrontendSession session) throws ProtocolProcessException {
         ProtocolProcessException e = null;
         try {
             tdHolder.set(new TraceableData());
@@ -59,13 +59,13 @@ public abstract class TraceableProcessor implements ProtocolProcessor {
 
     }
 
-    protected abstract void doProcess(MySQLSession session) throws Exception;
+    protected abstract void doProcess(MysqlFrontendSession session) throws Exception;
 
     public final TraceableData getTrace() {
         return tdHolder.get();
     }
 
-    public final MySQLSession getSession() {
+    public final MysqlFrontendSession getSession() {
         return sessionHolder.get();
     }
 

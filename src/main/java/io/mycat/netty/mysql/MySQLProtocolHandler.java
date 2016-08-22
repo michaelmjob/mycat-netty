@@ -22,8 +22,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
-import io.mycat.netty.mysql.proto.Flags;
-import io.mycat.netty.mysql.proto.OK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +47,7 @@ public class MySQLProtocolHandler extends ProtocolHandler {
         ByteBuf buf = (ByteBuf) msg;
         Channel channel = ctx.channel();
         // refactor : get Session
-        MySQLSession session = (MySQLSession) channel.attr(Session.CHANNEL_SESSION_KEY).get();
+        MysqlFrontendSession session = (MysqlFrontendSession) channel.attr(Session.CHANNEL_SESSION_KEY).get();
         assert !Objects.isNull(session);
         if(session == null) {
             throw new IllegalStateException("It is a bug.");
@@ -65,9 +63,9 @@ public class MySQLProtocolHandler extends ProtocolHandler {
      * TODO: JAVA8
      */
     class HandleTask implements Runnable {
-        private MySQLSession mysqlSession;
+        private MysqlFrontendSession mysqlSession;
 
-        HandleTask(ChannelHandlerContext ctx, ProtocolTransport transport, MySQLSession session) {
+        HandleTask(ChannelHandlerContext ctx, ProtocolTransport transport, MysqlFrontendSession session) {
             this.mysqlSession = session;
             this.mysqlSession.setTransport(transport);
             this.mysqlSession.setCtx(ctx);

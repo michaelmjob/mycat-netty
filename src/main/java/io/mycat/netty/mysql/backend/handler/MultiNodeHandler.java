@@ -5,6 +5,7 @@ import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.response.ResultSetPacket;
+import io.mycat.netty.router.RouteResultset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +19,16 @@ public abstract class MultiNodeHandler implements ResponseHandler{
     private static final Logger logger = LoggerFactory.getLogger(MultiNodeHandler.class);
 
     protected final ReentrantLock lock = new ReentrantLock();
-    private AtomicBoolean isFailed = new AtomicBoolean(false);
+    protected AtomicBoolean isFailed = new AtomicBoolean(false);
+    protected MysqlSessionContext mysqlSessionContext;
+    protected byte packetId;
+    protected final AtomicBoolean errorRepsponsed = new AtomicBoolean(false);
+    protected volatile String error;
+    protected RouteResultset rrs;
 
-    public MultiNodeHandler(){
-
+    public MultiNodeHandler(RouteResultset rrs, MysqlSessionContext mysqlSessionContext){
+        this.rrs = rrs;
+        this.mysqlSessionContext = mysqlSessionContext;
     }
 
     public boolean isFailed(){

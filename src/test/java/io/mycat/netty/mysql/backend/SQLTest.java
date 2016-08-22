@@ -1,6 +1,5 @@
 package io.mycat.netty.mysql.backend;
 
-import io.mycat.netty.mysql.MySQLSession;
 import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.router.RouteResultset;
@@ -35,7 +34,7 @@ public class SQLTest {
         nodes.setNodes(nodearr);
 
         // mock frontsession
-//        MySQLSession frontSession = new MySQLSession();
+//        MysqlFrontendSession frontSession = new MysqlFrontendSession();
 //        frontSession.
 
         MysqlSessionContext context = new MysqlSessionContext(null);
