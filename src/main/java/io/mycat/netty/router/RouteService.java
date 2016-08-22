@@ -1,6 +1,7 @@
 package io.mycat.netty.router;
 
 import io.mycat.netty.Session;
+import io.mycat.netty.mysql.MysqlSessionContext;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,10 @@ import org.slf4j.LoggerFactory;
 public class RouteService {
     private static final Logger logger = LoggerFactory.getLogger(RouteService.class);
 
-    public RouteResultset route(int sqlType, String stmt, Session session){
+    public RouteResultset route(int sqlType, String stmt, MysqlSessionContext mysqlSessionContext){
+
+
+
         return null;
     }
 
