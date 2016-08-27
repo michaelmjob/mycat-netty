@@ -10,7 +10,7 @@ public class PartitionByLong extends AbstractPartition implements Partition{
     protected PartitionUtil partitionUtil;
 
     private static int[] toIntArray(String string) {
-        String[] strs = io.mycat.util.SplitUtil.split(string, ',', true);
+        String[] strs = SplitUtil.split(string, ',', true);
         int[] ints = new int[strs.length];
         for (int i = 0; i < strs.length; ++i) {
             ints[i] = Integer.parseInt(strs[i]);
@@ -33,7 +33,7 @@ public class PartitionByLong extends AbstractPartition implements Partition{
     }
 
     @Override
-    public Integer calculate(String columnValue) {
+    public int caculate(String columnValue) {
         long key = Long.parseLong(columnValue);
         return partitionUtil.partition(key);
     }

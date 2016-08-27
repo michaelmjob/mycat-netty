@@ -13,13 +13,13 @@ import java.util.*;
  */
 @Data
 public class SchemaConfig {
-    private final Random random = new Random();
-
     private static final Logger logger = LoggerFactory.getLogger(SchemaConfig.class);
 
-//    @Getter
+    private final Random random = new Random();
+
+    private String name;
+
     Map<String, TableConfig> tables;
-//    List<String>  list;
 
     public SchemaConfig(){ tables = new HashMap<>();}
 

@@ -27,10 +27,12 @@ import java.util.List;
 @Data
 public class TableConfig {
     private String name;
-    private Partition partition;
+    private String partitionColumn;
+//    private Partition partition;
     private List<NodeConfig> datasource;
 
-
+    //
+    private RuleConfig rule;
 
     @AllArgsConstructor
     @NoArgsConstructor
