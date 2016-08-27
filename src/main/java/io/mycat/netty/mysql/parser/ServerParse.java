@@ -26,6 +26,10 @@ public final class ServerParse {
     public static final int KILL_QUERY = 16;
     public static final int LOAD       = 17;
 
+
+    public static final int DDL = 100;
+    public static final int DESCRIBE = 21;
+
     public static int parse(String stmt) {
         for (int i = 0; i < stmt.length(); ++i) {
             switch (stmt.charAt(i)) {

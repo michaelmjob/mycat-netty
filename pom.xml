@@ -75,13 +75,15 @@
       <artifactId>logback-core</artifactId>
       <version>${logback.version}</version>
     </dependency>
-    <!-- end of logging -->
 
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
     </dependency>
+    <!-- end of logging -->
+
+
 
 
     <dependency>
@@ -110,6 +112,10 @@
       <version>1.4.190</version>
       <scope>test</scope>
     </dependency>
+
+
+
+    <!-- util relation -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
@@ -121,11 +127,6 @@
       <artifactId>commons-io</artifactId>
       <version>2.5</version>
     </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>${netty.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -133,6 +134,28 @@
       <version>19.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>1.16.4</version>
+    </dependency>
+    <!-- end of util relation -->
+
+
+
+
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>${netty.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>druid</artifactId>
+      <version>1.0.24</version>
+    </dependency>
 
     <dependency>
       <groupId>org.codehaus.janino</groupId>
@@ -140,6 +163,7 @@
       <version>2.6.1</version>
     </dependency>
 
+    <!-- config file type -->
     <dependency>
       <groupId>org.yaml</groupId>
       <artifactId>snakeyaml</artifactId>
@@ -151,12 +175,9 @@
       <artifactId>toml4j</artifactId>
       <version>0.7.1</version>
     </dependency>
+    <!-- end of config file type -->
 
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.16.4</version>
-    </dependency>
+
 
     <dependency>
       <groupId>junit</groupId>

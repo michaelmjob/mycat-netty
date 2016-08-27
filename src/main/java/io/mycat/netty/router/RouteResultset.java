@@ -27,5 +27,6 @@ public class RouteResultset implements Serializable{
     }
 
 
+    private boolean isFinishedRoute = false;
 
 }
