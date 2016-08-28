@@ -17,6 +17,9 @@ public class SchemaConfig {
 
     private final Random random = new Random();
 
+    // 暂时不需要管理这些参数
+    private boolean noSharding;
+
     private String name;
 
     Map<String, TableConfig> tables;

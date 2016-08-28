@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid;
+package io.mycat.netty.router.parser.util;
 
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
 import com.alibaba.druid.sql.ast.SQLExpr;

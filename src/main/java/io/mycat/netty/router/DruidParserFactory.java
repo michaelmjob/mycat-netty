@@ -9,7 +9,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
 import com.alibaba.druid.sql.visitor.SchemaStatVisitor;
 import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.router.parser.druid.parser.*;
+import io.mycat.netty.router.parser.druid.*;
 
 /**
  * Created by snow_young on 16/8/27.

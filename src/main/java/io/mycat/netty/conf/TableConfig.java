@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -31,8 +33,19 @@ public class TableConfig {
     // private Partition partition;
     private List<NodeConfig> datasource;
 
+    // add temp
+    private String primaryKey;
     //
     private PartitionConfig rule;
+
+    public Collection<String> getAllNode(){
+        List<String> nodes = new ArrayList<>();
+        datasource.forEach(item -> {
+            nodes.add(item.datanode);
+        });
+        return nodes;
+    }
+
 
     @AllArgsConstructor
     @NoArgsConstructor

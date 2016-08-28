@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid;
+package io.mycat.netty.router.parser.util;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;

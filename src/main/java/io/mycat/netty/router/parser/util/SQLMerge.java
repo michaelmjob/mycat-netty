@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid;
+package io.mycat.netty.router.parser.util;
 
 import io.mycat.netty.mysql.sqlengine.mpp.HavingCols;
 

@@ -154,8 +154,9 @@ public class XMLSchemaLoader {
                 List<TableConfig.NodeConfig> nodes = getNodes(tablegroupNode);
                 for (int h = 0; h < subTableNodes.getLength(); h++) {
                     String name = ((Element) subTableNodes.item(h)).getAttribute("name");
+                    // primary key is null
                     getSchemaConfigs().get(schemaName).getTables().put(name,
-                            new TableConfig(name, config.getColumn(), nodes, config));
+                            new TableConfig(name, config.getColumn(), nodes, null, config));
                 }
             }
         }

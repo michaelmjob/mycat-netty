@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid.parser;
+package io.mycat.netty.router.parser.druid;
 
 import java.sql.SQLNonTransientException;
 import java.util.*;
@@ -9,14 +9,12 @@ import com.alibaba.druid.sql.ast.SQLName;
 import com.alibaba.druid.sql.ast.SQLOrderingSpecification;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.*;
-import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
 import com.alibaba.druid.sql.ast.statement.SQLSelectGroupByClause;
 import com.alibaba.druid.sql.ast.statement.SQLSelectItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectOrderByItem;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQuery;
 import com.alibaba.druid.sql.ast.statement.SQLSelectQueryBlock;
 import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
-import com.alibaba.druid.sql.ast.statement.SQLTableSource;
 import com.alibaba.druid.sql.dialect.mysql.ast.expr.MySqlOrderingExpr;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlSelectQueryBlock.Limit;
@@ -25,12 +23,10 @@ import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
 import com.alibaba.druid.util.JdbcConstants;
 import com.alibaba.druid.wall.spi.WallVisitorUtils;
 import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.conf.TableConfig;
 import io.mycat.netty.mysql.sqlengine.mpp.HavingCols;
 import io.mycat.netty.mysql.sqlengine.mpp.OrderCol;
 import io.mycat.netty.router.RouteResultset;
-import io.mycat.netty.router.RouteResultsetNode;
-import io.mycat.netty.router.parser.druid.*;
+import io.mycat.netty.router.parser.util.*;
 import io.mycat.netty.util.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Created by snow_young on 16/8/27.
+ * reference by http://dev.mysql.com/doc/refman/5.7/en/select.html
  */
 public class DruidSelectParser extends DefaultDruidParser {
     private static final Logger logger = LoggerFactory.getLogger(DruidSelectParser.class);
@@ -46,7 +43,7 @@ public class DruidSelectParser extends DefaultDruidParser {
 
     //
     @Override
-    public void statementParse(SchemaConfig schema, RouteResultset rrs, SQLStatement stmt) {
+    public void statementParse(SchemaConfig schema, RouteResultset rrs, SQLStatement stmt) throws SQLNonTransientException {
         SQLSelectStatement selectStmt = (SQLSelectStatement) stmt;
         SQLSelectQuery sqlSelectQuery = selectStmt.getSelect().getQuery();
 
@@ -57,6 +54,7 @@ public class DruidSelectParser extends DefaultDruidParser {
 
 //            暂时不全面支持 mycat 的性质
 //            //更改canRunInReadDB属性
+//            暂时不支持 shareMode 和 forUpdate 特性
 //            if ((mysqlSelectQuery.isForUpdate() || mysqlSelectQuery.isLockInShareMode()) && rrs.isAutocommit() == false)
 //            {
 //                rrs.setCanRunInReadDB(false);
@@ -64,22 +62,25 @@ public class DruidSelectParser extends DefaultDruidParser {
 
             // 也就是说不支持下面这个 ?
         } else if (sqlSelectQuery instanceof MySqlUnionQuery) {
-//			MySqlUnionQuery unionQuery = (MySqlUnionQuery)sqlSelectQuery;
-//			MySqlSelectQueryBlock left = (MySqlSelectQueryBlock)unionQuery.getLeft();
-//			MySqlSelectQueryBlock right = (MySqlSelectQueryBlock)unionQuery.getLeft();
-//			System.out.println();
+            // 不需要支持union的操作
+            String msg = "union join not supported,tables:" + ctx.getTables();
+            logger.warn(msg);
+            throw new SQLNonTransientException(msg);
         }
     }
 
+    // 处理 :
+    // rrs 中 添加 groupby  orderBy 属性
     protected void parseOrderAggGroupMysql(SchemaConfig schema, SQLStatement stmt, RouteResultset rrs, MySqlSelectQueryBlock mysqlSelectQuery) {
         MySqlSchemaStatVisitor visitor = new MySqlSchemaStatVisitor();
         stmt.accept(visitor);
 //		rrs.setGroupByCols((String[])visitor.getGroupByColumns().toArray());
 
-        // 默认true ?
+        // 默认true
         if (!isNeedParseOrderAgg) {
             return;
         }
+        // 解析别名列
         Map<String, String> aliaColumns = parseAggGroupCommon(schema, stmt, rrs, mysqlSelectQuery);
 
         // setOrderByCols
@@ -91,9 +92,8 @@ public class DruidSelectParser extends DefaultDruidParser {
         isNeedParseOrderAgg = false;
     }
 
-    //
+    // aggregate 就是groupby的意思
     protected Map<String, String> parseAggGroupCommon(SchemaConfig schema, SQLStatement stmt, RouteResultset rrs, SQLSelectQueryBlock mysqlSelectQuery) {
-        // ?
         //
         Map<String, String> aliaColumns = new HashMap<String, String>();
         Map<String, Integer> aggrColumns = new HashMap<String, Integer>();
@@ -104,9 +104,11 @@ public class DruidSelectParser extends DefaultDruidParser {
         boolean isNeedChangeSql = false;
         int size = selectList.size();
         boolean isDistinct = mysqlSelectQuery.getDistionOption() == 2;
+
+        // 遍历每一个需要查询的这段
         for (int i = 0; i < size; i++) {
             SQLSelectItem item = selectList.get(i);
-
+            // 字段所在是一个表达式
             if (item.getExpr() instanceof SQLAggregateExpr) {
                 SQLAggregateExpr expr = (SQLAggregateExpr) item.getExpr();
                 String method = expr.getMethodName();
@@ -117,16 +119,21 @@ public class DruidSelectParser extends DefaultDruidParser {
                 }
                 //只处理有别名的情况，无别名添加别名，否则某些数据库会得不到正确结果处理
                 int mergeType = MergeCol.getMergeType(method);
-                if (MergeCol.MERGE_AVG == mergeType && isRoutMultiNode(schema, rrs)) {    //跨分片avg需要特殊处理，直接avg结果是不对的
+                // having 语句的处理, merge_avg 是指 ?
+                if (MergeCol.MERGE_AVG == mergeType && isRoutMultiNode(schema, rrs)) {
+                    //跨分片avg需要特殊处理，直接avg结果是不对的
                     String colName = item.getAlias() != null ? item.getAlias() : method + i;
+
+                    // sum
                     SQLSelectItem sum = new SQLSelectItem();
                     String sumColName = colName + "SUM";
                     sum.setAlias(sumColName);
+
                     SQLAggregateExpr sumExp = new SQLAggregateExpr("SUM");
                     ObjectUtil.copyProperties(expr, sumExp);
-
                     sumExp.getArguments().addAll(expr.getArguments());
                     sumExp.setMethodName("SUM");
+
                     sum.setExpr(sumExp);
 
                     selectList.set(i, sum);
@@ -134,13 +141,16 @@ public class DruidSelectParser extends DefaultDruidParser {
                     havingColsName.add(sumColName);    // Added by winbill, 20160314, for having clause
                     havingColsName.add(item.getAlias() != null ? item.getAlias() : "");    // Added by winbill, 20160314, two aliases for AVG
 
+                    // count
                     SQLSelectItem count = new SQLSelectItem();
                     String countColName = colName + "COUNT";
                     count.setAlias(countColName);
+
                     SQLAggregateExpr countExp = new SQLAggregateExpr("COUNT");
                     ObjectUtil.copyProperties(expr, countExp);
                     countExp.getArguments().addAll(expr.getArguments());
                     countExp.setMethodName("COUNT");
+
                     count.setExpr(countExp);
                     selectList.add(count);
                     aggrColumns.put(countColName, MergeCol.MERGE_COUNT);
@@ -151,7 +161,8 @@ public class DruidSelectParser extends DefaultDruidParser {
                 } else if (MergeCol.MERGE_UNSUPPORT != mergeType) {
                     if (item.getAlias() != null && item.getAlias().length() > 0) {
                         aggrColumns.put(item.getAlias(), mergeType);
-                    } else {   //如果不加，jdbc方式时取不到正确结果   ;修改添加别名
+                    } else {
+                        //如果不加，jdbc方式时取不到正确结果   ;修改添加别名
                         item.setAlias(method + i);
                         aggrColumns.put(method + i, mergeType);
                         isNeedChangeSql = true;
@@ -161,6 +172,7 @@ public class DruidSelectParser extends DefaultDruidParser {
                     havingColsName.add("");                // Added by winbill, 20160314, one alias for non-AVG
                 }
             } else {
+                // 这个是什么语句类型
                 if (!(item.getExpr() instanceof SQLAllColumnExpr)) {
                     String alia = item.getAlias();
                     String field = getFieldName(item);
@@ -172,6 +184,8 @@ public class DruidSelectParser extends DefaultDruidParser {
             }
 
         }
+        // sum count 有点不明显
+        // 需要sql语句重写
         if (aggrColumns.size() > 0) {
             rrs.setMergeCols(aggrColumns);
         }
@@ -188,10 +202,11 @@ public class DruidSelectParser extends DefaultDruidParser {
         }
 
 
-        //setGroupByCols
+        // setGroupByCols
         if (mysqlSelectQuery.getGroupBy() != null) {
             List<SQLExpr> groupByItems = mysqlSelectQuery.getGroupBy().getItems();
             String[] groupByCols = buildGroupByCols(groupByItems, aliaColumns);
+            // groupby 和 having 语句的处理
             rrs.setGroupByCols(groupByCols);
             rrs.setHavings(buildGroupByHaving(mysqlSelectQuery.getGroupBy().getHaving()));
             rrs.setHasAggrColumn(true);

@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid.parser;
+package io.mycat.netty.router.parser.druid;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.SQLUpdateSetItem;
@@ -6,8 +6,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.conf.TableConfig;
 import io.mycat.netty.router.RouteResultset;
-import io.mycat.netty.router.parser.druid.RouterUtil;
-import io.mycat.netty.router.parser.druid.StringUtil;
+import io.mycat.netty.router.parser.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +15,7 @@ import java.util.List;
 
 /**
  * Created by snow_young on 16/8/27.
+ * reference by http://dev.mysql.com/doc/refman/5.7/en/update.html
  */
 public class DruidUpdateParser extends DefaultDruidParser {
     private static final Logger logger = LoggerFactory.getLogger(DruidUpdateParser.class);
@@ -35,11 +35,11 @@ public class DruidUpdateParser extends DefaultDruidParser {
         List<SQLUpdateSetItem> updateSetItem = update.getItems();
         TableConfig tc = schema.getTables().get(tableName);
 
-        if (RouterUtil.isNoSharding(schema, tableName)) {//整个schema都不分库或者该表不拆分
-            RouterUtil.routeForTableMeta(rrs, schema, tableName, rrs.getStatement());
-            rrs.setFinishedRoute(true);
-            return;
-        }
+//        if (RouterUtil.isNoSharding(schema, tableName)) {//整个schema都不分库或者该表不拆分
+//            RouterUtil.routeForTableMeta(rrs, schema, tableName, rrs.getStatement());
+//            rrs.setFinishedRoute(true);
+//            return;
+//        }
 
         String partitionColumn = tc.getPartitionColumn();
 
@@ -65,10 +65,12 @@ public class DruidUpdateParser extends DefaultDruidParser {
 //        }
     }
 
+    // 确保 sharding key 没有被更新
     private void confirmShardColumnNotUpdated(List<SQLUpdateSetItem> updateSetItem, SchemaConfig schema, String tableName, String partitionColumn, RouteResultset rrs) throws SQLNonTransientException {
         if (updateSetItem != null && updateSetItem.size() > 0) {
             // 父表是什么
 //            boolean hasParent = (schema.getTables().get(tableName).getParentTC() != null);
+//            去除了父表的处理
             for (SQLUpdateSetItem item : updateSetItem) {
                 String column = StringUtil.removeBackquote(item.getColumn().toString().toUpperCase());
                 //考虑别名，前面已经限制了update分片表的个数只能有一个，所以这里别名只能是分片表的

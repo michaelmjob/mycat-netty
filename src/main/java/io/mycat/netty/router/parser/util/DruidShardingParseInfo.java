@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid;
+package io.mycat.netty.router.parser.util;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

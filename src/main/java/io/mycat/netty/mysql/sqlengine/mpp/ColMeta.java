@@ -17,7 +17,7 @@ public class ColMeta implements Serializable {
     public static final int COL_TYPE_LONGLONG = 8;
     public static final int COL_TYPE_INT24 = 9;
     public static final int COL_TYPE_DATE = 0x0a;
-    public static final int COL_TYPE_DATETIME=0X0C;
+    public static final int COL_TYPE_DATETIME = 0X0C;
     public static final int COL_TYPE_TIME = 0x0b;
     public static final int COL_TYPE_YEAR = 0x0d;
     public static final int COL_TYPE_NEWDATE = 0x0e;
@@ -33,23 +33,26 @@ public class ColMeta implements Serializable {
     public static final int COL_TYPE_VAR_STRING = 0xfd;
     public static final int COL_TYPE_STRING = 0xfe;
     public static final int COL_TYPE_GEOMETRY = 0xff;
-    public  int colIndex;
+
+    public int colIndex;
     public final int colType;
 
-    public  int avgSumIndex;
-    public  int avgCountIndex;
+    public int avgSumIndex;
+    public int avgCountIndex;
 
     public ColMeta(int colIndex, int colType) {
         super();
         this.colIndex = colIndex;
         this.colType = colType;
     }
-    public ColMeta(int avgSumIndex,int avgCountIndex,  int colType) {
+
+    public ColMeta(int avgSumIndex, int avgCountIndex, int colType) {
         super();
         this.avgSumIndex = avgSumIndex;
-        this.avgCountIndex=avgCountIndex;
+        this.avgCountIndex = avgCountIndex;
         this.colType = colType;
     }
+
     public int getColIndex() {
         return colIndex;
     }

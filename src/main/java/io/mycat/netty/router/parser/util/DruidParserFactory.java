@@ -1,4 +1,4 @@
-package io.mycat.netty.router.parser.druid;
+package io.mycat.netty.router.parser.util;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.statement.SQLAlterTableStatement;
@@ -11,8 +11,7 @@ import com.alibaba.druid.sql.visitor.SchemaStatVisitor;
 
 
 import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.conf.TableConfig;
-import io.mycat.netty.router.parser.druid.parser.*;
+import io.mycat.netty.router.parser.druid.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

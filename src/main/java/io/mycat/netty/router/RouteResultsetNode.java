@@ -3,6 +3,7 @@ package io.mycat.netty.router;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,11 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
 
     // 是否强制走master
     @Getter
+    @Setter
     private Boolean canRunSlave = true;
 
     @Getter
+    @Setter
     private boolean canRunInReadDB = false;
     // 添加负载均衡标志
     // boolean hasBalanceFlag = ??

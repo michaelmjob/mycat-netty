@@ -2,32 +2,42 @@ package io.mycat.netty.router;
 
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.mysql.sqlengine.mpp.HavingCols;
-import io.mycat.netty.router.parser.druid.SQLMerge;
+import io.mycat.netty.router.parser.util.SQLMerge;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/12.
  */
 @Data
+@NoArgsConstructor
 public class RouteResultset implements Serializable{
     private String statement;
 //    private int sqlType;
     private RouteResultsetNode[] nodes;
 
     private boolean canRunSlave = false;
-    private final int sqlType;
+    private int sqlType;
     private String primaryKey;
     private int limitStart;
     private int limitSize;
     private boolean autocommit = true;
 
     private SQLMerge sqlMerge;
+
+
+    // 四种类型 master  slave  read write
+    //是否可以在从库运行,此属性主要供RouteResultsetNode获取
+    private Boolean canRunInReadDB;
+
+    // 强制走 master，可以通过 RouteResultset的属性canRunInReadDB=false
+    // 传给 RouteResultsetNode 来实现，但是 强制走 slave需要增加一个属性来实现:
+    private Boolean runOnSlave = null;	// 默认null表示不施加影响
+
 
     public RouteResultset(String statement, int sqlType){
         this.statement = statement;

@@ -5,13 +5,13 @@ import com.alibaba.druid.sql.ast.statement.SQLSelectStatement;
 import com.alibaba.druid.sql.dialect.mysql.parser.MySqlStatementParser;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.parser.ServerParse;
-import io.mycat.netty.router.parser.druid.DruidShardingParseInfo;
-import io.mycat.netty.router.parser.druid.MycatSchemaStatVisitor;
-import io.mycat.netty.router.parser.druid.RouteCalculateUnit;
-import io.mycat.netty.router.parser.druid.RouterUtil;
-import io.mycat.netty.router.parser.druid.parser.DruidParser;
+import io.mycat.netty.router.parser.druid.DruidParser;
+
+import io.mycat.netty.router.parser.util.DruidShardingParseInfo;
+import io.mycat.netty.router.parser.util.MycatSchemaStatVisitor;
+import io.mycat.netty.router.parser.util.RouteCalculateUnit;
+import io.mycat.netty.router.parser.util.RouterUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +23,8 @@ import java.util.TreeSet;
 
 /**
  * Created by snow_young on 16/8/22.
+ *
+ * 这个不可测试
  */
 public class DruidRouteStrategy extends AbstractRouteStrategy {
     private static Logger logger = LoggerFactory.getLogger(DruidRouteStrategy.class);
@@ -31,68 +33,69 @@ public class DruidRouteStrategy extends AbstractRouteStrategy {
     @Override
     public RouteResultset routeNormalSqlWithAST(SchemaConfig schema, String stmt, RouteResultset rrs, String charset) throws SQLNonTransientException {
 
-        return null;
-//        SQLStatementParser parser = new MySqlStatementParser(stmt);
-//
-//        SQLStatement statement = null;
-//
-//        statement = parser.parseStatement();
-//        MycatSchemaStatVisitor visitor = new MycatSchemaStatVisitor();
-//
-//
-//        DruidParser druidParser = DruidParserFactory.create(schema, statement, visitor);
-//        druidParser.parser(schema, rrs, statement, stmt, visitor);
-//
-//        /**
-//         * DruidParser 解析过程中已完成了路由的直接返回
-//         * 什么时候会没有完成呢 ?
-//         * 暂时用不到
-//         */
-//        if (rrs.isFinishedRoute()) {
-//            return rrs;
+        SQLStatementParser parser = new MySqlStatementParser(stmt);
+
+        SQLStatement statement = parser.parseStatement();
+        MycatSchemaStatVisitor visitor = new MycatSchemaStatVisitor();
+
+        /**
+         * 检验unsupported statement
+         */
+//        checkUnSupportedStatement(statement);
+
+        // 就是这里需要进行测试的点
+        DruidParser druidParser = DruidParserFactory.create(schema, statement, visitor);
+        druidParser.parser(schema, rrs, statement, stmt, visitor);
+
+        /**
+         * DruidParser 解析过程中已完成了路由的直接返回
+         * ???
+         */
+        if (rrs.isFinishedRoute()) {
+            return rrs;
+        }
+
+        /**
+         * 最简单的select语句
+         */
+        DruidShardingParseInfo ctx = druidParser.getCtx();
+//        最简单的sql语句, 暂时就不支持了, 后面添加
+//        if ((ctx.getTables() == null || ctx.getTables().size() == 0) && (ctx.getTableAliasMap() == null || ctx.getTableAliasMap().isEmpty())) {
+//            //
+//            return RouterUtil.routeToSingleNode(rrs, schema.getRandomDataNode(), druidParser.getCtx().getSql());
 //        }
-//
-//        /**
-//         * 没有from的select语句或其他 ?? 是什么意思，就是没有具体指定一个 数据库 的操作？
-//         * 怎么先添加一个测试
-//         */
-//        DruidShardingParseInfo ctx = druidParser.getCtx();
-////        这应该算是一个异常!!!
-////        if ((ctx.getTables() == null || ctx.getTables().size() == 0) && (ctx.getTableAliasMap() == null || ctx.getTableAliasMap().isEmpty())) {
-////            //
-////            return RouterUtil.routeToSingleNode(rrs, schema.getRandomDataNode(), druidParser.getCtx().getSql());
-////        }
-//
-//        // 空的路由计算 就放一个空的
-//        // 算不算一个异常
-//        if (druidParser.getCtx().getRouteCalculateUnits().size() == 0) {
-//            RouteCalculateUnit routeCalculateUnit = new RouteCalculateUnit();
-//            druidParser.getCtx().addRouteCalculateUnit(routeCalculateUnit);
-//        }
-//
-//        // 获取所有的路由计算单元,
-//        // 计算路由， 放入nodeset
-//        // 一个 RouteCalculateUnit 对应一个 RouteResultset
-//        SortedSet<RouteResultsetNode> nodeSet = new TreeSet<RouteResultsetNode>();
-//        for (RouteCalculateUnit unit : druidParser.getCtx().getRouteCalculateUnits()) {
-//            RouteResultset rrsTmp = RouterUtil.tryRouteForTables(schema, druidParser.getCtx(), unit, rrs, isSelect(statement));
-//            if (rrsTmp != null) {
-//                for (RouteResultsetNode node : rrsTmp.getNodes()) {
-//                    nodeSet.add(node);
-//                }
-//            }
-//        }
-//
-//        // 转换格式 set -> array
-//        RouteResultsetNode[] nodes = new RouteResultsetNode[nodeSet.size()];
-//        int i = 0;
-//        for (Iterator<RouteResultsetNode> iterator = nodeSet.iterator(); iterator.hasNext(); ) {
-//            nodes[i] = iterator.next();
-//            i++;
-//        }
-//        rrs.setNodes(nodes);
-//
-//        return rrs;
+
+        // 空的路由计算 就放一个空的
+        if (druidParser.getCtx().getRouteCalculateUnits().size() == 0) {
+            RouteCalculateUnit routeCalculateUnit = new RouteCalculateUnit();
+            druidParser.getCtx().addRouteCalculateUnit(routeCalculateUnit);
+        }
+
+        // 获取所有的路由计算单元,
+        // 计算路由， 放入nodeset
+        // 一个 RouteCalculateUnit 对应一个 RouteResultset
+        // 获取路由结果
+        SortedSet<RouteResultsetNode> nodeSet = new TreeSet<>();
+        for (RouteCalculateUnit unit : druidParser.getCtx().getRouteCalculateUnits()) {
+            //
+            RouteResultset rrsTmp = RouterUtil.tryRouteForTables(schema, druidParser.getCtx(), unit, rrs, isSelect(statement));
+            if (rrsTmp != null) {
+                for (RouteResultsetNode node : rrsTmp.getNodes()) {
+                    nodeSet.add(node);
+                }
+            }
+        }
+
+        // 转换格式 set -> array
+        RouteResultsetNode[] nodes = new RouteResultsetNode[nodeSet.size()];
+        int i = 0;
+        for (Iterator<RouteResultsetNode> iterator = nodeSet.iterator(); iterator.hasNext(); ) {
+            nodes[i] = iterator.next();
+            i++;
+        }
+        rrs.setNodes(nodes);
+
+        return rrs;
     }
 
     private boolean isSelect(SQLStatement statement) {
@@ -102,6 +105,7 @@ public class DruidRouteStrategy extends AbstractRouteStrategy {
         return false;
     }
 
+    // 暂时不测试这个功能
     @Override
     public RouteResultset routeSystemInfo(SchemaConfig schema, int sqlType, String stmt, RouteResultset rrs) throws SQLSyntaxErrorException {
         switch (sqlType) {

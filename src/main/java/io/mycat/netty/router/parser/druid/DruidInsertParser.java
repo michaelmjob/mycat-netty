@@ -1,34 +1,27 @@
-package io.mycat.netty.router.parser.druid.parser;
+package io.mycat.netty.router.parser.druid;
 
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.conf.TableConfig;
 import io.mycat.netty.router.RouteResultset;
-import io.mycat.netty.router.parser.druid.MycatSchemaStatVisitor;
-import io.mycat.netty.router.parser.druid.RouteCalculateUnit;
-import io.mycat.netty.router.parser.druid.RouterUtil;
-import io.mycat.netty.router.parser.druid.StringUtil;
-import io.mycat.netty.router.partition.AbstractPartition;
+import io.mycat.netty.router.parser.util.MycatSchemaStatVisitor;
+import io.mycat.netty.router.parser.util.RouteCalculateUnit;
+import io.mycat.netty.router.parser.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.druid.sql.ast.SQLExpr;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.ast.expr.SQLBinaryOpExpr;
-import com.alibaba.druid.sql.ast.expr.SQLCharExpr;
-import com.alibaba.druid.sql.ast.expr.SQLIntegerExpr;
-import com.alibaba.druid.sql.ast.statement.SQLInsertStatement.ValuesClause;
 import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
-
 
 import java.sql.SQLNonTransientException;
 import java.sql.SQLSyntaxErrorException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/27.
+ * reference by http://dev.mysql.com/doc/refman/5.7/en/insert.html
+ *
  */
 public class DruidInsertParser extends DefaultDruidParser {
     private static final Logger logger = LoggerFactory.getLogger(DruidInsertParser.class);
@@ -49,6 +42,14 @@ public class DruidInsertParser extends DefaultDruidParser {
 
         ctx.addTable(tableName);
 
+//        现阶段不支持，后期可以支持
+//        if(RouterUtil.isNoSharding(schema,tableName)) {//整个schema都不分库或者该表不拆分
+//            RouterUtil.routeForTableMeta(rrs, schema, tableName, rrs.getStatement());
+//            rrs.setFinishedRoute(true);
+//            return;
+//        }
+
+
         TableConfig tc = schema.getTables().get(tableName);
         if (tc == null) {
             String msg = "can't find table define in schema "
@@ -56,8 +57,10 @@ public class DruidInsertParser extends DefaultDruidParser {
             logger.warn(msg);
             throw new SQLNonTransientException(msg);
         } else {
+            //
 
             // 后面添加两维度分表
+            // 单维度的分表
             String partitionColumn = tc.getPartitionColumn();
 
             if (partitionColumn != null) {//分片表
@@ -66,9 +69,12 @@ public class DruidInsertParser extends DefaultDruidParser {
                     throw new SQLSyntaxErrorException("partition table, insert must provide ColumnList");
                 }
 
-                // 批量insert
-                // 暂时不支持 多行插入
-                parserSingleInsert(schema, rrs, partitionColumn, tableName, insert);
+                if(isMultiInsert(insert)) {
+                    logger.error("multi insert is forbidden");
+                    return;
+                } else {
+                    parserSingleInsert(schema, rrs, partitionColumn, tableName, insert);
+                }
             }
         }
     }
@@ -138,10 +144,12 @@ public class DruidInsertParser extends DefaultDruidParser {
             logger.warn(msg);
             throw new SQLNonTransientException(msg);
         }
+
+        // 这种语句不应该支持
         //  insert into .... on duplicateKey
         //  such as :   INSERT INTO TABLEName (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE b=VALUES(b);
         //              INSERT INTO TABLEName (a,b,c) VALUES (1,2,3) ON DUPLICATE KEY UPDATE c=c+1;
-        //              duplicate 处理！！
+        //              du plicate 处理！！
         if (insertStmt.getDuplicateKeyUpdate() != null) {
             List<SQLExpr> updateList = insertStmt.getDuplicateKeyUpdate();
             for (SQLExpr expr : updateList) {

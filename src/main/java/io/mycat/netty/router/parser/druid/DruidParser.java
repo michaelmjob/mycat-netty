@@ -1,10 +1,10 @@
-package io.mycat.netty.router.parser.druid.parser;
+package io.mycat.netty.router.parser.druid;
 
 import com.alibaba.druid.sql.ast.SQLStatement;
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.router.RouteResultset;
-import io.mycat.netty.router.parser.druid.DruidShardingParseInfo;
-import io.mycat.netty.router.parser.druid.MycatSchemaStatVisitor;
+import io.mycat.netty.router.parser.util.DruidShardingParseInfo;
+import io.mycat.netty.router.parser.util.MycatSchemaStatVisitor;
 
 import java.sql.SQLNonTransientException;
 
