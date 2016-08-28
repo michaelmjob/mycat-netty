@@ -6,9 +6,11 @@
 
         <!-- class 使用动态加载策略 -->
         <table name="tb0">
-            <partition class="org.mycat.netty.partition.PartitionByMonth">
+            <partition class="io.mycat.netty.router.partition.PartitionByMonth">
+                <property name="partitionKey">begin_date</property>
                 <property name="dateFormat">yyyy-MM-dd</property>
-                <property name="sBeginDate">2015-01-01</property>
+                <property name="beginDate">2015-01-01</property>
+                <property name="endDate">2020-01-01</property>
             </partition>
 
             <datasource>
@@ -24,9 +26,12 @@
                 <table name="tb2"/>
             </tables>
 
-            <partition class="org.mycat.netty.partition.PartitionByLong">
-                <property name="partitionCount">2</property>
-                <property name="partitionLength">512</property>
+            <!--byLong 支持暂时还不完善-->
+            <partition class="io.mycat.netty.router.partition.PartitionByMod">
+                <property name="partitionKey">order_id</property>
+                <!--<property name="count">2</property>-->
+                <!--<property name="length">512</property>-->
+                <property name="count">3</property>
             </partition>
 
             <datasource>

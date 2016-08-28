@@ -4,10 +4,6 @@ package io.mycat.netty.router.partition;
  * Created by snow_young on 16/8/27.
  */
 public abstract class AbstractPartition implements Partition{
-    @Override
-    public void init() {
-
-    }
 
 
     @Override

@@ -6,6 +6,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlUpdateStatement;
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.conf.TableConfig;
 import io.mycat.netty.router.RouteResultset;
+import io.mycat.netty.router.parser.druid.RouterUtil;
 import io.mycat.netty.router.parser.druid.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +19,12 @@ import java.util.List;
  */
 public class DruidUpdateParser extends DefaultDruidParser {
     private static final Logger logger = LoggerFactory.getLogger(DruidUpdateParser.class);
-    
+
     @Override
     public void statementParse(SchemaConfig schema, RouteResultset rrs, SQLStatement stmt) throws SQLNonTransientException {
         //这里限制了update分片表的个数只能有一个
-        if (ctx.getTables() != null && ctx.getTables().size() > 1 && !schema.isNoSharding()) {
+//        if (ctx.getTables() != null && ctx.getTables().size() > 1 && !schema.isNoSharding()) {
+        if (ctx.getTables() != null && ctx.getTables().size() > 1) {
             String msg = "multi table related update not supported,tables:" + ctx.getTables();
             logger.warn(msg);
             throw new SQLNonTransientException(msg);
@@ -40,16 +42,9 @@ public class DruidUpdateParser extends DefaultDruidParser {
         }
 
         String partitionColumn = tc.getPartitionColumn();
-        String joinKey = tc.getJoinKey();
-        if (tc.isGlobalTable() || (partitionColumn == null && joinKey == null)) {
-            //修改全局表 update 受影响的行数
-            RouterUtil.routeToMultiNode(false, rrs, tc.getDataNodes(), rrs.getStatement(), tc.isGlobalTable());
-            rrs.setFinishedRoute(true);
-            return;
-        }
 
 
-        confirmShardColumnNotUpdated(updateSetItem, schema, tableName, partitionColumn, joinKey, rrs);
+        confirmShardColumnNotUpdated(updateSetItem, schema, tableName, partitionColumn, rrs);
 
 //		if(ctx.getTablesAndConditions().size() > 0) {
 //			Map<String, Set<ColumnRoutePair>> map = ctx.getTablesAndConditions().get(tableName);
@@ -70,9 +65,10 @@ public class DruidUpdateParser extends DefaultDruidParser {
 //        }
     }
 
-    private void confirmShardColumnNotUpdated(List<SQLUpdateSetItem> updateSetItem,SchemaConfig schema,String tableName,String partitionColumn,String joinKey,RouteResultset rrs) throws SQLNonTransientException {
+    private void confirmShardColumnNotUpdated(List<SQLUpdateSetItem> updateSetItem, SchemaConfig schema, String tableName, String partitionColumn, RouteResultset rrs) throws SQLNonTransientException {
         if (updateSetItem != null && updateSetItem.size() > 0) {
-            boolean hasParent = (schema.getTables().get(tableName).getParentTC() != null);
+            // 父表是什么
+//            boolean hasParent = (schema.getTables().get(tableName).getParentTC() != null);
             for (SQLUpdateSetItem item : updateSetItem) {
                 String column = StringUtil.removeBackquote(item.getColumn().toString().toUpperCase());
                 //考虑别名，前面已经限制了update分片表的个数只能有一个，所以这里别名只能是分片表的
@@ -83,14 +79,6 @@ public class DruidUpdateParser extends DefaultDruidParser {
                     String msg = "partion key can't be updated " + tableName + "->" + partitionColumn;
                     logger.warn(msg);
                     throw new SQLNonTransientException(msg);
-                }
-                if (hasParent) {
-                    if (column.equals(joinKey)) {
-                        String msg = "parent relation column can't be updated " + tableName + "->" + joinKey;
-                        logger.warn(msg);
-                        throw new SQLNonTransientException(msg);
-                    }
-                    rrs.setCacheAble(true);
                 }
             }
         }

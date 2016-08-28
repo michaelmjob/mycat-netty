@@ -1,5 +1,7 @@
 package io.mycat.netty.router.partition;
 
+import java.util.Map;
+
 /**
  * Created by snow_young on 16/8/27.
  */
@@ -11,6 +13,11 @@ public class PartitionByJumpConsistentHash extends AbstractPartition implements 
     private static final long CONSTANT = Long.parseLong("286293355577794175", 10) * 10 + 7;
 
     private int totalBuckets;
+
+    @Override
+    public void init(Map<String, String> params) {
+
+    }
 
     @Override
     public int caculate(String columnValue) {

@@ -1,6 +1,5 @@
 package io.mycat.netty.conf;
 
-import io.mycat.netty.router.partition.Partition;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,12 +26,13 @@ import java.util.List;
 @Data
 public class TableConfig {
     private String name;
+    // that is extra!
     private String partitionColumn;
-//    private Partition partition;
+    // private Partition partition;
     private List<NodeConfig> datasource;
 
     //
-    private RuleConfig rule;
+    private PartitionConfig rule;
 
     @AllArgsConstructor
     @NoArgsConstructor

@@ -12,14 +12,13 @@ import java.util.Map;
 public class PartitionByMod extends AbstractPartition implements Partition {
     private int count;
 
-    @Override
-    public void init() {
-
-
-    }
-
     public void setCount(int count) {
         this.count = count;
+    }
+
+    @Override
+    public void init(Map<String, String> params) {
+        count = Integer.parseInt( params.get("count"));
     }
 
     @Override
@@ -32,7 +31,7 @@ public class PartitionByMod extends AbstractPartition implements Partition {
     private static void hashTest() {
         PartitionByMod hash = new PartitionByMod();
         hash.setCount(11);
-        hash.init();
+        hash.init(null);
 
         int[] bucket = new int[hash.count];
 
@@ -72,7 +71,7 @@ public class PartitionByMod extends AbstractPartition implements Partition {
     private static void rehashTest(List<Integer> partition) {
         PartitionByMod hash = new PartitionByMod();
         hash.count = 110;//分片数
-        hash.init();
+        hash.init(null);
 
         int[] bucket = new int[hash.count];
 

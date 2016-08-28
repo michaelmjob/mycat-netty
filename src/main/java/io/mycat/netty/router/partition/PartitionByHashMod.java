@@ -1,6 +1,7 @@
 package io.mycat.netty.router.partition;
 
 import java.math.BigInteger;
+import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/27.
@@ -8,13 +9,6 @@ import java.math.BigInteger;
 public class PartitionByHashMod extends AbstractPartition implements Partition {
     private boolean watch = false;
     private int count;
-
-    public void setCount(int count) {
-        this.count = count;
-        if ((count & (count - 1)) == 0) {
-            watch = true;
-        }
-    }
 
     /**
      * Using Wang/Jenkins Hash
@@ -34,6 +28,15 @@ public class PartitionByHashMod extends AbstractPartition implements Partition {
     }
 
     @Override
+    public void init(Map<String, String> params) {
+       count = Integer.parseInt(params.get("count"));
+
+//        if ((count & (count - 1)) == 0) {
+//            watch = true;
+//        }
+    }
+
+    @Override
     public int caculate(String columnValue) {
         columnValue = columnValue.replace("\'", " ");
         columnValue = columnValue.trim();
@@ -45,9 +48,5 @@ public class PartitionByHashMod extends AbstractPartition implements Partition {
         return (bigNum.mod(BigInteger.valueOf(count))).intValue();
     }
 
-    @Override
-    public void init() {
-        super.init();
-    }
 
 }

@@ -16,5 +16,7 @@ public class schemaLoaderTest {
     @Test
     public void testXmlLoader() throws ParserConfigurationException, SAXException, IOException {
         new XMLSchemaLoader().load();
+
+        // 提高测试覆盖率
     }
 }

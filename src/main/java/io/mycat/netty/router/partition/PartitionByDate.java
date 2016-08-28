@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/27.
@@ -26,7 +27,13 @@ public class PartitionByDate extends AbstractPartition implements Partition {
     private static final long oneDay = 86400000;
 
     @Override
-    public void init() {
+    public void init(Map<String, String> params) {
+
+        sPartionDay = params.get("PartionDay");
+        sBeginDate = params.get("beginDate");
+        dateFormat = params.get("dateFormat");
+        sEndDate = params.get("endDate");
+
         try {
             partionTime = Integer.parseInt(sPartionDay) * oneDay;
 

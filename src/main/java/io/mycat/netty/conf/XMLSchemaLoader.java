@@ -1,6 +1,7 @@
 package io.mycat.netty.conf;
 
 import io.mycat.netty.mysql.auth.XmlUtils;
+import io.mycat.netty.router.partition.AbstractPartition;
 import io.mycat.netty.router.partition.Partition;
 import lombok.Data;
 import org.slf4j.Logger;
@@ -28,8 +29,8 @@ public class XMLSchemaLoader {
     private Map<String, SchemaConfig> schemaConfigs;
     private DataSourceConfig datasource;
 
-    public XMLSchemaLoader(){
-        schemaConfigs =  new HashMap<>();
+    public XMLSchemaLoader() {
+        schemaConfigs = new HashMap<>();
         datasource = new DataSourceConfig();
     }
 
@@ -52,22 +53,51 @@ public class XMLSchemaLoader {
     }
 
 
-    public static Partition getPartition(Element root){
-        Element partitionNode = (Element)root.getElementsByTagName("partition").item(0);
+    public PartitionConfig getPartition(Element root) {
+        Element partitionNode = (Element) root.getElementsByTagName("partition").item(0);
         String clazz = partitionNode.getAttribute("class");
         logger.info("partition class : {}, ", clazz);
+        try {
+            Class<?> clz = Class.forName(clazz);
+            AbstractPartition partition = (AbstractPartition) clz.newInstance();
+            // 设置参数
+            NodeList nodeList = partitionNode.getElementsByTagName("property");
 
-        return null;
+            Map<String, String> kv = new HashMap<>();
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Element property = (Element) nodeList.item(i);
+                String key = property.getAttribute("name");
+                String value = property.getTextContent();
+                kv.put(key, value);
+            }
+
+            partition.init(kv);
+            PartitionConfig config = new PartitionConfig();
+            config.setPartition(partition);
+            config.setColumn(kv.get("partitionKey"));
+//            Partition partition = Thread.currentThread().getContextClassLoader().loadClass(clazz);
+//            Partition partition =  Class.forName(clazz);
+            return config;
+        } catch (ClassNotFoundException cnfe) {
+            logger.error("partition class {} is not found", cnfe);
+            throw new RuntimeException("partition class not found");
+        } catch (InstantiationException e) {
+            logger.error("partition class {} instantiate fail", e);
+            throw new RuntimeException("partition class instantialize fail");
+        } catch (IllegalAccessException e) {
+            logger.error("partition class {} access fail", e);
+            throw new RuntimeException("partition class access fail");
+        }
     }
 
-    public static List<TableConfig.NodeConfig> getNodes(Element root){
+    public static List<TableConfig.NodeConfig> getNodes(Element root) {
 //        NodeList Nodes = ((Element)tableNode.getElementsByTagName("datasource").item(0))
 //                .getElementsByTagName("node");
 
         List<TableConfig.NodeConfig> nodes = new ArrayList<>();
-        NodeList Nodes = ((Element)root.getElementsByTagName("datasource").item(0))
+        NodeList Nodes = ((Element) root.getElementsByTagName("datasource").item(0))
                 .getElementsByTagName("node");
-        for(int h = 0 ; h < Nodes.getLength(); h++){
+        for (int h = 0; h < Nodes.getLength(); h++) {
             Element nodeNode = (Element) Nodes.item(h);
 //            tableConfig.getDatasource().add(
 //                    new TableConfig.NodeConfig(
@@ -80,10 +110,10 @@ public class XMLSchemaLoader {
         return nodes;
     }
 
-    public void loadSchema(Element root){
+    public void loadSchema(Element root) {
         NodeList schemaNodes = root.getElementsByTagName("schema");
-        for(int i = 0; i < schemaNodes.getLength(); i++){
-            Element schemaNode = (Element)schemaNodes.item(i);
+        for (int i = 0; i < schemaNodes.getLength(); i++) {
+            Element schemaNode = (Element) schemaNodes.item(i);
             String schemaName = schemaNode.getAttribute("name");
             getSchemaConfigs().put(schemaName, new SchemaConfig());
             NodeList tableNodes = schemaNode.getElementsByTagName("table");
@@ -91,50 +121,56 @@ public class XMLSchemaLoader {
 
 //            schemaNode.getChildNodes()
 
-            TableConfig tableConfig =  new TableConfig();
+            TableConfig tableConfig = new TableConfig();
             // instance.getSchemaConfig().tables;
             // deal with table
-            for(int j = 0; j < tableNodes.getLength(); j++){
-                Element tableNode = (Element)tableNodes.item(j);
+            for (int j = 0; j < tableNodes.getLength(); j++) {
+                Element tableNode = (Element) tableNodes.item(j);
                 String name = tableNode.getAttribute("name");
 
 //                Element partitionNode = (Element)tableNode.getElementsByTagName("partition").item(0);
-                if(!tableNode.getParentNode().getNodeName().equals("schema")){
+                if (!tableNode.getParentNode().getNodeName().equals("schema")) {
                     continue;
                 }
 
-                getPartition(tableNode);
+                PartitionConfig config = getPartition(tableNode);
+                tableConfig.setRule(config);
+                tableConfig.setPartitionColumn(config.getColumn());
 
                 tableConfig.setDatasource(getNodes(tableNode));
-
                 tableConfig.setName(name);
                 getSchemaConfigs().get(schemaName).getTables().put(name, tableConfig);
             }
 
-            for(int j = 0 ; j < tablegroupNodes.getLength(); j++){
+            for (int j = 0; j < tablegroupNodes.getLength(); j++) {
                 Element tablegroupNode = (Element) tablegroupNodes.item(j);
-                NodeList subTableNodes = ((Element)tablegroupNode.getElementsByTagName("tables").item(0))
-                                                                        .getElementsByTagName("table");
-                getPartition(tablegroupNode);
+                NodeList subTableNodes = ((Element) tablegroupNode.getElementsByTagName("tables").item(0))
+                        .getElementsByTagName("table");
+//                getPartition(tablegroupNode);
+                PartitionConfig config = getPartition(tablegroupNode);
+//                tableConfig.setRule(config);
+//                tableConfig.setPartitionColumn(config.getColumn());
+
                 List<TableConfig.NodeConfig> nodes = getNodes(tablegroupNode);
-                for(int h = 0; h < subTableNodes.getLength(); h++){
-                    String name = ((Element)subTableNodes.item(h)).getAttribute("name");
-                    getSchemaConfigs().get(schemaName).getTables().put(name, new TableConfig(name, null, nodes));
+                for (int h = 0; h < subTableNodes.getLength(); h++) {
+                    String name = ((Element) subTableNodes.item(h)).getAttribute("name");
+                    getSchemaConfigs().get(schemaName).getTables().put(name,
+                            new TableConfig(name, config.getColumn(), nodes, config));
                 }
             }
         }
     }
 
 
-    public void loadDatasource(Element root){
+    public void loadDatasource(Element root) {
         NodeList datanodeNodes = root.getElementsByTagName("datanode");
-        for(int i = 0; i < datanodeNodes.getLength(); i++){
+        for (int i = 0; i < datanodeNodes.getLength(); i++) {
             Node node = datanodeNodes.item(i);
-            if(node instanceof Element){
-                Element e = (Element)node;
+            if (node instanceof Element) {
+                Element e = (Element) node;
 
                 DataSourceConfig.DatanodeConfig datanode = new DataSourceConfig.DatanodeConfig();
-                DataSourceConfig.HostConfig writehost= new DataSourceConfig.HostConfig();
+                DataSourceConfig.HostConfig writehost = new DataSourceConfig.HostConfig();
                 List<DataSourceConfig.HostConfig> readhosts = new ArrayList<>();
 
                 // name="d0" balance="rr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin"
@@ -149,7 +185,7 @@ public class XMLSchemaLoader {
 //               <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
 //               <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>
 //               <heartbeat>select user()</heartbeat>
-                Element writehostNode = (Element)e.getElementsByTagName("writehost").item(0);
+                Element writehostNode = (Element) e.getElementsByTagName("writehost").item(0);
                 writehost.setUrl(writehostNode.getAttribute("url"));
                 writehost.setUser(writehostNode.getAttribute("user"));
                 writehost.setPassword(writehostNode.getAttribute("password"));
@@ -157,14 +193,14 @@ public class XMLSchemaLoader {
                 datanode.setWritehost(writehost);
 
                 NodeList readhostNodes = e.getElementsByTagName("readhost");
-                for(int j = 0; j < readhostNodes.getLength(); j++){
+                for (int j = 0; j < readhostNodes.getLength(); j++) {
                     Element readhostNode = (Element) readhostNodes.item(j);
                     readhosts.add(new DataSourceConfig.HostConfig(
-                                                        readhostNode.getAttribute("url"),
-                                                        readhostNode.getAttribute("user"),
-                                                        readhostNode.getAttribute("password"),
-                                                        true,
-                                                        Integer.parseInt(readhostNode.getAttribute("weight"))));
+                            readhostNode.getAttribute("url"),
+                            readhostNode.getAttribute("user"),
+                            readhostNode.getAttribute("password"),
+                            true,
+                            Integer.parseInt(readhostNode.getAttribute("weight"))));
                 }
 //                logger.info("index : {}, datanode: {}", i, datanode);
                 datanode.setReadhost(readhosts);

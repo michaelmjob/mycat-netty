@@ -1,5 +1,7 @@
 package io.mycat.netty.router.partition;
 
+import java.util.*;
+
 /**
  * Created by snow_young on 16/8/27.
  */
@@ -27,9 +29,24 @@ public class PartitionByLong extends AbstractPartition implements Partition{
     }
 
     @Override
-    public void init() {
-        partitionUtil = new PartitionUtil(count, length);
+    public void init(Map<String, String> params) {
+        // 这里的设计有点奇怪 ！
+        List<Integer> countList =  new ArrayList<>();
+        List<Integer> lengthList = new ArrayList<>();
 
+        int[] count = new int[]{};
+        int[] length = new int[]{};
+        int index = 0;
+        List<String> list = Arrays.asList(params.get("count").split(","));
+        for(String item : list){
+            count[index++] = Integer.parseInt(item);
+        }
+        index = 0 ;
+        list =  Arrays.asList(params.get("length").split(","));
+        for(String item : list){
+            length[index++] = Integer.parseInt(item);
+        }
+        partitionUtil = new PartitionUtil( count, length);
     }
 
     @Override

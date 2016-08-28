@@ -5,20 +5,28 @@ import com.sun.xml.internal.ws.wsdl.writer.document.Part;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map;
 
 /**
  * Created by snow_young on 16/8/27.
  */
 public class PartitionByMonth extends AbstractPartition implements Partition{
-    private String sBeginDate;
+//    private String sBeginDate;
     private String dateFormat;
-    private String sEndDate;
+//    private String sEndDate;
+
     private Calendar beginDate;
     private Calendar endDate;
     private int nPartition;
 
     @Override
-    public void init() {
+    public void init(Map<String, String> params) {
+
+        String sBeginDate = params.get("beginDate");
+        dateFormat = params.get("dateFormat");
+        String sEndDate = params.get("endDate");
+
+
         try {
             beginDate = Calendar.getInstance();
             beginDate.setTime(new SimpleDateFormat(dateFormat)
@@ -81,15 +89,4 @@ public class PartitionByMonth extends AbstractPartition implements Partition{
                 beginValue, endValue);
     }
 
-    public void setsBeginDate(String sBeginDate) {
-        this.sBeginDate = sBeginDate;
-    }
-
-    public void setDateFormat(String dateFormat) {
-        this.dateFormat = dateFormat;
-    }
-
-    public void setsEndDate(String sEndDate) {
-        this.sEndDate = sEndDate;
-    }
 }
