@@ -16,4 +16,6 @@ public interface ResponseHandler {
     void okResponse(OkPacket packet, NettyBackendSession session);
 
     void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session);
+
+    void send();
 }

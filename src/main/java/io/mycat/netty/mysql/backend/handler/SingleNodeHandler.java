@@ -18,7 +18,7 @@ import java.util.Objects;
  * 处理收到的结果并准备进行输出：
  *  需要前端的session
  */
-public class SingleNodeHandler implements ResponseHandler{
+public class SingleNodeHandler extends AbstractResponseHandler implements ResponseHandler{
     private static final Logger logger = LoggerFactory.getLogger(SingleNodeHandler.class);
 
     // whether need to have a packet id, 单节点的packetId的意义不大
@@ -59,9 +59,33 @@ public class SingleNodeHandler implements ResponseHandler{
 //        session.getBackendSession().sendBytes(packet.getPacket());
     }
 
+
+
     @Override
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
         this.mysqlSessionContext.getFrontSession().writeAndFlush(resultSetPacket.getPacket());
 //        session.getBackendSession().sendBytes(resultSetPacket.getPacket());
+    }
+
+    @Override
+    public void send(){
+        startTime=System.currentTimeMillis();
+
+        this.packetId = 0;
+        final BackendConnection conn = session.getTarget(node);
+
+        logger.debug("rrs.getRunOnSlave() " + rrs.getRunOnSlave());
+        node.setRunOnSlave(rrs.getRunOnSlave());	// 实现 master/slave注解
+        logger.debug("node.getRunOnSlave() " + node.getRunOnSlave());
+
+        if (session.tryExistsCon(conn, node)) {
+            _execute(conn);
+        } else {
+            // create new connection
+            MycatConfig conf = MycatServer.getInstance().getConfig();
+
+            PhysicalDBNode dn = conf.getDataNodes().get(node.getName());
+            dn.getConnection(dn.getDatabase(), sc.isAutocommit(), node, this, node);
+        }
     }
 }

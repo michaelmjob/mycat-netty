@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Created by snow_young on 16/8/13.
  */
-public abstract class MultiNodeHandler implements ResponseHandler{
+public abstract class MultiNodeHandler extends AbstractResponseHandler implements ResponseHandler{
     private static final Logger logger = LoggerFactory.getLogger(MultiNodeHandler.class);
 
     protected final ReentrantLock lock = new ReentrantLock();

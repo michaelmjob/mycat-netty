@@ -17,11 +17,11 @@ public class RouteStrategyFactory {
     }
 
 
-    public RouteStrategy getRouteStrategy(){
+    public static RouteStrategy getRouteStrategy(){
         return routeStrategy;
     }
 
-    public RouteStrategy getRouteStrategy(String type){
+    public static RouteStrategy getRouteStrategy(String type){
         return strategies.get(type);
     }
 }
