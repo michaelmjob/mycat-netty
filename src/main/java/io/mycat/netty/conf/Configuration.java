@@ -38,9 +38,9 @@ public class Configuration {
         // init
         logger.info("load datasource");
 //        too much time wasted in init
-//        load_datasource();
+        load_datasource();
         logger.info("init datasource");
-//        init_datasource();
+        init_datasource();
     }
 
     public static Map<String, SchemaConfig> getSchemaCofnigs(){

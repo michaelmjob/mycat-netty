@@ -146,7 +146,7 @@ public class MysqlFrontendSession implements Session {
      * @return the user
      */
     public String getUser() {
-        return handshakeResponse.username;
+        return this.username;
     }
 
     /**
@@ -160,7 +160,8 @@ public class MysqlFrontendSession implements Session {
      * @return the schema
      */
     public String getSchema() {
-        return handshakeResponse.schema;
+        return this.schema;
+//        return handshakeResponse.schema;
     }
 
     /**

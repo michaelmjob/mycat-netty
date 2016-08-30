@@ -1,7 +1,10 @@
 package io.mycat.netty.mysql.backend.datasource;
 
+import com.sun.tools.internal.ws.processor.model.Response;
 import io.mycat.netty.conf.DataSourceConfig;
+import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
+import io.mycat.netty.mysql.backend.handler.ConnectionGetResponseHandler;
 import io.mycat.netty.mysql.backend.handler.ConnectionHeartBeatHandler;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.mysql.packet.ErrorPacket;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,6 +62,16 @@ public abstract class Host {
 //        this.dbname = dbname;
     }
 
+    // first block get session
+    public void send(String sql, ResponseHandler responseHandler, MysqlSessionContext mysqlSessionContext) throws IOException {
+        // for debug
+
+        NettyBackendSession session  = this.getConnection(mysqlSessionContext.getFrontSession().getSchema(),
+                mysqlSessionContext.getFrontSession().isAutocommit());
+        session.setResponseHandler(responseHandler);
+        session.sendBytes(sql.getBytes());
+    }
+
     // create connection fro dbname but with autocommit only
     public void init(String dbname) throws InterruptedException {
         logger.info("prepare init connection for dbname {}", dbname);
@@ -85,6 +99,11 @@ public abstract class Host {
                         logger.error("should not happen here");
                         System.exit(-1);
                     }
+
+                    @Override
+                    public void send() {
+
+                    }
                 });
             } catch (IOException e) {
                 logger.error("init error", e);
@@ -101,13 +120,12 @@ public abstract class Host {
         logger.info("finish init connection for dbname {}", dbname);
     }
 
-    public NettyBackendSession getConnection(String schema, boolean autocommit,
-                              ResponseHandler handler)
+    public NettyBackendSession getConnection(String schema, boolean autocommit)
             throws IOException {
         // conMap 是记录所有数据库的连接
         NettyBackendSession con = this.conMap.tryTakeCon(schema, autocommit);
         if (con != null) {
-            markConTaken(con, handler, schema);
+            markConTaken(con, schema);
             return con;
         } else {
             int activeCons = this.getActiveCount();// 当前最大活动连接
@@ -120,7 +138,7 @@ public abstract class Host {
                         + this.name + " of schema " + schema);
                 // should add connection get handler
                 //
-                return createNewConnection(schema, autocommit, handler);
+                return createNewConnection(schema, autocommit, new ConnectionGetResponseHandler());
             }
         }
     }
@@ -129,9 +147,7 @@ public abstract class Host {
         return this.conMap.getActiveCount4Host(this);
     }
 
-    private NettyBackendSession markConTaken(NettyBackendSession conn,
-                                      final ResponseHandler handler,
-                                        String schema) {
+    private NettyBackendSession markConTaken(NettyBackendSession conn, String schema) {
 
         conn.setBorrowed(true);
         // 不用切换数据库吗?
@@ -144,12 +160,11 @@ public abstract class Host {
         queue.incExecuteCount();
         conn.setLastTime(System.currentTimeMillis()); // 每次取连接的时候，更新下lasttime，防止在前端连接检查的时候，关闭连接，导致sql执行失败
 //        handler.connectionAcquired(conn);
-        conn.setResponseHandler(handler);
         return conn;
     }
 
 
-    public abstract NettyBackendSession createNewConnection(String dbname, boolean autoCommit, ResponseHandler handler) throws IOException;
+    public abstract NettyBackendSession createNewConnection(String dbname, boolean autoCommit, ResponseHandler responseHandler) throws IOException;
 
     public abstract DBHeartbeat createHeartBeat();
 }

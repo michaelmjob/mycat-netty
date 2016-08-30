@@ -26,6 +26,8 @@ public class ConfigurationTest {
 
         checkConsistency(dataSourceMap.get("d0"), "db0",30);
         checkConsistency(dataSourceMap.get("d1"), "db1", 30);
+
+        System.out.println("finish test");
     }
 
 

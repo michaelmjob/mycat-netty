@@ -114,6 +114,11 @@ public class ConnectionHeartBeatHandler implements ResponseHandler {
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
 
     }
+
+    @Override
+    public void send() {
+
+    }
 }
 
 class HeartBeatCon {

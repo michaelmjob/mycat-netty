@@ -68,8 +68,8 @@ public class NettyBackendSession implements BackendSession {
     private OkPacket okPacket = null;
     private ErrorPacket errorPacket = null;
 
-    private boolean isClosed;
-    private AtomicBoolean isQuit;
+    private boolean isClosed = false;
+    private AtomicBoolean isQuit = new AtomicBoolean(false);
 
     private ResponseHandler responseHandler;
 
@@ -82,11 +82,13 @@ public class NettyBackendSession implements BackendSession {
     public void setOkPacket(byte[] ok) {
         this.okPacket = new OkPacket();
         this.okPacket.read(ok);
+        responseHandler.okResponse(this.okPacket, this);
     }
 
     public void setErrorPacket(byte[] data) {
         this.errorPacket = new ErrorPacket();
         this.errorPacket.read(data);
+        responseHandler.errorResponse(this.errorPacket, this);
     }
 
     public NettyBackendSession(String host, int port) {
@@ -266,6 +268,12 @@ public class NettyBackendSession implements BackendSession {
 //                + ", host=" + host + ", port=" + port + ", statusSync="
 //                + statusSync + ", writeQueue=" + this.getWriteQueue().size()
 //                + ", modifiedSQLExecuted=" + modifiedSQLExecuted + "]";
+    }
+
+//    private boolean finished;
+    public void setFinished(){
+//        this.finished = true;
+        this.responseHandler.resultsetResponse(resultSetPacket, this);
     }
 
     public static class Builder {

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ConQueue {
     private final ConcurrentLinkedQueue<NettyBackendSession> autoCommitCons = new ConcurrentLinkedQueue<NettyBackendSession>();
     private final ConcurrentLinkedQueue<NettyBackendSession> manCommitCons = new ConcurrentLinkedQueue<NettyBackendSession>();
-    private AtomicLong executeCount;
+    private AtomicLong executeCount = new AtomicLong(0);
 
     public NettyBackendSession takeIdleCon(boolean autoCommit) {
         ConcurrentLinkedQueue<NettyBackendSession> f1 = autoCommitCons;

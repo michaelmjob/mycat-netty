@@ -71,7 +71,6 @@ public class MysqlSessionContext {
         if (rrs != null) {
             // session执行
             send(rrs, type);
-//            session.execute(rrs, type);
         }
     }
 

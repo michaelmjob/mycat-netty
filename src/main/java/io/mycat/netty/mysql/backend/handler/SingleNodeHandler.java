@@ -72,20 +72,20 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
         startTime=System.currentTimeMillis();
 
         this.packetId = 0;
-        final BackendConnection conn = session.getTarget(node);
-
-        logger.debug("rrs.getRunOnSlave() " + rrs.getRunOnSlave());
-        node.setRunOnSlave(rrs.getRunOnSlave());	// 实现 master/slave注解
-        logger.debug("node.getRunOnSlave() " + node.getRunOnSlave());
-
-        if (session.tryExistsCon(conn, node)) {
-            _execute(conn);
-        } else {
-            // create new connection
-            MycatConfig conf = MycatServer.getInstance().getConfig();
-
-            PhysicalDBNode dn = conf.getDataNodes().get(node.getName());
-            dn.getConnection(dn.getDatabase(), sc.isAutocommit(), node, this, node);
-        }
+//        final BackendConnection conn = session.getTarget(node);
+//
+//        logger.debug("rrs.getRunOnSlave() " + rrs.getRunOnSlave());
+//        node.setRunOnSlave(rrs.getRunOnSlave());	// 实现 master/slave注解
+//        logger.debug("node.getRunOnSlave() " + node.getRunOnSlave());
+//
+//        if (session.tryExistsCon(conn, node)) {
+//            _execute(conn);
+//        } else {
+//            // create new connection
+//            MycatConfig conf = MycatServer.getInstance().getConfig();
+//
+//            PhysicalDBNode dn = conf.getDataNodes().get(node.getName());
+//            dn.getConnection(dn.getDatabase(), sc.isAutocommit(), node, this, node);
+//        }
     }
 }

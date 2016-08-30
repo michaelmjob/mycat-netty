@@ -53,9 +53,10 @@ public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
             default:
                 // select result
                 this.session.getResultSetPacket().read(data);
-        }
-        if(this.session.getResultSetPacket().isFinished()){
-            logger.info("all finished");
+                if(this.session.getResultSetPacket().isFinished()){
+                    logger.info("all finished");
+                    this.session.setFinished();
+                }
         }
         logger.info("finish channel write");
     }

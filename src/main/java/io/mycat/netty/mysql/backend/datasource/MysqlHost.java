@@ -26,9 +26,11 @@ public class MysqlHost extends Host{
     // 需要放到connMap
     // 每一次操作结束的时候，需要放到conMap
     @Override
-    public NettyBackendSession createNewConnection(String schema, boolean autocommit, ResponseHandler handler) throws IOException {
+    public NettyBackendSession createNewConnection(String schema, boolean autocommit, ResponseHandler responseHandler) throws IOException {
         // 创建连接
         NettyBackendSession session = new NettyBackendSession();
+
+        session.setResponseHandler(responseHandler);
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
         session.setMaxPacketSize(SystemConfig.maxPacketSize);
@@ -41,7 +43,6 @@ public class MysqlHost extends Host{
 //        set database name
         session.setCurrentDB(schema);
         session.setPort(Integer.parseInt(url.split(":")[1]));
-        session.setResponseHandler(handler);
 
         // blocking method
         // TODO: add async method

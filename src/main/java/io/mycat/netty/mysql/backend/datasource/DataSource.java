@@ -125,7 +125,8 @@ public class DataSource {
             // TODO: 添加balance
             Host host = getReadHosts()[0];
             try {
-                return host.getConnection(schema, autoCommit, responseHandler);
+                return host.getConnection(schema, autoCommit);
+//                return host.getConnection(schema, autoCommit, responseHandler);
             } catch (IOException e) {
                 logger.error("get connection for schema[{}] with autocommit[{}] failed", schema, autoCommit, e);
                 return null;
@@ -134,7 +135,8 @@ public class DataSource {
             // 写操作
             Host host = getWriteHost();
             try {
-                return host.getConnection(schema, autoCommit, responseHandler);
+                return host.getConnection(schema, autoCommit);
+//                return host.getConnection(schema, autoCommit, responseHandler);
             } catch (IOException e) {
                 logger.error("get connection for schema[{}] with autocommit[{}] failed", schema, autoCommit, e);
                 return null;

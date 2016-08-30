@@ -26,6 +26,9 @@ import java.util.Map;
 public class XMLSchemaLoader {
     private static final Logger logger = LoggerFactory.getLogger(XMLSchemaLoader.class);
 
+    private String dtdFile = "/schema.dtd";
+    private String schemaFile = "/schema.xml";
+
     private Map<String, SchemaConfig> schemaConfigs;
     private DataSourceConfig datasource;
 
@@ -35,8 +38,8 @@ public class XMLSchemaLoader {
     }
 
     public void load() throws IOException, SAXException, ParserConfigurationException {
-        InputStream dtd = XMLSchemaLoader.class.getResourceAsStream("/schema.dtd");
-        InputStream xml = XMLSchemaLoader.class.getResourceAsStream("/schema.xml");
+        InputStream dtd = XMLSchemaLoader.class.getResourceAsStream(dtdFile);
+        InputStream xml = XMLSchemaLoader.class.getResourceAsStream(schemaFile);
         assert dtd != null;
         assert xml != null;
 

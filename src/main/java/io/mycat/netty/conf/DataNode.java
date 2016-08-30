@@ -43,7 +43,8 @@ public class DataNode {
             // 添加balance
             Host host = dataSource.getReadHosts()[0];
             try {
-                host.getConnection(schema, autoCommit, responseHandler);
+//                host.getConnection(schema, autoCommit, responseHandler);
+                host.getConnection(schema, autoCommit);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -51,7 +52,8 @@ public class DataNode {
             // 写操作
             Host host = dataSource.getWriteHost();
             try {
-                host.getConnection(schema, autoCommit, responseHandler);
+//                host.getConnection(schema, autoCommit, responseHandler);
+                host.getConnection(schema, autoCommit);
             } catch (IOException e) {
                 e.printStackTrace();
             }
