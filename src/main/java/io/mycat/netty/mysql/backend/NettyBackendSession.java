@@ -3,6 +3,7 @@ package io.mycat.netty.mysql.backend;
 import com.sun.tools.internal.ws.wscompile.ErrorReceiver;
 import io.mycat.netty.conf.Capabilities;
 import io.mycat.netty.mysql.MySQLProtocolDecoder;
+import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.mysql.response.ResultSetPacket;
@@ -59,6 +60,8 @@ public class NettyBackendSession implements BackendSession {
     private String host;
     private int port;
 
+    private Host owner;
+
     // dirty implementation: to ensure the connection is established before server serve.
     private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -78,11 +81,22 @@ public class NettyBackendSession implements BackendSession {
         return isClosed() || isQuit.get();
     }
 
+    public void back(boolean autoCommit){
+        release();
+        owner.back(this, autoCommit);
+    }
+
+
+    public void release(){
+        this.responseHandler = null;
+    }
+
     // should invole responeHandler
     public void setOkPacket(byte[] ok) {
         this.okPacket = new OkPacket();
         this.okPacket.read(ok);
         responseHandler.okResponse(this.okPacket, this);
+
     }
 
     public void setErrorPacket(byte[] data) {

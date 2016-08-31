@@ -19,25 +19,38 @@ public class ConQueue {
     private AtomicLong executeCount = new AtomicLong(0);
 
     public NettyBackendSession takeIdleCon(boolean autoCommit) {
-        ConcurrentLinkedQueue<NettyBackendSession> f1 = autoCommitCons;
-        ConcurrentLinkedQueue<NettyBackendSession> f2 = manCommitCons;
+//        ConcurrentLinkedQueue<NettyBackendSession> f1 = autoCommitCons;
+//        ConcurrentLinkedQueue<NettyBackendSession> f2 = manCommitCons;
 
-        if (!autoCommit) {
-            f1 = manCommitCons;
-            f2 = autoCommitCons;
-
+        if(autoCommit){
+            return autoCommitCons.poll();
+        }else{
+            return manCommitCons.poll();
         }
-        NettyBackendSession con = f1.poll();
-        if (con == null || con.isClosedOrQuit()) {
-            con = f2.poll();
-        }
-        if (con == null || con.isClosedOrQuit()) {
-            return null;
-        } else {
-            return con;
-        }
-
+//        if (!autoCommit) {
+//            f1 = manCommitCons;
+//            f2 = autoCommitCons;
+//
+//        }
+//        NettyBackendSession con = f1.poll();
+//        if (con == null || con.isClosedOrQuit()) {
+//            con = f2.poll();
+//        }
+//        if (con == null || con.isClosedOrQuit()) {
+//            return null;
+//        } else {
+//            return con;
+//        }
     }
+
+    public void back(NettyBackendSession nettyBackendSession, boolean autocommit){
+        if(autocommit){
+            autoCommitCons.offer(nettyBackendSession);
+        }else{
+            manCommitCons.offer(nettyBackendSession);
+        }
+    }
+
 
     public long getExecuteCount() {
         return executeCount.get();

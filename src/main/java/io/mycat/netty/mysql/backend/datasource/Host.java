@@ -64,12 +64,15 @@ public abstract class Host {
 
     // first block get session
     public void send(String sql, ResponseHandler responseHandler, MysqlSessionContext mysqlSessionContext) throws IOException {
-        // for debug
 
         NettyBackendSession session  = this.getConnection(mysqlSessionContext.getFrontSession().getSchema(),
                 mysqlSessionContext.getFrontSession().isAutocommit());
         session.setResponseHandler(responseHandler);
-        session.sendBytes(sql.getBytes());
+        session.sendQueryCmd(sql);
+    }
+
+    public void back(NettyBackendSession session, boolean autoCommit){
+        this.conMap.getSchemaConQueue(session.getCurrentDB()).back(session, autoCommit);
     }
 
     // create connection fro dbname but with autocommit only
@@ -149,11 +152,12 @@ public abstract class Host {
 
     private NettyBackendSession markConTaken(NettyBackendSession conn, String schema) {
 
-        conn.setBorrowed(true);
+//        conn.setBorrowed(true);
         // 不用切换数据库吗?
         // TODO: add database change test
         if (!conn.getCurrentDB().equals(schema)) {
             // need do schema syn in before sql send
+            // 需要发送一次请求！
             conn.setCurrentDB(schema);
         }
         ConQueue queue = conMap.getSchemaConQueue(schema);

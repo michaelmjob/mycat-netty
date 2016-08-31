@@ -1,6 +1,7 @@
 package io.mycat.netty.router;
 
 import io.mycat.netty.mysql.backend.NettyBackendSession;
+import io.mycat.netty.mysql.backend.datasource.Host;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +22,7 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     private String dataNodeName;
     @Getter
     private String statement;
-
+    private String database;
     private int sqlType;
 
     private int limitStart;
@@ -38,20 +39,23 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     // 添加负载均衡标志
     // boolean hasBalanceFlag = ??
 
-    private NettyBackendSession backendSession;
+    @Getter
+    @Setter
+    private Host host;
+//    private NettyBackendSession backendSession;
 
 
-    public RouteResultsetNode(String dataNodeName, String statement){
+    public RouteResultsetNode(String dataNodeName, String statement, String databaseName){
         this.dataNodeName = dataNodeName;
         this.statement = statement;
-        this.sqlType = sqlType;
+        this.database = databaseName;
     }
 
     //
-    public void getBackendSession(){
+//    public void getBackendSession(){
         // get real node fro nodeName
 
-    }
+//    }
 
     @Override
     public int compare(RouteResultsetNode o1, RouteResultsetNode o2) {

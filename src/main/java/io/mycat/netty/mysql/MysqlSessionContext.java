@@ -6,6 +6,7 @@ import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.handler.MultiNodeQueryHandler;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.mysql.backend.handler.SingleNodeHandler;
+import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.proto.ERR;
 import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.ws.Response;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,9 +42,33 @@ public class MysqlSessionContext {
     }
 
     public void releaseConnections(){
-        for(RouteResultsetNode node : target.keySet()){
-            releaseConnection(node);
+        for(Map.Entry<RouteResultsetNode, NettyBackendSession> entry : target.entrySet()){
+            releaseConnection(entry);
         }
+    }
+
+    public void releaseConnection(Map.Entry<RouteResultsetNode, NettyBackendSession> entry){
+        if(!Objects.isNull(entry.getValue())){
+            // return back connection
+            entry.getKey().getHost().back(entry.getValue(), this.getFrontSession().isAutocommit());
+        }
+    }
+
+    public void send2Client(byte[] bytes){
+        this.frontSession.writeAndFlush(bytes);
+        this.releaseConnections();
+    }
+
+    public void send2Client(MySQLPacket mySQLPacket){
+        this.frontSession.writeAndFlush(mySQLPacket.getPacket());
+        this.releaseConnections();
+    }
+
+    public void closeAndClearResources(){
+        // responseHandler
+        releaseConnections();
+        target.clear();
+        // clearHandlesResources();
     }
 
     public void route(String sql, int type, SchemaConfig schema){
@@ -50,10 +76,6 @@ public class MysqlSessionContext {
         RouteResultset rrs = null;
         try {
             rrs = RouteService.route(type, sql, this);
-//                    MycatServer
-//                    .getInstance()
-//                    .getRouterservice()
-//                    .route(MycatServer.getInstance().getConfig().getSystem(),
 //                            schema, type, sql, this.charset, this);
 
         } catch (Exception e) {
@@ -75,8 +97,8 @@ public class MysqlSessionContext {
     }
 
 
-    public void getSession(RouteResultset routeResultSet){
-        for(RouteResultsetNode node : routeResultSet.getNodes()){
+    public void getSession(){
+        for(RouteResultsetNode node : rrs.getNodes()){
 
         }
     }
@@ -116,21 +138,7 @@ public class MysqlSessionContext {
 
     // 应该把 frontendSession 的功能移植到这边来
 
-    public void releaseConnection(RouteResultsetNode node){
-        NettyBackendSession session = target.remove(node);
-        if(!Objects.isNull(session)){
-            // return back connection
 
-        }
-    }
-
-    public void closeAndClearResources(){
-        for(NettyBackendSession session : target.values()){
-            // node.close(reason);
-        }
-        target.clear();
-        // clearHandlesResources();
-    }
 
     public boolean isClosed() {
         return frontSession.isClosed();

@@ -24,6 +24,8 @@ import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by snow_young on 16/8/13.
+ *
+ * session 级别的测试
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class handshakeTest {
@@ -71,12 +73,6 @@ public class handshakeTest {
 
         session.sendQueryCmd("show databases");
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
         countDownLatch.await();
         logger.info("finish connect, resultsetPacket {}", session.getResultSetPacket().getPacket());
         Assert.assertNull(session.getErrorPacket());
@@ -107,11 +103,6 @@ public class handshakeTest {
         logger.info("begin show tables");
         session.sendQueryCmd("show tables");
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
         countDownLatch.await();
         ROWOutput(session.getResultSetPacket().getRows());
@@ -127,11 +118,6 @@ public class handshakeTest {
         logger.info("begin insert table");
         session.sendQueryCmd(sql);
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
         countDownLatch.await();
         OKOutput(session.getOkPacket());
@@ -155,11 +141,6 @@ public class handshakeTest {
 
         session.sendQueryCmd("select * from mytable");
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         countDownLatch.await();
 
         ROWOutput(session.getResultSetPacket().getRows());
@@ -177,12 +158,6 @@ public class handshakeTest {
         logger.info("begin update table");
         session.sendQueryCmd(sql);
 
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
         countDownLatch.await();
 
         OKOutput(session.getOkPacket());
@@ -198,12 +173,6 @@ public class handshakeTest {
         String sql = "delete from mytable where t_title='i_title'";
 
         session.sendQueryCmd(sql);
-
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
 
         countDownLatch.await();
 

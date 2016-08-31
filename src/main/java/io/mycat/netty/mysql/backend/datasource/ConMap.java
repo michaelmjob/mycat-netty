@@ -27,6 +27,8 @@ public class ConMap {
         return queue;
     }
 
+
+
     public NettyBackendSession tryTakeCon(final String schema, boolean autoCommit) {
         final ConQueue queue = items.get(schema);
         NettyBackendSession con = tryTakeCon(queue, autoCommit);

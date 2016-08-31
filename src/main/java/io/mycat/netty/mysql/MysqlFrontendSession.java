@@ -16,6 +16,7 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.ProtocolTransport;
+import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.CharsetUtil;
 import io.mycat.netty.Session;
@@ -70,9 +71,10 @@ public class MysqlFrontendSession implements Session {
         return packet;
     }
 
-
     public void writeAndFlush(byte[] bytes){
-
+        this.transport.out.writeBytes(bytes);
+        this.ctx.writeAndFlush(this.transport.out);
+        this.transport.in.release();
     }
 
     public void writeAndFlush(ERR err){
@@ -91,6 +93,10 @@ public class MysqlFrontendSession implements Session {
         }
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
+    }
+
+    public void writeAndFlush(MySQLPacket mySQLPacket){
+        writeAndFlush(mySQLPacket.getPacket());
     }
 
     public void sendError(int errno, String msg) {

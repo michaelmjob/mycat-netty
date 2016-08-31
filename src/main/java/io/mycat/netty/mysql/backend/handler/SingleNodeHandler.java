@@ -45,7 +45,8 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
 //        int port = this.mysqlSessionContext.getFrontSession().getPort();
 //        log.error("execute  sql err : {} , con: {} from frontend: {}/{}/{}", packet.message, user,
 //          host, port);
-        this.mysqlSessionContext.getFrontSession().writeAndFlush(packet.getPacket());
+        this.mysqlSessionContext.send2Client(packet);
+
     }
 
     @Override
@@ -55,7 +56,8 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
         // TODO : check whether need to reset sequenceId
 //        packet.packetId = this.mysqlSessionContext.getFrontSession().getSequenceId();
 
-        this.mysqlSessionContext.getFrontSession().writeAndFlush(packet.getPacket());
+        this.mysqlSessionContext.send2Client(packet);
+//        this.mysqlSessionContext.getFrontSession().writeAndFlush(packet.getPacket());
 //        session.getBackendSession().sendBytes(packet.getPacket());
     }
 
@@ -63,8 +65,7 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
 
     @Override
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
-        this.mysqlSessionContext.getFrontSession().writeAndFlush(resultSetPacket.getPacket());
-//        session.getBackendSession().sendBytes(resultSetPacket.getPacket());
+        this.mysqlSessionContext.send2Client(resultSetPacket);
     }
 
     @Override
