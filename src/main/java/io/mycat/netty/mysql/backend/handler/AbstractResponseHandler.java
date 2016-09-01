@@ -15,11 +15,17 @@ public abstract class AbstractResponseHandler implements ResponseHandler{
     protected long netOutBytes;
     protected long selectRows;
     protected long affectedRows;
+    protected boolean finished;
 
     protected int fieldCount;
 
 
     public void send(){
 
+    }
+
+    @Override
+    public void setFinished(){
+        this.finished = true;
     }
 }

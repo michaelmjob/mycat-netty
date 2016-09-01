@@ -60,7 +60,7 @@ public class SessionServiceTest extends BackendTest{
 
         frontendSession.setSchema("db0");
         frontendSession.setAutocommit(true);
-        mysqlSessionContext.setFrontSession(frontendSession);
+//        mysqlSessionContext.setFrontSession(frontendSession);
     }
 
 
@@ -77,23 +77,24 @@ public class SessionServiceTest extends BackendTest{
 
         CountDownLatch countDownLatch;
         String sql;
+        String databaseName = "db0";
 
         sql = "delete from  tb0 where order_id=1";
         countDownLatch = new CountDownLatch(1);
-        host.send(sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
+        host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
 
 
         sql = "insert into tb0 values(1,1,1,'2016-01-01', '2016-01-01', 1)";
         countDownLatch = new CountDownLatch(1);
-        host.send(sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
+        host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
 
 
-        sql = "delete from  tb0 where order_id=1";
-        countDownLatch = new CountDownLatch(1);
-        host.send(sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
-        countDownLatch.await();
+//        sql = "delete from  tb0 where order_id=1";
+//        countDownLatch = new CountDownLatch(1);
+//        host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
+//        countDownLatch.await();
     }
 
 
@@ -126,6 +127,11 @@ public class SessionServiceTest extends BackendTest{
             @Override
             public void send() {
                 logger.info("send message");
+            }
+
+            @Override
+            public void setFinished() {
+
             }
         };
     }

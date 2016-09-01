@@ -28,7 +28,7 @@ public class SQLTest {
     public void update(){
         // 假设这是路由的结果
         RouteResultset nodes = new RouteResultset("update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'", MySQLPacket.COM_DEBUG);
-        RouteResultsetNode node = new RouteResultsetNode("d0", "update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'", "db0");
+        RouteResultsetNode node = new RouteResultsetNode("d0", "db0","update mytable set t_author='mysql_proxy' where t_title='mysql_proxyed'");
         RouteResultsetNode[] nodearr = new RouteResultsetNode[1];
         nodearr[0] = node;
         nodes.setNodes(nodearr);

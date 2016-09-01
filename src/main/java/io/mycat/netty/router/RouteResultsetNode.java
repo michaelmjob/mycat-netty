@@ -22,7 +22,11 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     private String dataNodeName;
     @Getter
     private String statement;
+    @Getter
     private String database;
+
+    @Getter
+    private String sql;
     private int sqlType;
 
     private int limitStart;
@@ -45,10 +49,10 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
 //    private NettyBackendSession backendSession;
 
 
-    public RouteResultsetNode(String dataNodeName, String statement, String databaseName){
+    public RouteResultsetNode(String dataNodeName, String databaseName, String sql){
         this.dataNodeName = dataNodeName;
-        this.statement = statement;
         this.database = databaseName;
+        this.sql = sql;
     }
 
     //

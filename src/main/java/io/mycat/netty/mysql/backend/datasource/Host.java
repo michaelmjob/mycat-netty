@@ -32,9 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class Host {
     private static final Logger logger = LoggerFactory.getLogger(Host.class);
 
-    // schema name,
+    //
     private String name;
-//    private String dbname;
 
     // conMap : used in other
     private ConMap conMap = new ConMap();
@@ -53,19 +52,21 @@ public abstract class Host {
     DataSourceConfig.HostConfig hostConfig;
     DataSourceConfig.DatanodeConfig datanodeConfig;
 
-    public Host(DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
+    public Host(String hostName, DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
                 boolean isReadNode){
+        this.name = hostName;
         this.hostConfig = hostConfig;
         this.datanodeConfig = dataNodeConfig;
         heartbeat = this.createHeartBeat();
-        this.name = hostConfig.getUrl();
 //        this.dbname = dbname;
     }
 
     // first block get session
-    public void send(String sql, ResponseHandler responseHandler, MysqlSessionContext mysqlSessionContext) throws IOException {
+    // whether need to split getSession and send ?
+    // too dependent on mysqlSessionContext
+    public void send(String dbname, String sql, ResponseHandler responseHandler, MysqlSessionContext mysqlSessionContext) throws IOException {
 
-        NettyBackendSession session  = this.getConnection(mysqlSessionContext.getFrontSession().getSchema(),
+        NettyBackendSession session  = this.getConnection(dbname,
                 mysqlSessionContext.getFrontSession().isAutocommit());
         session.setResponseHandler(responseHandler);
         session.sendQueryCmd(sql);
@@ -105,6 +106,11 @@ public abstract class Host {
 
                     @Override
                     public void send() {
+
+                    }
+
+                    @Override
+                    public void setFinished() {
 
                     }
                 });

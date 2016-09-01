@@ -12,9 +12,11 @@ public class MysqlDataSource extends DataSource{
 
         readHosts = new MysqlHost[datanodeConfig.getReadhost().size()];
         for(int i = 0; i < datanodeConfig.getReadhost().size(); i++){
-            readHosts[i] = new MysqlHost(datanodeConfig.getReadhost().get(i), datanodeConfig, true);
+            String hostName = datanodeConfig.getName() + "_read_" + String.valueOf(i);
+            readHosts[i] = new MysqlHost(hostName, datanodeConfig.getReadhost().get(i), datanodeConfig, true);
         }
-        writeHost = new MysqlHost(datanodeConfig.getWritehost(), datanodeConfig, false);
+        String hostName = datanodeConfig.getName() + "_write";
+        writeHost = new MysqlHost(hostName, datanodeConfig.getWritehost(), datanodeConfig, false);
     }
 
 }

@@ -18,4 +18,6 @@ public interface ResponseHandler {
     void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session);
 
     void send();
+
+    void setFinished();
 }

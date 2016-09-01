@@ -19,13 +19,13 @@ public class SessionService {
     @Getter
     private static Map<String, DataSource> dataSources;
 
-    private DataSourceConfig dataSourceConfig;
-    private SchemaConfig schemaConfig;
+    private static DataSourceConfig dataSourceConfig;
+    private static SchemaConfig schemaConfig;
 
 
 
     // ======== ============
-    public Host getSession(String datanode, boolean readOnly){
+    public static Host getSession(String datanode, boolean readOnly){
         DataSource  dataSource = dataSources.get(datanode);
         Host host;
         // TODO: 使用最少channel算法选取read

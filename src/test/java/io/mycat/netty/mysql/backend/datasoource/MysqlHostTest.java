@@ -62,7 +62,7 @@ public class MysqlHostTest {
     @Test
     public void testGetConn(){
 //        Host host = new MysqlHost(hostConfig, datanodeConfig, true, "mydb");
-        Host host = new MysqlHost(hostConfig, datanodeConfig, true);
+        Host host = new MysqlHost("mysqlhostTest", hostConfig, datanodeConfig, true);
 
         try {
             host.init("mydb");

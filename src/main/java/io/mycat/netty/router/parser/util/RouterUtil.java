@@ -74,7 +74,8 @@ public class RouterUtil {
             return rrs;
         }
         RouteResultsetNode[] nodes = new RouteResultsetNode[1];
-        nodes[0] = new RouteResultsetNode(dataNode, stmt);
+        // TODO:
+        nodes[0] = new RouteResultsetNode(dataNode, "databaseName",stmt);
         rrs.setNodes(nodes);
         rrs.setFinishedRoute(true);
 
@@ -453,7 +454,8 @@ public class RouterUtil {
         RouteResultsetNode node;
         // 封装每一个datanode
         for (TableConfig.NodeConfig dataNode : dataNodes) {
-            node = new RouteResultsetNode(dataNode.getDatanode(), stmt);
+            // TODO: ensure the database name
+            node = new RouteResultsetNode(dataNode.getDatanode(), dataNode.getDatabase(),stmt);
 //            read  write  slave master 四种类型
             if (rrs.getCanRunInReadDB() != null) {
                 node.setCanRunInReadDB(rrs.getCanRunInReadDB());
@@ -485,7 +487,8 @@ public class RouterUtil {
 
         RouteResultsetNode[] nodes = new RouteResultsetNode[1];
         // readdb slavedb => 一般来说，读写分离 注定了 read db 是slave db
-        nodes[0] = new RouteResultsetNode(dataNode, sql);
+        // TODO: ensure the database name
+        nodes[0] = new RouteResultsetNode(dataNode, "", sql);
 //        if (rrs.getCanRunInReadDB() != null) {
 //            nodes[0].setCanRunInReadDB(rrs.getCanRunInReadDB());
 //        }

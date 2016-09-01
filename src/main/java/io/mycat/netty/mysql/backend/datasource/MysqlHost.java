@@ -17,9 +17,9 @@ public class MysqlHost extends Host{
 
 //    private final MySQLConnectionFactory factory;
 
-    public MysqlHost(DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
+    public MysqlHost(String hostName, DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
                      boolean isReadNode) {
-        super(hostConfig, dataNodeConfig, isReadNode);
+        super(hostName ,hostConfig, dataNodeConfig, isReadNode);
 //        this.factory = new MySQLConnectionFactory();
     }
 

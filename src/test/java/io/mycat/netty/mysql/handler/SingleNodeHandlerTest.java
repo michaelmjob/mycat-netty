@@ -7,6 +7,7 @@ import io.mycat.netty.mysql.backend.BackendTest;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
+import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
@@ -31,6 +32,8 @@ public class SingleNodeHandlerTest extends BackendTest {
 
     private static MysqlSessionContext mysqlSessionContext;
 
+    private static MysqlFrontendSession frontendSession;
+
     @BeforeClass
     public static void beforeClass() throws IOException, SAXException, ParserConfigurationException {
         init();
@@ -41,38 +44,47 @@ public class SingleNodeHandlerTest extends BackendTest {
 
 //        frontendSession.setSchema("db0");
 //        frontendSession.setAutocommit(true);
-        MysqlFrontendSession frontendSession = Mockito.spy(MysqlFrontendSession.class);
-        Mockito.when(frontendSession.getSchema()).thenReturn("db0");
+        frontendSession = Mockito.mock(MysqlFrontendSession.class);
         Mockito.when(frontendSession.isAutocommit()).thenReturn(true);
-        Mockito.doNothing().when(frontendSession.writeAndFlush(Mockito.any()))
-        mysqlSessionContext.setFrontSession(frontendSession);
+        Mockito.doNothing().when(frontendSession).writeAndFlush(Mockito.any(MySQLPacket.class));
+
+        mysqlSessionContext = new MysqlSessionContext(frontendSession);
+//        mysqlSessionContext.setFrontSession(frontendSession);
 
 //        ResponseHandler responseHandler = Mockito.spy(ResponseHandler.class);
 //        Mockito.doNothing().when(responseHandler).okResponse(Mockito.any(OkPacket.class), Mockito.any(NettyBackendSession.class));
 
     }
 
+
+
     @Test
     public void testInsert(){
 
-        String dataNodeName= "d0";
-        String databaseName = "db0";
-        String insert = "insert into tb0 values(1,1,1,'2016-01-01', '2016-01-01', 1)";
+        // 这里隐藏着bug, 并没有检查数据库名字，而是直接发送给了 datanodeName 所在的节点
+        String dataNodeName= "d1";
+        String databaseName = "db4";
+        String insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01', 1)";
 
         // build route, ensuere host exists after route
-        RouteResultsetNode node = new RouteResultsetNode(dataNodeName, insert, databaseName);
+        RouteResultsetNode node = new RouteResultsetNode(dataNodeName, databaseName, insert);
         RouteResultsetNode[] nodeArr = new RouteResultsetNode[]{node};
         RouteResultset routeResultset = new RouteResultset();
         routeResultset.setNodes(nodeArr);
 
         // whether should live in a cycle
-        Host host = sessionService.getSession("d0", true);
-        node.setHost(host);
+//        Host host = sessionService.getSession("d0", true);
+//        node.setHost(host);
 
+        // should have a status change circle
         mysqlSessionContext.setRrs(routeResultset);
+        mysqlSessionContext.getSession();
 
+        mysqlSessionContext.send();
 //        mysqlSessionContext
 
+
+//        coun
     }
 
     @Test

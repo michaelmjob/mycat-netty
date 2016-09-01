@@ -3,7 +3,7 @@ package io.mycat.netty.mysql;
 import io.mycat.netty.ProtocolProcessException;
 import io.mycat.netty.mysql.parser.*;
 import io.mycat.netty.mysql.proto.*;
-import io.mycat.netty.mysql.respo.CharacterSet;
+import io.mycat.netty.mysql.response.CharacterSet;
 import io.mycat.netty.util.MysqlDefs;
 import io.mycat.netty.util.ResultSetUtil;
 import io.mycat.netty.util.StringUtil;

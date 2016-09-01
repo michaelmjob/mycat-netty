@@ -3,9 +3,11 @@ package io.mycat.netty.mysql;
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
+import io.mycat.netty.mysql.backend.SessionService;
 import io.mycat.netty.mysql.backend.handler.MultiNodeQueryHandler;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
 import io.mycat.netty.mysql.backend.handler.SingleNodeHandler;
+import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.proto.ERR;
 import io.mycat.netty.router.RouteResultset;
@@ -18,6 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.ws.Response;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,7 +38,9 @@ public class MysqlSessionContext {
 //    private NettyBackendSession backendSession;
     private ConcurrentHashMap<RouteResultsetNode, NettyBackendSession> target;
 
+    private String sql;
     private RouteResultset rrs;
+
 
     public MysqlSessionContext(MysqlFrontendSession frontSession){
         this.frontSession = frontSession;
@@ -92,34 +98,46 @@ public class MysqlSessionContext {
         }
         if (rrs != null) {
             // session执行
-            send(rrs, type);
+//            send();
         }
     }
 
 
+    // set Host
     public void getSession(){
         for(RouteResultsetNode node : rrs.getNodes()){
-
+            node.setHost(SessionService.getSession(node.getDataNodeName(), this.frontSession.isAutocommit()));
         }
     }
 
 
+    public void send(){
+        try {
+            send0();
+        } catch (UnsupportedEncodingException e) {
+            logger.error("should not occur this problem : {}", e);
+            this.frontSession.sendError(ErrorCode.ER_COLLATION_CHARSET_MISMATCH, "encoding not supported");
+        }
+    }
+
     // 通过 rrs 进行发送
-    public void send(RouteResultset routeResultSet, int type){
+    private void send0() throws UnsupportedEncodingException {
 
         // clear prev execute resources
 //        clearHandlesResources();
-
         // 检查路由结果是否为空
         RouteResultsetNode[] nodes = rrs.getNodes();
         if (nodes == null || nodes.length == 0) {
-            ERR err = new ERR();
+            ErrorPacket errorPacket = new ErrorPacket();
+//            ERR err = new ERR();
             String msg = "No dataNode found ,please check tables defined in schema:" + getFrontSession().getSchema();
-            err.errorCode = ErrorCode.ER_NO_DB_ERROR;
-            err.errorMessage = msg;
-            this.frontSession.writeAndFlush(err);
-
-            this.frontSession.writeAndFlush(err);
+//            err.errorCode = ErrorCode.ER_NO_DB_ERROR;
+//            err.errorMessage = msg;
+            errorPacket.errno =  ErrorCode.ER_NO_DB_ERROR;
+            errorPacket.message = msg.getBytes(this.frontSession.getCharset());
+            this.frontSession.writeAndFlush(errorPacket);
+//            this.frontSession.writeAndFlush(err);
+            // 释放host
             return;
         }
 
@@ -127,13 +145,22 @@ public class MysqlSessionContext {
 
         if (nodes.length == 1) {
             responseHandler = new SingleNodeHandler(rrs, this);
-            responseHandler.send();
-
         } else {
             boolean autocommit = getFrontSession().isAutocommit();
-            responseHandler = new MultiNodeQueryHandler(type, rrs, autocommit, this);
-            responseHandler.send();
+            responseHandler = new MultiNodeQueryHandler(rrs, autocommit, this);
         }
+
+        for(RouteResultsetNode node : rrs.getNodes()){
+            try {
+                node.getHost().send(node.getDatabase(), node.getSql(), responseHandler, this);
+            } catch (IOException e) {
+                logger.error("send sql failed");
+                responseHandler.setFinished();
+                this.frontSession.sendError(ErrorCode.ER_ERROR_ON_WRITE, "send packet to mysql error");
+                logger.error("send sql failed, set finished");
+            }
+        }
+
     }
 
     // 应该把 frontendSession 的功能移植到这边来

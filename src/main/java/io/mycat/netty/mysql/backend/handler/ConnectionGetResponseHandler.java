@@ -9,15 +9,17 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Created by snow_young on 16/8/14.
- *
+ * <p>
  * drop
  */
-public class ConnectionGetResponseHandler implements ResponseHandler{
+public class ConnectionGetResponseHandler implements ResponseHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionGetResponseHandler.class);
 
+    private boolean isFinished;
 
-    public ConnectionGetResponseHandler(){
+    public ConnectionGetResponseHandler() {
     }
+
     @Override
     public void errorResponse(ErrorPacket packet, NettyBackendSession session) {
         logger.error("connection handshake failed : {}", packet);
@@ -36,5 +38,10 @@ public class ConnectionGetResponseHandler implements ResponseHandler{
     @Override
     public void send() {
         logger.info("should not come here");
+    }
+
+    @Override
+    public void setFinished() {
+        isFinished = true;
     }
 }

@@ -40,4 +40,9 @@ public class DelegateResponseHandler implements ResponseHandler{
     public void send() {
 
     }
+
+    @Override
+    public void setFinished() {
+        target.setFinished();
+    }
 }

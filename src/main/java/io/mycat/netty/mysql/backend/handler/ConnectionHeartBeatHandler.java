@@ -19,6 +19,8 @@ public class ConnectionHeartBeatHandler implements ResponseHandler {
             .getLogger(ConnectionHeartBeatHandler.class);
     protected final ReentrantLock lock = new ReentrantLock();
     private final ConcurrentHashMap<Long, HeartBeatCon> allCons = new ConcurrentHashMap<Long, HeartBeatCon>();
+    private boolean isFinished;
+
 
     public void doHeartBeat(NettyBackendSession conn, String sql) {
         if (logger.isDebugEnabled()) {
@@ -118,6 +120,11 @@ public class ConnectionHeartBeatHandler implements ResponseHandler {
     @Override
     public void send() {
 
+    }
+
+    @Override
+    public void setFinished() {
+        this.isFinished = true;
     }
 }
 

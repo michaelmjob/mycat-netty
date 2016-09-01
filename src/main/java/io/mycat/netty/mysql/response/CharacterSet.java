@@ -1,4 +1,4 @@
-package io.mycat.netty.mysql.respo;
+package io.mycat.netty.mysql.response;
 
 import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.parser.ServerParseSet;

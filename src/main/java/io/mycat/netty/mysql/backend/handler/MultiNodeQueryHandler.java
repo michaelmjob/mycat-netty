@@ -44,7 +44,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     private AtomicInteger nodeCount;
     private AtomicBoolean fieldsRtn;
 
-    public MultiNodeQueryHandler(int sqlType, RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext){
+    public MultiNodeQueryHandler(RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext){
         super(rrs, sessionContext);
         nodeCount = new AtomicInteger(rrs.getNodes().length);
         assert !Objects.isNull(rrs.getNodes());
