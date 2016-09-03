@@ -84,7 +84,7 @@ public class SingleNodeHandlerTest extends BackendTest {
         String insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01', 1)";
         // just for test, not used in production
         String select = "select * from tb0";
-        String update = "update tb0 set begin_time=2016-04-04";
+        String update = "update tb0 set status=2";
         String delete = "delete from tb0";
 
         // build route, ensuere host exists after route
@@ -93,12 +93,13 @@ public class SingleNodeHandlerTest extends BackendTest {
         // whether should live in a cycle
         // should have a status change circle
 
+        // insert success
         testSQL(routeResultset, mySQLPacket -> {
             Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
         });
         logger.info("first one : send && receive finish");
 
-
+        // insert fail
         testSQL(routeResultset, mySQLPacket -> {
             Assert.assertTrue("insert distinct pakcet should be errPacket", mySQLPacket instanceof ErrorPacket);
         });
@@ -112,7 +113,7 @@ public class SingleNodeHandlerTest extends BackendTest {
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;
             Assert.assertEquals("tb0 field should be 6", 6, resultSetPacket.getFields().size());
             Assert.assertEquals("should only one data in db", 1, resultSetPacket.getRows().size());
-            logger.info("insert check right");
+            logger.info("insert check by select is right");
         });
 
 //        // update
@@ -121,17 +122,16 @@ public class SingleNodeHandlerTest extends BackendTest {
             Assert.assertTrue("update pakcet should return okPacket", mySQLPacket instanceof OkPacket);
             logger.info("update check right");
         });
-//
-//
-//        // delete
+
+        // delete
         routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, delete);
         testSQL(routeResultset, mySQLPacket -> {
             Assert.assertTrue("delete pakcet should return okPacket", mySQLPacket instanceof OkPacket);
             logger.info("delete check right");
         });
-//
-//        // select again
-//        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
+
+        // select again
+        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
         testSQL(routeResultset, packet -> {
             Assert.assertTrue("pakcet should be ResultsetPacket", packet instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;
