@@ -67,8 +67,8 @@ public class MysqlDataSourceTest {
         dataSource.init();
 
         for(Host host : dataSource.getAllHosts()){
-            int truesize = host.getConMap().getSchemaConQueue("mydb").getConnQueue(true).size();
-            int falsesize = host.getConMap().getSchemaConQueue("mydb").getConnQueue(false).size();
+            int truesize = host.connectionSize("mydb", true);
+            int falsesize = host.connectionSize("mydb", false);
             logger.info("true size : {}", truesize);
             logger.info("false size : {}", falsesize);
             Assert.assertEquals(10, truesize);

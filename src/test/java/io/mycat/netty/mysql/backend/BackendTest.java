@@ -35,9 +35,12 @@ public class BackendTest {
         sessionService.load_datasource(schemaLoader.getDatasource(), schemaLoader.getSchemaConfigs().values());
         sessionService.init_datasource();
 
-        checkConsistency(SessionService.getDataSources().get("d0"), "db0",2);
-        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 2);
+//        checkConsistency(SessionService.getDataSources().get("d0"), "db0",2);
+//        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 2);
 
+        // after refactor, the db conn session is shared.
+        checkConsistency(SessionService.getDataSources().get("d0"), "db0",6);
+        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 8);
         // logic
         System.out.println(" ============ ");
         System.out.println(" ============ ");
@@ -53,8 +56,8 @@ public class BackendTest {
 
     private static void checkConsistency(DataSource dataSource, String dbname, int size){
         for(Host host : dataSource.getAllHosts()){
-            int truesize = host.getConMap().getSchemaConQueue(dbname).getConnQueue(true).size();
-            int falsesize = host.getConMap().getSchemaConQueue(dbname).getConnQueue(false).size();
+            int truesize = host.connectionSize(dbname, true);
+            int falsesize = host.connectionSize(dbname, false);
             logger.info(" true size : {}", truesize);
             logger.info(" false size : {}", falsesize);
             junit.framework.Assert.assertEquals(size, truesize);

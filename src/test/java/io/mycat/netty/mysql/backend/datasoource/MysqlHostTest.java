@@ -72,7 +72,7 @@ public class MysqlHostTest {
         }
 
         // should ensure all connection is finished
-        int size = host.getConMap().getSchemaConQueue("mydb").getConnQueue(true).size();
+        int size = host.connectionSize("mydb", true);
 
         logger.info("host size  : {}", size);
         Assert.assertEquals(10, size);

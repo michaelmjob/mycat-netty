@@ -19,10 +19,8 @@ public class SessionService {
     @Getter
     private static Map<String, DataSource> dataSources;
 
-    private static DataSourceConfig dataSourceConfig;
-    private static SchemaConfig schemaConfig;
-
-
+//    private static DataSourceConfig dataSourceConfig;
+//    private static SchemaConfig schemaConfig;
 
     // ======== ============
     public static Host getSession(String datanode, boolean readOnly){

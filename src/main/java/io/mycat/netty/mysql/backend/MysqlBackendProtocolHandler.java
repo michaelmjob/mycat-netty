@@ -5,6 +5,7 @@ import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.packet.ResultSetHeaderPacket;
 import io.mycat.netty.mysql.packet.RowDataPacket;
 import io.mycat.netty.mysql.proto.Packet;
+import io.mycat.netty.mysql.response.ErrorCode;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,6 +62,14 @@ public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
         logger.info("finish channel write");
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.errno = ErrorCode.ER_ERROR_ON_READ;
+        errorPacket.message = "backend connection error occurred".getBytes();
+        this.session.setErrorPacket(errorPacket);
+        ctx.fireExceptionCaught(cause);
+    }
     @Override
     public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
         logger.info("channel inactive");

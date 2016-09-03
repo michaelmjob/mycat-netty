@@ -46,7 +46,6 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
 //        log.error("execute  sql err : {} , con: {} from frontend: {}/{}/{}", packet.message, user,
 //          host, port);
         this.mysqlSessionContext.send2Client(packet);
-
     }
 
     @Override
@@ -66,6 +65,7 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
     @Override
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
         this.mysqlSessionContext.send2Client(resultSetPacket);
+//        super.resultsetResponse(resultSetPacket, session);
     }
 
     @Override

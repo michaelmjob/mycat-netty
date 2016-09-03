@@ -43,11 +43,13 @@ public class ConQueue {
 //        }
     }
 
-    public void back(NettyBackendSession nettyBackendSession, boolean autocommit){
-        if(autocommit){
-            autoCommitCons.offer(nettyBackendSession);
+    public void back(NettyBackendSession nettyBackendSession){
+        if(nettyBackendSession.isAutocommit()){
+//            autoCommitCons.offer(nettyBackendSession);
+            autoCommitCons.add(nettyBackendSession);
         }else{
-            manCommitCons.offer(nettyBackendSession);
+//            manCommitCons.offer(nettyBackendSession);
+            manCommitCons.add(nettyBackendSession);
         }
     }
 

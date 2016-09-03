@@ -46,7 +46,7 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
     @Getter
     @Setter
     private Host host;
-//    private NettyBackendSession backendSession;
+
 
 
     public RouteResultsetNode(String dataNodeName, String databaseName, String sql){
@@ -54,12 +54,6 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
         this.database = databaseName;
         this.sql = sql;
     }
-
-    //
-//    public void getBackendSession(){
-        // get real node fro nodeName
-
-//    }
 
     @Override
     public int compare(RouteResultsetNode o1, RouteResultsetNode o2) {

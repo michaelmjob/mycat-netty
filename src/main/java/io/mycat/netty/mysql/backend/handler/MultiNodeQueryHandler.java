@@ -132,7 +132,8 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
         if(decrementCountBy()){
             if(this.sessionContext.getFrontSession().isAutocommit()){
                 // TODO: add rollback action
-                sessionContext.releaseConnections();
+//                sessionContext.releaseConnections();
+                sessionContext.cleanBackendInfo();
             }
 
             if(this.isFailed() || sessionContext.isClosed()){
@@ -159,7 +160,8 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     protected void tryErrorFinished(){
         if(!sessionContext.isClosed()){
             if(sessionContext.getFrontSession().isAutocommit()){
-                sessionContext.closeAndClearResources();
+//                sessionContext.closeAndClearResources();
+                sessionContext.cleanBackendInfo();
             }else{
                 // 非自动提交的处理
             }

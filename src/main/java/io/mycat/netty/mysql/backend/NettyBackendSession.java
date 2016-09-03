@@ -16,7 +16,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +51,8 @@ public class NettyBackendSession implements BackendSession {
     private long connectionId;
     protected int packetHeaderSize;
     protected int maxPacketSize;
-    protected volatile String charset;
-    protected volatile int charsetIndex;
+    protected volatile String charset = "utf8";
+    protected volatile int charsetIndex = 33;
     private HandshakePacket handshake;
 
     private String userName;
@@ -62,8 +64,14 @@ public class NettyBackendSession implements BackendSession {
 
     private Host owner;
 
+    private boolean autocommit;
+
     // dirty implementation: to ensure the connection is established before server serve.
-    private final CountDownLatch countDownLatch = new CountDownLatch(1);
+    @Setter
+    @Getter
+    private CountDownLatch countDownLatch ;
+
+    private long sessionId;
 
     private volatile long since = System.currentTimeMillis();
 
@@ -81,9 +89,11 @@ public class NettyBackendSession implements BackendSession {
         return isClosed() || isQuit.get();
     }
 
-    public void back(boolean autoCommit){
-        release();
-        owner.back(this, autoCommit);
+    // session not remove originaly, dependent on Host
+    public void back(){
+//        ???!! bug
+//        release();
+        owner.back(sessionId);
     }
 
 
@@ -96,13 +106,19 @@ public class NettyBackendSession implements BackendSession {
         this.okPacket = new OkPacket();
         this.okPacket.read(ok);
         responseHandler.okResponse(this.okPacket, this);
-
+        this.back();
     }
 
     public void setErrorPacket(byte[] data) {
         this.errorPacket = new ErrorPacket();
         this.errorPacket.read(data);
         responseHandler.errorResponse(this.errorPacket, this);
+        this.back();
+    }
+
+    public void setErrorPacket(ErrorPacket errorPacket){
+        responseHandler.errorResponse(errorPacket, this);
+        this.back();
     }
 
     public NettyBackendSession(String host, int port) {
@@ -122,6 +138,7 @@ public class NettyBackendSession implements BackendSession {
             logger.info("wait countDownLatch");
             this.countDownLatch.await(loginTimeout, TimeUnit.MILLISECONDS);
             logger.info("wait countDownLatch success");
+//            this.countDownLatch.getCount()
             return true;
         } catch (InterruptedException e) {
             logger.error("connect error : wait channel interrupted", e);
@@ -197,6 +214,7 @@ public class NettyBackendSession implements BackendSession {
 
     // what aboud init and create!!
     public boolean initConnect() {
+        countDownLatch = new CountDownLatch(1);
         Bootstrap b = new Bootstrap();
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .option(ChannelOption.TCP_NODELAY, true)

@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by snow_young on 16/8/14.
@@ -18,6 +19,9 @@ public class ConMap {
     private final ConcurrentHashMap<String, ConQueue> items = new ConcurrentHashMap<String, ConQueue>();
     private final Map<String, AtomicInteger> hostsActiveCount = new ConcurrentHashMap<>();
 
+    // sessionIdTag for each session created on proxy
+    private AtomicLong sessionIdTag = new AtomicLong(0l);
+
     public ConQueue getSchemaConQueue(String schema) {
         ConQueue queue = items.get(schema);
         if (queue == null) {
@@ -29,22 +33,13 @@ public class ConMap {
     }
 
 
-
-    public NettyBackendSession tryTakeCon(final String schema, boolean autoCommit) {
+    public NettyBackendSession tryTakeCon(final String host, final String schema, boolean autoCommit) {
         final ConQueue queue = items.get(schema);
         NettyBackendSession con = tryTakeCon(queue, autoCommit);
         if (con != null) {
+            hostsActiveCount.get(host).getAndIncrement();
+            queue.incExecuteCount();
             return con;
-        } else {
-//            这样无法保证后端 Host 对象的 databaseName
-//            for (ConQueue queue2 : items.values()) {
-//                if (queue != queue2) {
-//                    con = tryTakeCon(queue2, autoCommit);
-//                    if (con != null) {
-//                        return con;
-//                    }
-//                }
-//            }
         }
         return null;
     }
@@ -53,10 +48,8 @@ public class ConMap {
         NettyBackendSession con = null;
         if (queue != null && ((con = queue.takeIdleCon(autoCommit)) != null)) {
             return con;
-        } else {
-            return null;
         }
-
+        return null;
     }
 
     public Collection<ConQueue> getAllConQueue() {
@@ -68,28 +61,38 @@ public class ConMap {
     public int getActiveCountForSchema(String schema, Host host, boolean autoCommit) {
         int total = 0;
 
-        for(NettyBackendSession session : items.get(schema).getConnQueue(autoCommit)){
+        for (NettyBackendSession session : items.get(schema).getConnQueue(autoCommit)) {
 //            if(session.getHost().equals(host))
         }
         return total;
     }
 
     public int getActiveCount4Host(Host host) {
-        
+        // TODO: init && null solve here
         return hostsActiveCount.get(host.getName()).get();
-//        return (int)items.get(host.getName()).getExecuteCount();
     }
 
-    public void decreaseActiveCount4Host(Host host){
+    public void put(String host, String db, NettyBackendSession session) {
+        session.setSessionId(sessionIdTag.getAndIncrement());
+        getSchemaConQueue(db).getConnQueue(session.isAutocommit()).add(session);
+        hostsActiveCount.put(host, new AtomicInteger());
+    }
+
+    public void back(NettyBackendSession session) {
+        getSchemaConQueue(session.getCurrentDB()).back(session);
+        // owner is null
+        hostsActiveCount.get(session.getOwner().getName()).decrementAndGet();
+    }
+
+    public void decreaseActiveCount4Host(Host host) {
         this.hostsActiveCount.get(host.getName()).decrementAndGet();
     }
 
-    public void addActiveCount4Host(Host host){
-        this.hostsActiveCount.get(host.getName()).addAndGet(1) ;
+    public void addActiveCount4Host(Host host) {
+        this.hostsActiveCount.get(host.getName()).addAndGet(1);
     }
 
     public void clearConnections(String reason, Host host) {
-
         items.clear();
     }
 }

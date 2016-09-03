@@ -1,7 +1,6 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.NettyBackendSession;
 import io.mycat.netty.mysql.backend.SessionService;
 import io.mycat.netty.mysql.backend.handler.MultiNodeQueryHandler;
@@ -14,20 +13,22 @@ import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
 import io.mycat.netty.router.RouteService;
 import io.mycat.netty.util.ErrorCode;
-import io.netty.buffer.ByteBuf;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.ws.Response;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by snow_young on 16/8/13.
+ * four step :
+ *  getSession : push host to routeResultsetNode
+ *  send : send by host [host need get session and then send]
  */
 @Data
 public class MysqlSessionContext {
@@ -35,8 +36,6 @@ public class MysqlSessionContext {
 
     // session interface should ultilize
     private MysqlFrontendSession frontSession;
-//    private NettyBackendSession backendSession;
-    private ConcurrentHashMap<RouteResultsetNode, NettyBackendSession> target;
 
     private String sql;
     private RouteResultset rrs;
@@ -44,38 +43,34 @@ public class MysqlSessionContext {
 
     public MysqlSessionContext(MysqlFrontendSession frontSession){
         this.frontSession = frontSession;
-        this.target = new ConcurrentHashMap<RouteResultsetNode, NettyBackendSession>(2, 0.75f);
     }
 
-    public void releaseConnections(){
-        for(Map.Entry<RouteResultsetNode, NettyBackendSession> entry : target.entrySet()){
-            releaseConnection(entry);
-        }
+    private void releaseBackendConnections(){
+        this.rrs = null;
     }
 
-    public void releaseConnection(Map.Entry<RouteResultsetNode, NettyBackendSession> entry){
-        if(!Objects.isNull(entry.getValue())){
-            // return back connection
-            entry.getKey().getHost().back(entry.getValue(), this.getFrontSession().isAutocommit());
-        }
-    }
 
     public void send2Client(byte[] bytes){
         this.frontSession.writeAndFlush(bytes);
-        this.releaseConnections();
+        this.releaseBackendConnections();
     }
 
     public void send2Client(MySQLPacket mySQLPacket){
-        this.frontSession.writeAndFlush(mySQLPacket.getPacket());
-        this.releaseConnections();
+        try {
+            this.frontSession.writeAndFlush(mySQLPacket.getPacket());
+            logger.info("send 2 client");
+        }catch (Exception e){
+            logger.error("proto parse fail", e);
+        }
+        this.releaseBackendConnections();
     }
 
-    public void closeAndClearResources(){
+    public void cleanBackendInfo(){
         // responseHandler
-        releaseConnections();
-        target.clear();
-        // clearHandlesResources();
+        releaseBackendConnections();
+//        target.clear();
     }
+
 
     public void route(String sql, int type, SchemaConfig schema){
         // 路由计算
@@ -123,20 +118,14 @@ public class MysqlSessionContext {
     // 通过 rrs 进行发送
     private void send0() throws UnsupportedEncodingException {
 
-        // clear prev execute resources
-//        clearHandlesResources();
         // 检查路由结果是否为空
         RouteResultsetNode[] nodes = rrs.getNodes();
         if (nodes == null || nodes.length == 0) {
             ErrorPacket errorPacket = new ErrorPacket();
-//            ERR err = new ERR();
             String msg = "No dataNode found ,please check tables defined in schema:" + getFrontSession().getSchema();
-//            err.errorCode = ErrorCode.ER_NO_DB_ERROR;
-//            err.errorMessage = msg;
             errorPacket.errno =  ErrorCode.ER_NO_DB_ERROR;
             errorPacket.message = msg.getBytes(this.frontSession.getCharset());
             this.frontSession.writeAndFlush(errorPacket);
-//            this.frontSession.writeAndFlush(err);
             // 释放host
             return;
         }

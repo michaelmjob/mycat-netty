@@ -52,7 +52,7 @@ public class handshakeTest {
         session.initConnect();
 
         // for other operation
-        session.setCharset("utf8");
+//        session.setCharset("utf8");
 
     }
 

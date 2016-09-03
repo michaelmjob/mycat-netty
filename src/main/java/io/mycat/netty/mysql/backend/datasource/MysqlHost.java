@@ -30,6 +30,7 @@ public class MysqlHost extends Host{
         // 创建连接
         NettyBackendSession session = new NettyBackendSession();
 
+        session.setAutocommit(autocommit);
         session.setResponseHandler(responseHandler);
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
@@ -54,10 +55,6 @@ public class MysqlHost extends Host{
         return null;
     }
 
-//    @Override
-//    public void createNewConnection(ResponseHandler handler,String schema) throws IOException {
-//        factory.make(this, handler,schema);
-//    }
 
     @Override
     public DBHeartbeat createHeartBeat() {

@@ -1,9 +1,12 @@
 package io.mycat.netty.mysql.packet;
 
 import io.mycat.netty.mysql.proto.Proto;
+import io.mycat.netty.router.parser.util.ObjectUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * Created by snow_young on 16/8/12.
@@ -88,21 +91,24 @@ public class OkPacket extends MySQLPacket{
         offset += insertIdBytes.length;
 
 
-        System.arraycopy(Proto.build_fixed_int(serverStatus, 2), 0, packet, offset, 2);
+//        System.arraycopy(Proto.build_fixed_int(serverStatus, 2), 0, packet, offset, 2);
+        System.arraycopy(Proto.build_fixed_int(2, serverStatus), 0, packet, offset, 2);
         offset += 2;
 
 
-        System.arraycopy(Proto.build_fixed_int(warningCount, 2), 0, packet, offset, 2);
+        System.arraycopy(Proto.build_fixed_int(2, warningCount), 0, packet, offset, 2);
         offset += 2;
 
 //        int size =
-        byte[] len = Proto.build_lenenc_int(message.length);
-        System.arraycopy(len, 0, packet, offset, len.length);
-        offset += len.length;
-        System.arraycopy(message, 0, packet, offset, message.length);
-        offset += message.length;
+        if(!Objects.isNull(message)) {
+            byte[] len = Proto.build_lenenc_int(message.length);
+            System.arraycopy(len, 0, packet, offset, len.length);
+            offset += len.length;
+            System.arraycopy(message, 0, packet, offset, message.length);
+            offset += message.length;
+        }
 
-        logger.info("ErrPacket array : {} ", packet);
+        logger.info("OKPacket array : {} ", packet);
         logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
     }

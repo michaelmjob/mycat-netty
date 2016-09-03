@@ -33,11 +33,11 @@ public class ConfigurationTest {
 
     private void checkConsistency(DataSource dataSource, String dbname, int size){
         for(Host host : dataSource.getAllHosts()){
-            int d0truesize = host.getConMap().getSchemaConQueue("db0").getConnQueue(true).size();
-            int d0falsesize = host.getConMap().getSchemaConQueue("db0").getConnQueue(false).size();
-            int d1truesize = host.getConMap().getSchemaConQueue("db1").getConnQueue(true).size();
-            int d1falsesize = host.getConMap().getSchemaConQueue("db1").getConnQueue(false).size();
-            int checksize = host.getConMap().getSchemaConQueue(dbname).getConnQueue(true).size();
+            int d0truesize = host.connectionSize("db0", true);
+            int d0falsesize = host.connectionSize("db0", false);
+            int d1truesize = host.connectionSize("db1", true);
+            int d1falsesize = host.connectionSize("db1", false);
+            int checksize = host.connectionSize(dbname, true);
             logger.info("db0 true size : {}", d0truesize);
             logger.info("db0 false size : {}", d0falsesize);
             logger.info("db1 true size : {}", d1truesize);

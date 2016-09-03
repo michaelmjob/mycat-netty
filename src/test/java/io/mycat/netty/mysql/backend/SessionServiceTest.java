@@ -90,21 +90,16 @@ public class SessionServiceTest extends BackendTest{
         host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
 
-
-//        sql = "delete from  tb0 where order_id=1";
-//        countDownLatch = new CountDownLatch(1);
-//        host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
-//        countDownLatch.await();
     }
 
-
+    // ??
     public ResponseHandler getResponseHandler(CountDownLatch countDownLatch, Host host){
         return new ResponseHandler() {
             @Override
             public void errorResponse(ErrorPacket packet, NettyBackendSession session) {
                 logger.info("error Response  : {}", new String(packet.message));
                 Assert.assertFalse(true);
-                host.back(session, true);
+                host.back(session);
                 countDownLatch.countDown();
             }
 
@@ -112,7 +107,7 @@ public class SessionServiceTest extends BackendTest{
             public void okResponse(OkPacket packet, NettyBackendSession session) {
                 logger.info("ok Response  : {}", packet.affectedRows);
                 // return session
-                host.back(session, true);
+                host.back(session);
                 countDownLatch.countDown();
             }
 
@@ -120,7 +115,7 @@ public class SessionServiceTest extends BackendTest{
             public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
                 logger.info("result Response  : {}", resultSetPacket.getRows());
                 Assert.assertFalse(true);
-                host.back(session, true);
+                host.back(session);
                 countDownLatch.countDown();
             }
 
@@ -139,8 +134,8 @@ public class SessionServiceTest extends BackendTest{
 
     private static void checkConsistency(DataSource dataSource, String dbname, int size){
         for(Host host : dataSource.getAllHosts()){
-            int truesize = host.getConMap().getSchemaConQueue(dbname).getConnQueue(true).size();
-            int falsesize = host.getConMap().getSchemaConQueue(dbname).getConnQueue(false).size();
+            int truesize = host.connectionSize(dbname, true);
+            int falsesize = host.connectionSize(dbname, false);
             logger.info(" true size : {}", truesize);
             logger.info(" false size : {}", falsesize);
             junit.framework.Assert.assertEquals(size, truesize);
