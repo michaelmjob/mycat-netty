@@ -31,7 +31,7 @@
                 <property name="partitionKey">order_id</property>
                 <!--<property name="count">2</property>-->
                 <!--<property name="length">512</property>-->
-                <property name="count">3</property>
+                <property name="count">2</property>
             </partition>
 
             <datasource>
@@ -97,6 +97,5 @@
         <readhost url="localhost:3306" user="root" password="xujianhai" weight="1"/>
         <heartbeat>select user()</heartbeat>
     </datanode>
-
 
 </guard:schema>

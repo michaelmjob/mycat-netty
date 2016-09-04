@@ -11,6 +11,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.html.parser.DTD;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,8 +27,11 @@ import java.util.Map;
 public class XMLSchemaLoader {
     private static final Logger logger = LoggerFactory.getLogger(XMLSchemaLoader.class);
 
-    private String dtdFile = "/schema.dtd";
-    private String schemaFile = "/schema.xml";
+    private static final String DTDFILE = "/schema.dtd";
+    private static final String SCHEMAFILE = "/schema.xml";
+
+    private String dtdFile = DTDFILE;
+    private String schemaFile = SCHEMAFILE;
 
     private Map<String, SchemaConfig> schemaConfigs;
     private DataSourceConfig datasource;

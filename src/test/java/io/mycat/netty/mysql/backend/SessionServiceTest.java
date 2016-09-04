@@ -60,7 +60,6 @@ public class SessionServiceTest extends BackendTest{
 
         frontendSession.setSchema("db0");
         frontendSession.setAutocommit(true);
-//        mysqlSessionContext.setFrontSession(frontendSession);
     }
 
 
