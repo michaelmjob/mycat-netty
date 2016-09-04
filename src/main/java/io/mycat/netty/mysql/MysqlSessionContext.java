@@ -36,6 +36,8 @@ public class MysqlSessionContext {
 
     // session interface should ultilize
     private MysqlFrontendSession frontSession;
+//    private NettyBackendSession backendSession;
+//    private ConcurrentHashMap<RouteResultsetNode, NettyBackendSession> target;
 
     private String sql;
     private RouteResultset rrs;
@@ -43,12 +45,21 @@ public class MysqlSessionContext {
 
     public MysqlSessionContext(MysqlFrontendSession frontSession){
         this.frontSession = frontSession;
+//        this.target = new ConcurrentHashMap<RouteResultsetNode, NettyBackendSession>(2, 0.75f);
     }
 
     private void releaseBackendConnections(){
         this.rrs = null;
     }
 
+//    public void releaseConnection(Map.Entry<RouteResultsetNode, NettyBackendSession> entry){
+//        if(!Objects.isNull(entry.getValue())){
+//            // return back connection
+//            entry.getValue().setResponseHandler(null);
+//            entry.getKey().getHost().back(entry.getValue(), this.getFrontSession().isAutocommit());
+//
+//        }
+//    }
 
     public void send2Client(byte[] bytes){
         this.frontSession.writeAndFlush(bytes);
@@ -125,7 +136,8 @@ public class MysqlSessionContext {
             String msg = "No dataNode found ,please check tables defined in schema:" + getFrontSession().getSchema();
             errorPacket.errno =  ErrorCode.ER_NO_DB_ERROR;
             errorPacket.message = msg.getBytes(this.frontSession.getCharset());
-            this.frontSession.writeAndFlush(errorPacket);
+//            this.frontSession.writeAndFlush(errorPacket);
+            send2Client(errorPacket);
             // 释放host
             return;
         }

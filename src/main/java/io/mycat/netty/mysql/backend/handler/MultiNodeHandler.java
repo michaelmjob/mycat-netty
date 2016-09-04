@@ -20,10 +20,11 @@ public abstract class MultiNodeHandler extends AbstractResponseHandler implement
 
     protected final ReentrantLock lock = new ReentrantLock();
     protected AtomicBoolean isFailed = new AtomicBoolean(false);
+    // move 2 abs
     protected MysqlSessionContext mysqlSessionContext;
     protected byte packetId;
     protected final AtomicBoolean errorRepsponsed = new AtomicBoolean(false);
-    protected volatile String error;
+    protected volatile StringBuilder errorMsg;
     protected RouteResultset rrs;
 
     public MultiNodeHandler(RouteResultset rrs, MysqlSessionContext mysqlSessionContext){
@@ -35,18 +36,4 @@ public abstract class MultiNodeHandler extends AbstractResponseHandler implement
         return isFailed.get();
     }
 
-//    @Override
-//    public void errorResponse(ErrorPacket packet, MysqlSessionContext session) {
-//
-//    }
-//
-//    @Override
-//    public void okResponse(OkPacket packet, MysqlSessionContext session) {
-//
-//    }
-//
-//    @Override
-//    public void resultsetResponse(ResultSetPacket resultSetPacket, MysqlSessionContext session) {
-//
-//    }
 }

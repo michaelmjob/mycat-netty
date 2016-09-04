@@ -19,39 +19,49 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by snow_young on 16/8/13.
+ * <p>
+ * <p>
+ * instruction :
+ * normal :
+ * 聚合行为
+ * ok ->
+ * err ->
+ * resultSetResponse ->
+ * abnormal :
+ * 存在一个errResponse:
+ * 纪录错误，全部都结束的时候，输出错误的结果,
+ * TODO: host geli : 熔断限流机制
  */
-public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseHandler{
+public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseHandler {
     private static final Logger logger = LoggerFactory.getLogger(MultiNodeQueryHandler.class);
 
     private boolean prepared;
-    protected byte packetId;
 
     private int selectedRows;
-
-    private MysqlSessionContext sessionContext;
 
     // should be modifield : update/insert/delete no resultsetpacket
     // select resultsetpacket
     private OkPacket ok = new OkPacket();
-    private ErrorPacket error = new ErrorPacket();
     private ResultSetPacket result = new ResultSetPacket();
 
     // limit N,M
     private int limitStart;
     private int limitSize;
-    private int end ;
+    private int end;
 
     private AtomicInteger nodeCount;
     private AtomicBoolean fieldsRtn;
 
-    public MultiNodeQueryHandler(RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext){
+    // TODO: add limit support.
+    // remove autoCommit
+    public MultiNodeQueryHandler(RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext) {
         super(rrs, sessionContext);
         nodeCount = new AtomicInteger(rrs.getNodes().length);
         assert !Objects.isNull(rrs.getNodes());
 
         this.limitSize = rrs.getLimitSize();
         this.limitStart = rrs.getLimitStart();
-        this.end  = rrs.getLimitStart() + rrs.getLimitSize();
+        this.end = rrs.getLimitStart() + rrs.getLimitSize();
 
         // do this in netty
 //        if (this.limitStart < 0)
@@ -64,38 +74,41 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
 //            LOGGER.debug("has data merge logic ");
 //        }
 
-
     }
 
+    // 有一个错误就都是错误？
+    //  先定义失败，然后等待所有的响应，后面一起响应：使用错误的结果，可是怎么回滚呢？
+    //  which err
     @Override
     public void errorResponse(ErrorPacket packet, NettyBackendSession session) {
         // can be stoppped about other session
-        isFailed.compareAndSet(false , true);
-        error = packet;
-        // 		LOGGER.warn("error response from " + conn + " err " + errmsg + " code:"
-//        + err.errno);
+        lock.lock();
+        if (!isFailed()) {
+            isFailed.set(true);
+            errorMsg = new StringBuilder();
+//            errorMsg.append(packet.message);
+//            errorMsg.append(new String(packet.message));
+            errorMsg.append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
+        } else {
+//            errorMsg.append(packet.message).append(";");
+            errorMsg.append(";").append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
+        }
+        lock.unlock();
+        // 多个错误的处理情况
+        logger.warn("error response from {} err: {} code :{}", session.getCurrentDB(), new String(packet.message), packet.errno);
         tryErrorFinished(decrementCountBy());
     }
 
+    // 统一的错误处理行为
     protected void tryErrorFinished(boolean allEnd) {
         if (allEnd) {
-            //
-            if (errorRepsponsed.compareAndSet(false, true)) {
-                this.sessionContext.getFrontSession().writeAndFlush(createErrPkg("multi node failed").getPacket());
-            }
-            // clear session resources,release all
-//            if (session.getSource().isAutocommit()) {
-//                session.closeAndClearResources(error);
-//            } else {
-//                session.getSource().setTxInterrupt(this.error);
-//                 clear resouces
-//                clearResources();
-//            }
+            errorFinished();
         }
     }
 
     // refactor : obvious code
     protected ErrorPacket createErrPkg(String errmgs) {
+        logger.error("create error message for {}", errmgs);
         ErrorPacket err = new ErrorPacket();
         lock.lock();
         try {
@@ -104,10 +117,9 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
             lock.unlock();
         }
         err.errno = ErrorCode.ER_UNKNOWN_ERROR;
-        err.message = StringUtil.encode(errmgs, this.sessionContext.getFrontSession().getCharset());
+        err.message = StringUtil.encode(errmgs, this.mysqlSessionContext.getFrontSession().getCharset());
         return err;
     }
-
 
 
     // TODO: add whther need to deal with data to all responseHandler
@@ -122,59 +134,55 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
             if (packet.insertId > 0) {
                 ok.insertId = (ok.insertId == 0) ? packet.insertId : Math.min(ok.insertId, packet.insertId);
             }
-        }finally{
+        } finally {
             lock.unlock();
         }
 
         // ahout auto commit  implementation?
-        // 判是否是最后一个包
+        // 判是否是最后一个包,
         // TODO: 添加autocommit 支持
-        if(decrementCountBy()){
-            if(this.sessionContext.getFrontSession().isAutocommit()){
+        if (decrementCountBy()) {
+            logger.info("prepare to send");
+            if (this.mysqlSessionContext.getFrontSession().isAutocommit()) {
                 // TODO: add rollback action
-//                sessionContext.releaseConnections();
-                sessionContext.cleanBackendInfo();
+                mysqlSessionContext.cleanBackendInfo();
             }
 
-            if(this.isFailed() || sessionContext.isClosed()){
-                tryErrorFinished();
+            // 错误处理
+            if (this.isFailed() || mysqlSessionContext.isClosed()) {
+                errorFinished();
                 return;
             }
 
             lock.lock();
-            try{
+            try {
                 ok.packetId = ++packetId;
-                ok.serverStatus = sessionContext.getFrontSession().isAutocommit() ? 2 : 1;
-
-                sessionContext.getFrontSession().writeAndFlush(ok.getPacket());
-
-            }finally{
+                ok.serverStatus = mysqlSessionContext.getFrontSession().isAutocommit() ? 2 : 1;
+                mysqlSessionContext.send2Client(ok);
+            } finally {
                 lock.unlock();
             }
-
         }
-
     }
 
     // 处理失败的异常
-    protected void tryErrorFinished(){
-        if(!sessionContext.isClosed()){
-            if(sessionContext.getFrontSession().isAutocommit()){
-//                sessionContext.closeAndClearResources();
-                sessionContext.cleanBackendInfo();
-            }else{
-                // 非自动提交的处理
-            }
+    // 可能前端已经关闭了，或者 某一个返回异常
+    // strange: how to define one of abnormal condition
+    protected void errorFinished() {
+//        logger.error("multi node error : {}", errorMsg);
+        logger.error("multi node error : {}", errorMsg.toString());
+        if (!mysqlSessionContext.isClosed()) {
+            this.mysqlSessionContext.send2Client(createErrPkg(errorMsg.toString()));
         }
     }
 
 
-    protected boolean decrementCountBy(){
+    private boolean decrementCountBy() {
         // TODO: ADD zero callback
         lock.lock();
-        try{
+        try {
             return nodeCount.decrementAndGet() == 0;
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
@@ -183,37 +191,37 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     // just flush row data
     @Override
     public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
-        if(isFailed.get()){
+        if (isFailed.get()) {
             return;
         }
 
         lock.lock();
-        try{
-            if(!fieldsRtn.get()){
+        try {
+            if (!fieldsRtn.get()) {
                 ResultSetHeaderPacket resultSetHeaderPacket = resultSetPacket.getHeader();
                 List<FieldPacket> fieldsPacket = resultSetPacket.getFields();
                 this.mysqlSessionContext.getFrontSession().writeAndFlush(resultSetHeaderPacket.getPacket());
-                for(FieldPacket fieldPacket : fieldsPacket) {
+                for (FieldPacket fieldPacket : fieldsPacket) {
                     this.mysqlSessionContext.getFrontSession().writeAndFlush(fieldPacket.getPacket());
                 }
                 fieldsRtn.compareAndSet(false, true);
             }
 
-            this.selectedRows ++;
-            for(RowDataPacket rowDataPacket : resultSetPacket.getRows()){
-                rowDataPacket.packetId = ++ packetId;
+            this.selectedRows++;
+            for (RowDataPacket rowDataPacket : resultSetPacket.getRows()) {
+                rowDataPacket.packetId = ++packetId;
                 this.mysqlSessionContext.getFrontSession().writeAndFlush(rowDataPacket.getPacket());
             }
 
-        }finally {
+        } finally {
             lock.unlock();
         }
 
         // check result
-        if(decrementCountBy()){
-            if(this.mysqlSessionContext.getFrontSession().isAutocommit()){
+        if (decrementCountBy()) {
+            if (this.mysqlSessionContext.getFrontSession().isAutocommit()) {
 //                this.mysqlSessionContext.getFrontSession()
-            }else{
+            } else {
 
             }
 
@@ -223,7 +231,4 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
         }
         // TODO: 不太理解查询结果派发相关的逻辑
     }
-
-
-
 }

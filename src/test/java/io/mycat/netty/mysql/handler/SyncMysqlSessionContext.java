@@ -12,14 +12,14 @@ import java.util.function.Consumer;
 /**
  * Created by snow_young on 16/9/2.
  */
-public class BlockingMysqlSessionContext extends MysqlSessionContext {
+public class SyncMysqlSessionContext extends MysqlSessionContext {
     @Setter
     private CountDownLatch blocking;
 
     @Setter
     private Consumer<MySQLPacket> check;
 
-    public BlockingMysqlSessionContext(MysqlFrontendSession frontSession) {
+    public SyncMysqlSessionContext(MysqlFrontendSession frontSession) {
         super(frontSession);
     }
 

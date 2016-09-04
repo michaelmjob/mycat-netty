@@ -29,25 +29,6 @@ public abstract class AbstractResponseHandler implements ResponseHandler {
 
     }
 
-//    @Override
-//    public void errorResponse(ErrorPacket packet, NettyBackendSession session) {
-//        clear(session);
-//    }
-//
-//    @Override
-//    public void okResponse(OkPacket packet, NettyBackendSession session) {
-//        clear(session);
-//    }
-//
-//    @Override
-//    public void resultsetResponse(ResultSetPacket resultSetPacket, NettyBackendSession session) {
-//        clear(session);
-//    }
-//
-//    private void clear(NettyBackendSession nettyBackendSession) {
-//        nettyBackendSession.back();
-//    }
-
     @Override
     public void setFinished() {
         this.finished = true;

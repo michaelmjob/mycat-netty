@@ -17,6 +17,9 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * Created by snow_young on 16/8/12.
+ *
+ * TODO:
+ *  解耦 session 和  protocolhandler, 应该可以通过connecitonId 实现
  */
 public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(MysqlHandshakeHandler.class);
@@ -48,10 +51,11 @@ public class MysqlBackendProtocolHandler extends ChannelInboundHandlerAdapter {
                 logger.info("mysql response handler receive OK PACKET");
                 break;
             case ErrorPacket.FIELD_COUNT:
-                this.session.setErrorPacket(data);
                 logger.info("mysql response handler receive error packet");
+                this.session.setErrorPacket(data);
                 break;
             default:
+                logger.info("mysql response handler receive default packet");
                 // select result
                 this.session.getResultSetPacket().read(data);
                 if(this.session.getResultSetPacket().isFinished()){

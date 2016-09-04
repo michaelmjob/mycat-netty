@@ -1,7 +1,6 @@
 package io.mycat.netty.mysql.handler;
 
 import io.mycat.netty.mysql.MysqlFrontendSession;
-import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.BackendTest;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.MySQLPacket;
@@ -19,8 +18,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -61,7 +58,7 @@ public class SingleNodeHandlerTest extends BackendTest {
     }
 
     public void testSQL(RouteResultset routeResultset, Consumer<MySQLPacket> check) throws InterruptedException {
-        BlockingMysqlSessionContext blockingMysqlSessionContext = new BlockingMysqlSessionContext(frontendSession);
+        SyncMysqlSessionContext blockingMysqlSessionContext = new SyncMysqlSessionContext(frontendSession);
 
         blockingMysqlSessionContext.setRrs(routeResultset);
         blockingMysqlSessionContext.getSession();
@@ -78,7 +75,6 @@ public class SingleNodeHandlerTest extends BackendTest {
     @Test
     public void testInsert() throws InterruptedException {
 
-        // 这里隐藏着bug, 并没有检查数据库名字，而是直接发送给了 datanodeName 所在的节点
         String dataNodeName = "d1";
         String databaseName = "db1";
         String insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01', 1)";
@@ -141,4 +137,9 @@ public class SingleNodeHandlerTest extends BackendTest {
         });
     }
 
+    // 榨干session, 使重建session
+    public void testConn(){
+        // according to logic, just using the bloking send2Cient method to implement the conn accquired scene.
+
+    }
 }
