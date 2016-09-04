@@ -10,6 +10,7 @@ import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
+import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.router.RouteResultset;
 import io.mycat.netty.router.RouteResultsetNode;
 import junit.framework.Assert;
@@ -61,36 +62,50 @@ public class MultiNodeHandlerTest extends BackendTest {
         String update = "update tb0 set status=2";
         String delete = "delete from tb0";
 
-        // build route, ensuere host exists after route
-        RouteResultsetNode node_insert1 = new RouteResultsetNode(dataNodeName1, databaseName1, insert);
-        RouteResultsetNode node_insert2 = new RouteResultsetNode(dataNodeName2, databaseName2, insert);
-        RouteResultsetNode[] nodeArr = new RouteResultsetNode[]{node_insert1, node_insert2};
-//        RouteResultsetNode[] nodeArr = new RouteResultsetNode[]{node_insert1};
-        RouteResultset routeResultset = new RouteResultset();
-        routeResultset.setNodes(nodeArr);
 
-        //  test write success, okpacket group
-//        testSQL(routeResultset, mySQLPacket -> {
-//            Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
-//        });
+//        //  test write success, okpacket group
+        RouteResultset routeResultset = build_common_routeset(new String[]{insert, insert2});
+        testSQL(routeResultset, mySQLPacket -> {
+            Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
+        });
 
         // test write error, error group
         // build route, ensuere host exists after route
-        String error_insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01')";
-        node_insert1 = new RouteResultsetNode(dataNodeName1, databaseName1, error_insert);
-        node_insert2 = new RouteResultsetNode(dataNodeName2, databaseName2, error_insert);
-        nodeArr = new RouteResultsetNode[]{node_insert1, node_insert2};
-        routeResultset = new RouteResultset();
-        routeResultset.setNodes(nodeArr);
-
         // error group
+        String error_insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01')";
+        routeResultset = build_common_routeset(new String[]{error_insert, error_insert});
         testSQL(routeResultset, mySQLPacket -> {
-            Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof ErrorPacket);
+            Assert.assertTrue("insert fail pakcet should be errorPacket", mySQLPacket instanceof ErrorPacket);
             ErrorPacket errorPacket = (ErrorPacket)mySQLPacket;
             logger.info("error Packet errno : {}", errorPacket.errno);
 //            logger.info("error Packet err msg : {}", errorPacket.message.toString().getBytes());
             logger.info("error Packet err msg : {}", new String(errorPacket.message));
         });
+
+        // select method
+        routeResultset = build_common_routeset(new String[]{select, select});
+        testSQL(routeResultset, mySQLPacket -> {
+            Assert.assertTrue("select  pakcet should be resultPacket", mySQLPacket instanceof ResultSetPacket);
+            ResultSetPacket resultSetPacket = (ResultSetPacket)mySQLPacket;
+            Assert.assertEquals("tb0 field should be 6", 6, resultSetPacket.getFields().size());
+            Assert.assertEquals("should only one data in db", 2, resultSetPacket.getRows().size());
+        });
+
+
+    }
+
+    public RouteResultset build_common_routeset(String sql[]){
+
+        return  buildSingleRouteResultSet(new String[]{"d0", "d1"}, new String[]{"db0", "db1"}, sql);
+    }
+
+    public RouteResultset buildSingleRouteResultSet(String[] dataNodeName, String[] databaseName, String[] sql) {
+        RouteResultsetNode node_sql1 = new RouteResultsetNode(dataNodeName[0], databaseName[0], sql[0]);
+        RouteResultsetNode node_sql2 = new RouteResultsetNode(dataNodeName[1], databaseName[1], sql[1]);
+        RouteResultsetNode[] nodeArr = new RouteResultsetNode[]{node_sql1, node_sql2};
+        RouteResultset routeResultset = new RouteResultset();
+        routeResultset.setNodes(nodeArr);
+        return routeResultset;
     }
 
     public void testSQL(RouteResultset routeResultset, Consumer<MySQLPacket> check) throws InterruptedException {

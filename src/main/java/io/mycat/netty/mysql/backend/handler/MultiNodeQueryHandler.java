@@ -40,7 +40,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     private int selectedRows;
 
     // should be modifield : update/insert/delete no resultsetpacket
-    // select resultsetpacket
+//     select resultsetpacket
     private OkPacket ok = new OkPacket();
     private ResultSetPacket result = new ResultSetPacket();
 
@@ -50,7 +50,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     private int end;
 
     private AtomicInteger nodeCount;
-    private AtomicBoolean fieldsRtn;
+    private AtomicBoolean fieldsRtn = new AtomicBoolean(false);
 
     // TODO: add limit support.
     // remove autoCommit
@@ -86,11 +86,8 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
         if (!isFailed()) {
             isFailed.set(true);
             errorMsg = new StringBuilder();
-//            errorMsg.append(packet.message);
-//            errorMsg.append(new String(packet.message));
             errorMsg.append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
         } else {
-//            errorMsg.append(packet.message).append(";");
             errorMsg.append(";").append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
         }
         lock.unlock();
@@ -127,6 +124,9 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     // TODO: add 全局表的支持
     @Override
     public void okResponse(OkPacket packet, NettyBackendSession session) {
+        if (isFailed.get()) {
+            return;
+        }
 
         lock.lock();
         try {
@@ -198,36 +198,55 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
         lock.lock();
         try {
             if (!fieldsRtn.get()) {
-                ResultSetHeaderPacket resultSetHeaderPacket = resultSetPacket.getHeader();
+                // should set packetId++?
+                result.setHeader(resultSetPacket.getHeader());
+                result.setFields(resultSetPacket.getFields());
+                resultSetPacket.setEof(resultSetPacket.getEof());
+                packetId = (byte)(resultSetPacket.getFields().size() + 2);
+
+                // for  check
+                logger.info("header packetId {}",resultSetPacket.getHeader().packetId);
                 List<FieldPacket> fieldsPacket = resultSetPacket.getFields();
-                this.mysqlSessionContext.getFrontSession().writeAndFlush(resultSetHeaderPacket.getPacket());
                 for (FieldPacket fieldPacket : fieldsPacket) {
-                    this.mysqlSessionContext.getFrontSession().writeAndFlush(fieldPacket.getPacket());
+                    logger.info("field packetId {}", fieldPacket.packetId);
                 }
+                // header = 1
+                // field = 2...++ 7
+                // eof 0
+                logger.info("eof packetId  {}", resultSetPacket.packetId);
                 fieldsRtn.compareAndSet(false, true);
             }
 
             this.selectedRows++;
             for (RowDataPacket rowDataPacket : resultSetPacket.getRows()) {
+                // 9 ++
+                logger.info("row packetId : {}", rowDataPacket.packetId);
                 rowDataPacket.packetId = ++packetId;
-                this.mysqlSessionContext.getFrontSession().writeAndFlush(rowDataPacket.getPacket());
+                logger.info("my packetId : {}", packetId);
+                result.getRows().add(rowDataPacket);
+//                this.mysqlSessionContext.send2Client(rowDataPacket);
             }
+
+//            result.getRows().addAll(resultSetPacket.getRows());
 
         } finally {
             lock.unlock();
         }
 
         // check result
+        // 需要研究一下 autocommit 行为和客户端的一些用法
         if (decrementCountBy()) {
-            if (this.mysqlSessionContext.getFrontSession().isAutocommit()) {
-//                this.mysqlSessionContext.getFrontSession()
-            } else {
-
-            }
+//            if (this.mysqlSessionContext.getFrontSession().isAutocommit()) {
+////                this.mysqlSessionContext.getFrontSession()
+//            } else {
+//
+//            }
 
             EOFPacket eof = resultSetPacket.getLasteof();
             eof.packetId = this.packetId++;
-            this.mysqlSessionContext.getFrontSession().writeAndFlush(eof.getPacket());
+            result.setLasteof(eof);
+            this.mysqlSessionContext.send2Client(result);
+
         }
         // TODO: 不太理解查询结果派发相关的逻辑
     }

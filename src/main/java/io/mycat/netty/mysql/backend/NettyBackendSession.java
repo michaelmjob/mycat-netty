@@ -121,6 +121,12 @@ public class NettyBackendSession implements BackendSession {
         this.back();
     }
 
+    // resultSetPacket 这里依赖解析
+    public void setFinished(){
+        this.responseHandler.resultsetResponse(resultSetPacket, this);
+        back();
+    }
+
     public NettyBackendSession(String host, int port) {
         this.host = host;
         this.port = port;
@@ -245,7 +251,6 @@ public class NettyBackendSession implements BackendSession {
                 logger.info("countdownLatch has been solved");
             }
         });
-//        waitChannel(3000);
         return waitChannel(1000);
     }
 
@@ -300,12 +305,6 @@ public class NettyBackendSession implements BackendSession {
 //                + ", host=" + host + ", port=" + port + ", statusSync="
 //                + statusSync + ", writeQueue=" + this.getWriteQueue().size()
 //                + ", modifiedSQLExecuted=" + modifiedSQLExecuted + "]";
-    }
-
-//    private boolean finished;
-    public void setFinished(){
-//        this.finished = true;
-        this.responseHandler.resultsetResponse(resultSetPacket, this);
     }
 
     public static class Builder {

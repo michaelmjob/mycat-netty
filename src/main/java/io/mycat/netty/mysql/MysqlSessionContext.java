@@ -52,15 +52,6 @@ public class MysqlSessionContext {
         this.rrs = null;
     }
 
-//    public void releaseConnection(Map.Entry<RouteResultsetNode, NettyBackendSession> entry){
-//        if(!Objects.isNull(entry.getValue())){
-//            // return back connection
-//            entry.getValue().setResponseHandler(null);
-//            entry.getKey().getHost().back(entry.getValue(), this.getFrontSession().isAutocommit());
-//
-//        }
-//    }
-
     public void send2Client(byte[] bytes){
         this.frontSession.writeAndFlush(bytes);
         this.releaseBackendConnections();

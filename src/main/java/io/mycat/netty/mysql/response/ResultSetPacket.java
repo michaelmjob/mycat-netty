@@ -30,10 +30,10 @@ public class ResultSetPacket extends MySQLPacket {
 
     private int resultStauts = RESULT_STATUS_INIT;
     private ResultSetHeaderPacket header = new ResultSetHeaderPacket();
-    private final List<FieldPacket> fields = new ArrayList<>();
-    private final List<RowDataPacket> rows = new ArrayList<>();
-    private final EOFPacket eof = new EOFPacket();
-    private final EOFPacket lasteof = new EOFPacket();
+    private List<FieldPacket> fields = new ArrayList<>();
+    private List<RowDataPacket> rows = new ArrayList<>();
+    private EOFPacket eof = new EOFPacket();
+    private EOFPacket lasteof = new EOFPacket();
 
     public void read(byte[] data){
         switch (resultStauts){
@@ -86,32 +86,22 @@ public class ResultSetPacket extends MySQLPacket {
         byte[] packet = new byte[size];
         int offset = 0;
 
-//        List<byte[]> result = new ArrayList<>();
         System.arraycopy(header.getPacket(), 0, packet, offset, header.calcPacketSize() + 4);
         offset += header.calcPacketSize() + 4;
 
-//        result.add(header.getPacket());
-//        for(FieldPacket field : fields) {
-//            result.add(field.getPacket());
-//        }
         for(FieldPacket field : fields) {
             System.arraycopy(field.getPacket(), 0, packet, offset, field.calcPacketSize() + 4);
             offset += field.calcPacketSize() + 4;
         }
-//
-//        result.add(eof.getPacket());
+
         System.arraycopy(eof.getPacket(), 0, packet, offset, eof.calcPacketSize() + 4);
         offset += eof.calcPacketSize() + 4;
 
-//        for(RowDataPacket row : rows){
-//            result.add(row.getPacket());
-//        }
         for(RowDataPacket row : rows){
             System.arraycopy(row.getPacket(), 0, packet, offset, row.calcPacketSize() + 4);
             offset += row.calcPacketSize() + 4;
         }
 
-//        result.add(lasteof.getPacket());
         System.arraycopy(lasteof.getPacket(), 0, packet, offset, lasteof.calcPacketSize() + 4);
         return packet;
     }
