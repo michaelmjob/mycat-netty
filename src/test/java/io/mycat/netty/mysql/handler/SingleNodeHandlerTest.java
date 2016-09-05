@@ -132,7 +132,7 @@ public class SingleNodeHandlerTest extends BackendTest {
             Assert.assertTrue("pakcet should be ResultsetPacket", packet instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;
             Assert.assertEquals("tb0 field should be 6", 6, resultSetPacket.getFields().size());
-            Assert.assertEquals("should only one data in db", 1, resultSetPacket.getRows().size());
+            Assert.assertEquals("should only one data in db", 0, resultSetPacket.getRows().size());
             logger.info("select again check right");
         });
     }

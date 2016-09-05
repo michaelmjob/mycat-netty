@@ -22,7 +22,7 @@ public class OkPacket extends MySQLPacket{
     public long insertId;
     public int serverStatus;
     public int warningCount;
-    public byte[] message;
+    public byte[] message = null;
 
     public void read(BinaryPacket bin) {
         packetLength = bin.packetLength;

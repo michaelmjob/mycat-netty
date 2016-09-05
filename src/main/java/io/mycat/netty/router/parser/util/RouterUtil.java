@@ -586,7 +586,8 @@ public class RouterUtil {
 //        }
 
         //只有一个表的
-        // 测试一下 多表的操作， 不过一般情况性爱，确实都是一张表的操作
+        // 测试一下 多表的操作， 不过一般情况下，确实都是一张表的操作
+        // 目前并不打算支持多个表的操作
         if (tables.size() == 1) {
             return RouterUtil.tryRouteForOneTable(schema, ctx, routeUnit, tables.get(0), rrs, isSelect);
         }

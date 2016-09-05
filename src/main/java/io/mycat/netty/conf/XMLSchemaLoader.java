@@ -122,7 +122,8 @@ public class XMLSchemaLoader {
         for (int i = 0; i < schemaNodes.getLength(); i++) {
             Element schemaNode = (Element) schemaNodes.item(i);
             String schemaName = schemaNode.getAttribute("name");
-            getSchemaConfigs().put(schemaName, new SchemaConfig());
+//            getSchemaConfigs().put(schemaName, new SchemaConfig());
+            getSchemaConfigs().put(schemaName.toUpperCase(), new SchemaConfig());
             NodeList tableNodes = schemaNode.getElementsByTagName("table");
             NodeList tablegroupNodes = schemaNode.getElementsByTagName("tablegroup");
 
@@ -145,8 +146,10 @@ public class XMLSchemaLoader {
                 tableConfig.setPartitionColumn(config.getColumn());
 
                 tableConfig.setDatasource(getNodes(tableNode));
-                tableConfig.setName(name);
-                getSchemaConfigs().get(schemaName).getTables().put(name, tableConfig);
+//                tableConfig.setName(name);
+//                getSchemaConfigs().get(schemaName).getTables().put(name, tableConfig);
+                tableConfig.setName(name.toUpperCase());
+                getSchemaConfigs().get(schemaName.toUpperCase()).getTables().put(name.toUpperCase(), tableConfig);
             }
 
             for (int j = 0; j < tablegroupNodes.getLength(); j++) {

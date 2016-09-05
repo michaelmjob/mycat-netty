@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,7 +70,7 @@ public class NettyBackendSession implements BackendSession {
     // dirty implementation: to ensure the connection is established before server serve.
     @Setter
     @Getter
-    private CountDownLatch countDownLatch ;
+    private CountDownLatch countDownLatch;
 
     private long sessionId;
 
@@ -90,15 +91,10 @@ public class NettyBackendSession implements BackendSession {
     }
 
     // session not remove originaly, dependent on Host
-    public void back(){
-//        ???!! bug
-//        release();
-        owner.back(sessionId);
-    }
-
-
-    public void release(){
+    public void back() {
         this.responseHandler = null;
+        resultSetPacket = new ResultSetPacket();
+        owner.back(sessionId);
     }
 
     // should invole responeHandler
@@ -116,15 +112,21 @@ public class NettyBackendSession implements BackendSession {
         this.back();
     }
 
-    public void setErrorPacket(ErrorPacket errorPacket){
+    public void setErrorPacket(ErrorPacket errorPacket) {
         responseHandler.errorResponse(errorPacket, this);
         this.back();
     }
 
     // resultSetPacket 这里依赖解析
-    public void setFinished(){
-        this.responseHandler.resultsetResponse(resultSetPacket, this);
+    public void setFinished() {
+        if (Objects.isNull(responseHandler)) {
+            logger.error("resultsetPacket with sql:  {} loss responseHandler to respond", query);
+            logger.error("result set packet : {}", resultSetPacket);
+        } else {
+            this.responseHandler.resultsetResponse(resultSetPacket, this);
+        }
         back();
+        query = "unknow";
     }
 
     public NettyBackendSession(String host, int port) {
@@ -144,7 +146,6 @@ public class NettyBackendSession implements BackendSession {
             logger.info("wait countDownLatch");
             this.countDownLatch.await(loginTimeout, TimeUnit.MILLISECONDS);
             logger.info("wait countDownLatch success");
-//            this.countDownLatch.getCount()
             return true;
         } catch (InterruptedException e) {
             logger.error("connect error : wait channel interrupted", e);
@@ -169,8 +170,11 @@ public class NettyBackendSession implements BackendSession {
         this.serverChannel.writeAndFlush(out);
     }
 
+    private String query;
+
     // select/insert/delete/update
     public void sendQueryCmd(String query) {
+        this.query = query;
         CommandPacket packet = new CommandPacket();
         packet.packetId = 0;
         packet.command = MySQLPacket.COM_QUERY;

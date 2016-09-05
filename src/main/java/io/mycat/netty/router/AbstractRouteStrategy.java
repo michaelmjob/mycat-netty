@@ -53,6 +53,7 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
         String charset = mysqlSessionContext.getFrontSession().getCharset();
 
         // two steps.
+        // system info is not necessary
         RouteResultset returnedSet = routeSystemInfo(schemaConfig, sqlType, stmt, rrs);
         if (returnedSet == null) {
             rrs = routeNormalSqlWithAST(schemaConfig, stmt, rrs, charset);

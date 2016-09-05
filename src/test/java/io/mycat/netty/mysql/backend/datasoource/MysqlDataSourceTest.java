@@ -71,7 +71,7 @@ public class MysqlDataSourceTest {
             int falsesize = host.connectionSize("mydb", false);
             logger.info("true size : {}", truesize);
             logger.info("false size : {}", falsesize);
-            Assert.assertEquals(10, truesize);
+            Assert.assertEquals(20, truesize);
         }
 
     }

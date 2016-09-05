@@ -7,9 +7,9 @@ import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.parser.ServerParse;
 import io.mycat.netty.router.DruidRouteStrategy;
 import io.mycat.netty.router.RouteResultset;
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 
 import java.sql.SQLNonTransientException;
 
@@ -24,10 +24,18 @@ public class DruidRouteStrategyTest {
         String delete = "";
         String update = "";
 //        String select = "select order_id, product_id, usr_id from tb0 where begin_time='2016-01-01'";
-        String select = "select order_id, product_id, usr_id from tb1 where order_id=3";
+        // tb1 -> TB1
+         String select = "select order_id, product_id, usr_id from tb1 where order_id=3";
 
         // set xml configuration
 //        Configuration configuration = Mockito.mock(Configuration.class);
+//        PowerMockito.mockStatic(Configuration.class);
+        // what about field replaceMethods stub meaning?
+//        PowerMockito.replace(Configuration.init()).with();
+//        PowerMockito.stub(Configuration.init())
+        XMLSchemaLoader schemaLoader = new XMLSchemaLoader();
+        schemaLoader.setSchemaFile("/DruidRouteStrategyConfig.xml");
+        Configuration.setSchemaLoader(schemaLoader);
         Configuration.init();
 
         System.out.println(" ============ ");
@@ -43,7 +51,7 @@ public class DruidRouteStrategyTest {
 
         MysqlFrontendSession frontendSession = Mockito.mock(MysqlFrontendSession.class);
         Mockito.when(frontendSession.isAutocommit()).thenReturn(true);
-        Mockito.when(frontendSession.getSchema()).thenReturn("");
+        Mockito.when(frontendSession.getSchema()).thenReturn("frontdb0");
         Mockito.when(frontendSession.getCharset()).thenReturn("utf8");
         MysqlSessionContext mysqlSessionContext = new MysqlSessionContext(frontendSession);
 
@@ -51,7 +59,5 @@ public class DruidRouteStrategyTest {
         RouteResultset routeResultset = druidRouteStrategy.route(ServerParse.SELECT, select, mysqlSessionContext);
 
         // check result
-
-
     }
 }

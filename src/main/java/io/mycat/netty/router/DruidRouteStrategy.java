@@ -58,7 +58,7 @@ public class DruidRouteStrategy extends AbstractRouteStrategy {
         /**
          * 最简单的select语句
          */
-        DruidShardingParseInfo ctx = druidParser.getCtx();
+//        DruidShardingParseInfo ctx = druidParser.getCtx();
 //        最简单的sql语句, 暂时就不支持了, 后面添加
 //        if ((ctx.getTables() == null || ctx.getTables().size() == 0) && (ctx.getTableAliasMap() == null || ctx.getTableAliasMap().isEmpty())) {
 //            //
