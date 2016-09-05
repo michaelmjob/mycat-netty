@@ -62,7 +62,7 @@ public class ResultSetPacket extends MySQLPacket {
                     case EOFPacket.FIELD_COUNT:
                         logger.info("last eof packet, {}", data);
                         lasteof.read(data);
-                        resultStauts = RESULT_STATUS_INIT;
+                        init();
                         break;
                     default:
                         logger.info("row data packet, {}", data);
@@ -73,6 +73,15 @@ public class ResultSetPacket extends MySQLPacket {
                 }
                 break;
         }
+    }
+
+    public void init(){
+        resultStauts = RESULT_STATUS_INIT;
+        header = new ResultSetHeaderPacket();
+        fields = new ArrayList<>();
+        rows = new ArrayList<>();
+        eof = new EOFPacket();
+        lasteof = new EOFPacket();
     }
 
     public boolean isFinished(){
