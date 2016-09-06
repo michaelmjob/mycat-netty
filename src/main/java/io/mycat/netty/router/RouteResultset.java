@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by snow_young on 16/8/12.
@@ -17,8 +16,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class RouteResultset implements Serializable{
     private String statement;
-//    private int sqlType;
-    private RouteResultsetNode[] nodes;
+    private List<RouteResultsetNode> nodes;
 
     private boolean canRunSlave = false;
     private int sqlType;
@@ -42,6 +40,7 @@ public class RouteResultset implements Serializable{
     public RouteResultset(String statement, int sqlType){
         this.statement = statement;
         this.sqlType = sqlType;
+        this.nodes = new ArrayList<>();
     }
 
     public void setHasAggrColumn(boolean hasAggrColumn) {
@@ -56,6 +55,18 @@ public class RouteResultset implements Serializable{
         if (orderByCols != null && !orderByCols.isEmpty()) {
             createSQLMergeIfNull().setOrderByCols(orderByCols);
         }
+    }
+
+    public void addNode(RouteResultsetNode node){
+        nodes.add(node);
+    }
+
+    public void setNodes(RouteResultsetNode[] nodeArr){
+        this.nodes = Arrays.asList(nodeArr);
+    }
+
+    public int size(){
+        return nodes.size();
     }
 
     private SQLMerge createSQLMergeIfNull() {

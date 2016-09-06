@@ -14,14 +14,14 @@ import java.util.Comparator;
 /**
  * Created by snow_young on 16/8/12.
  */
-public class RouteResultsetNode implements Serializable, Comparator<RouteResultsetNode>{
+public class RouteResultsetNode implements Serializable, Comparable<RouteResultsetNode>{
     private static final Logger logger = LoggerFactory.getLogger(RouteResultsetNode.class);
 
     private static final long seriaVersionUID = 1;
     @Getter
     private String dataNodeName;
-    @Getter
-    private String statement;
+//    @Getter
+//    private String statement;
     @Getter
     private String database;
 
@@ -55,9 +55,15 @@ public class RouteResultsetNode implements Serializable, Comparator<RouteResults
         this.sql = sql;
     }
 
-    @Override
-    public int compare(RouteResultsetNode o1, RouteResultsetNode o2) {
-        return 1;
+//    @Override
+//    public int compare(RouteResultsetNode o1, RouteResultsetNode o2) {
+//        return 1;
+//
+//    }
 
+    // 顺序如何比较？
+    @Override
+    public int compareTo(RouteResultsetNode o) {
+        return 1;
     }
 }

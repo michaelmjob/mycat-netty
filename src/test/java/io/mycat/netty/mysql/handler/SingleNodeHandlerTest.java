@@ -103,7 +103,7 @@ public class SingleNodeHandlerTest extends BackendTest {
 
         // select
         routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
-        logger.info("select sql : {}", routeResultset.getNodes()[0].getSql());
+        logger.info("select sql : {}", routeResultset.getNodes().get(0).getSql());
         testSQL(routeResultset, packet -> {
             Assert.assertTrue("select pakcet should be ResultsetPacket", packet instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;

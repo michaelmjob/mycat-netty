@@ -17,6 +17,7 @@ import com.alibaba.druid.sql.dialect.mysql.ast.statement.MySqlInsertStatement;
 import java.sql.SQLNonTransientException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by snow_young on 16/8/27.
@@ -51,11 +52,10 @@ public class DruidInsertParser extends DefaultDruidParser {
 
 
         TableConfig tc = schema.getTables().get(tableName);
-        if (tc == null) {
-            String msg = "can't find table define in schema "
-                    + tableName + " schema:" + schema.getName();
+        if (Objects.isNull(tc)) {
+            String msg = "can't find table : " + tableName + " define in schema : " + schema.getName();
             logger.warn(msg);
-            throw new SQLNonTransientException(msg);
+            throw new IllegalArgumentException(msg);
         } else {
             //
 
@@ -66,7 +66,8 @@ public class DruidInsertParser extends DefaultDruidParser {
             if (partitionColumn != null) {//分片表
                 //拆分表必须给出column list,否则无法寻找分片字段的值
                 if (insert.getColumns() == null || insert.getColumns().size() == 0) {
-                    throw new SQLSyntaxErrorException("partition table, insert must provide ColumnList");
+                    logger.error("sql : {} , insert must provide ColumnList", stmt);
+                    throw new IllegalArgumentException("partition table, insert must provide ColumnList");
                 }
 
                 if(isMultiInsert(insert)) {

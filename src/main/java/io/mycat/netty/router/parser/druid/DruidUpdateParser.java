@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLNonTransientException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by snow_young on 16/8/27.
@@ -35,13 +36,23 @@ public class DruidUpdateParser extends DefaultDruidParser {
         List<SQLUpdateSetItem> updateSetItem = update.getItems();
         TableConfig tc = schema.getTables().get(tableName);
 
+
+        // TODO: 提出相似的代码
+        if(Objects.isNull(tc)){
+            String msg = "can't find table : " + tableName + " define in schema : " + schema.getName();
+            logger.warn(msg);
+            throw new IllegalArgumentException(msg);
+        }
+
 //        if (RouterUtil.isNoSharding(schema, tableName)) {//整个schema都不分库或者该表不拆分
 //            RouterUtil.routeForTableMeta(rrs, schema, tableName, rrs.getStatement());
 //            rrs.setFinishedRoute(true);
 //            return;
 //        }
 
+        // tc 的 partitin key 在 config 的时候配置一下
         String partitionColumn = tc.getPartitionColumn();
+
 
 
         confirmShardColumnNotUpdated(updateSetItem, schema, tableName, partitionColumn, rrs);
@@ -57,12 +68,7 @@ public class DruidUpdateParser extends DefaultDruidParser {
 //			}
 //			
 //		}
-//		System.out.println();
 
-//        暂时不支持 global table
-//        if (schema.getTables().get(tableName).isGlobalTable() && ctx.getRouteCalculateUnit().getTablesAndConditions().size() > 1) {
-//            throw new SQLNonTransientException("global table not supported multi table related update " + tableName);
-//        }
     }
 
     // 确保 sharding key 没有被更新

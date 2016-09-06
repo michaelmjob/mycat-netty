@@ -251,12 +251,12 @@ public class DruidSelectParser extends DefaultDruidParser {
     }
 
     private boolean isRoutMultiNode(SchemaConfig schema, RouteResultset rrs) {
-        if (rrs.getNodes() != null && rrs.getNodes().length > 1) {
+        if (!Objects.isNull(rrs) && rrs.size() > 1) {
             return true;
         }
         try {
             tryRoute(schema, rrs);
-            if (rrs.getNodes() != null && rrs.getNodes().length > 1) {
+            if (!Objects.isNull(rrs) && rrs.size() > 1) {
                 return true;
             }
         } catch (SQLNonTransientException e) {
@@ -461,7 +461,7 @@ public class DruidSelectParser extends DefaultDruidParser {
         if (rrs.getNodes() == null) {
             return false;
         } else {
-            if (rrs.getNodes().length > 1) {
+            if (rrs.size() > 1) {
                 return true;
             }
             return false;

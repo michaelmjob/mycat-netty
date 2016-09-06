@@ -75,7 +75,7 @@ public class RouterUtil {
         }
         RouteResultsetNode[] nodes = new RouteResultsetNode[1];
         // TODO:
-        nodes[0] = new RouteResultsetNode(dataNode, "databaseName",stmt);
+        nodes[0] = new RouteResultsetNode(dataNode, "databaseName", stmt);
         rrs.setNodes(nodes);
         rrs.setFinishedRoute(true);
 
@@ -455,7 +455,7 @@ public class RouterUtil {
         // 封装每一个datanode
         for (TableConfig.NodeConfig dataNode : dataNodes) {
             // TODO: ensure the database name
-            node = new RouteResultsetNode(dataNode.getDatanode(), dataNode.getDatabase(),stmt);
+            node = new RouteResultsetNode(dataNode.getDatanode(), dataNode.getDatabase(), stmt);
 //            read  write  slave master 四种类型
             if (rrs.getCanRunInReadDB() != null) {
                 node.setCanRunInReadDB(rrs.getCanRunInReadDB());
@@ -579,7 +579,7 @@ public class RouterUtil {
             throws SQLNonTransientException {
 
         List<String> tables = ctx.getTables();
-
+        // add rss can run on read, slave.
 //        暂时不管里 nosharding 的库和表
 //        if (schema.isNoSharding() || (tables.size() >= 1 && isNoSharding(schema, tables.get(0)))) {
 //            return routeToSingleNode(rrs, schema.getDataNode(), ctx.getSql());
@@ -588,89 +588,93 @@ public class RouterUtil {
         //只有一个表的
         // 测试一下 多表的操作， 不过一般情况下，确实都是一张表的操作
         // 目前并不打算支持多个表的操作
+        // 所以一定走这个流程
         if (tables.size() == 1) {
             return RouterUtil.tryRouteForOneTable(schema, ctx, routeUnit, tables.get(0), rrs, isSelect);
+        }else {
+            // 暂时不支持 多个table
+            throw new IllegalArgumentException("multi tables");
         }
 
-        Set<TableConfig.NodeConfig> retNodesSet = new HashSet<>();
-        // 每个表对应的路由映射
-        // 可能存在分片导致的路由
-        Map<String, Set<TableConfig.NodeConfig>> tablesRouteMap = new HashMap<>();
-
-        // 分库解析信息不为空
-        Map<String, Map<String, Set<ColumnRoutePair>>> tablesAndConditions = routeUnit.getTablesAndConditions();
-
-//        tables where 类型的语句
-        if (tablesAndConditions != null && tablesAndConditions.size() > 0) {
-            //为分库表找路由
-            RouterUtil.findRouteWithcConditionsForTables(schema, rrs, tablesAndConditions, tablesRouteMap, ctx.getSql(), isSelect);
-            if (rrs.isFinishedRoute()) {
-                return rrs;
-            }
-        }
-
-        // 遍历表
-        for (String tableName : tables) {
-            TableConfig tableConfig = schema.getTables().get(tableName.toUpperCase());
-            // 这种算是严重异常!
-            if (tableConfig == null) {
-                String msg = "can't find table define in schema " + tableName + " schema:" + schema.getName();
-                logger.warn(msg);
-                throw new SQLNonTransientException(msg);
-            }
-            if (tablesRouteMap.get(tableName) == null) {
-                // 这个是什么情况
-                // 余下的表都是单库表
-                tablesRouteMap.put(tableName, new HashSet<TableConfig.NodeConfig>());
-                tablesRouteMap.get(tableName).addAll(tableConfig.getDatasource());
-            }
-        }
-
-        // 确保多表的交集
-        boolean isFirstAdd = true;
-        for (Map.Entry<String, Set<TableConfig.NodeConfig>> entry : tablesRouteMap.entrySet()) {
-            if (entry.getValue() == null || entry.getValue().size() == 0) {
-                throw new SQLNonTransientException("parent key can't find any valid datanode ");
-            } else {
-                // 区分了 第一次
-                if (isFirstAdd) {
-                    retNodesSet.addAll(entry.getValue());
-                    isFirstAdd = false;
-                } else {
-                    // 保留交集
-                    retNodesSet.retainAll(entry.getValue());
-                    // 这个操作了复杂的多表操作
-                    if (retNodesSet.size() == 0) {
-                        //两个表的路由无交集
-                        String errMsg = "invalid route in sql, multi tables found but datanode has no intersection "
-                                + " sql:" + ctx.getSql();
-                        logger.warn(errMsg);
-                        throw new SQLNonTransientException(errMsg);
-                    }
-                }
-            }
-        }
-
-        // 最终的检查
-        if (retNodesSet != null && retNodesSet.size() > 0) {
-            String tableName = tables.get(0);
-            // 不止一列相交
-            if (retNodesSet.size() > 1) {
-                // mulit routes ,not cache route result
-                if (isSelect) {
-                    routeToSingleNode(rrs, retNodesSet.iterator().next().getDatanode(), ctx.getSql());
-                } else {//delete 删除全局表的记录
-//                    routeToMultiNode(isSelect, rrs, retNodesSet, ctx.getSql(), true);
-                    routeToMultiNode(rrs, retNodesSet, ctx.getSql());
-                }
-
-            } else {
-//                routeToMultiNode(isSelect, rrs, retNodesSet, ctx.getSql());
-                routeToMultiNode(rrs, retNodesSet, ctx.getSql());
-            }
-
-        }
-        return rrs;
+//        Set<TableConfig.NodeConfig> retNodesSet = new HashSet<>();
+//        // 每个表对应的路由映射
+//        // 可能存在分片导致的路由
+//        Map<String, Set<TableConfig.NodeConfig>> tablesRouteMap = new HashMap<>();
+//
+//        // 分库解析信息不为空
+//        Map<String, Map<String, Set<ColumnRoutePair>>> tablesAndConditions = routeUnit.getTablesAndConditions();
+//
+////        tables where 类型的语句
+//        if (tablesAndConditions != null && tablesAndConditions.size() > 0) {
+//            //为分库表找路由
+//            RouterUtil.findRouteWithcConditionsForTables(schema, rrs, tablesAndConditions, tablesRouteMap, ctx.getSql(), isSelect);
+//            if (rrs.isFinishedRoute()) {
+//                return rrs;
+//            }
+//        }
+//
+//        // 遍历表
+//        for (String tableName : tables) {
+//            TableConfig tableConfig = schema.getTables().get(tableName.toUpperCase());
+//            // 这种算是严重异常!
+//            if (tableConfig == null) {
+//                String msg = "can't find table define in schema " + tableName + " schema:" + schema.getName();
+//                logger.warn(msg);
+//                throw new SQLNonTransientException(msg);
+//            }
+//            if (tablesRouteMap.get(tableName) == null) {
+//                // 这个是什么情况
+//                // 余下的表都是单库表
+//                tablesRouteMap.put(tableName, new HashSet<TableConfig.NodeConfig>());
+//                tablesRouteMap.get(tableName).addAll(tableConfig.getDatasource());
+//            }
+//        }
+//
+//        // 确保多表的交集
+//        boolean isFirstAdd = true;
+//        for (Map.Entry<String, Set<TableConfig.NodeConfig>> entry : tablesRouteMap.entrySet()) {
+//            if (entry.getValue() == null || entry.getValue().size() == 0) {
+//                throw new SQLNonTransientException("parent key can't find any valid datanode ");
+//            } else {
+//                // 区分了 第一次
+//                if (isFirstAdd) {
+//                    retNodesSet.addAll(entry.getValue());
+//                    isFirstAdd = false;
+//                } else {
+//                    // 保留交集
+//                    retNodesSet.retainAll(entry.getValue());
+//                    // 这个操作了复杂的多表操作
+//                    if (retNodesSet.size() == 0) {
+//                        //两个表的路由无交集
+//                        String errMsg = "invalid route in sql, multi tables found but datanode has no intersection "
+//                                + " sql:" + ctx.getSql();
+//                        logger.warn(errMsg);
+//                        throw new SQLNonTransientException(errMsg);
+//                    }
+//                }
+//            }
+//        }
+//
+//        // 最终的检查
+//        if (retNodesSet != null && retNodesSet.size() > 0) {
+//            String tableName = tables.get(0);
+//            // 不止一列相交
+//            if (retNodesSet.size() > 1) {
+//                // mulit routes ,not cache route result
+//                if (isSelect) {
+//                    routeToSingleNode(rrs, retNodesSet.iterator().next().getDatanode(), ctx.getSql());
+//                } else {//delete 删除全局表的记录
+////                    routeToMultiNode(isSelect, rrs, retNodesSet, ctx.getSql(), true);
+//                    routeToMultiNode(rrs, retNodesSet, ctx.getSql());
+//                }
+//
+//            } else {
+////                routeToMultiNode(isSelect, rrs, retNodesSet, ctx.getSql());
+//                routeToMultiNode(rrs, retNodesSet, ctx.getSql());
+//            }
+//
+//        }
+//        return rrs;
 
     }
 
@@ -685,20 +689,20 @@ public class RouterUtil {
 //            return routeToSingleNode(rrs, schema.getDataNode(), ctx.getSql());
 //        }
 
-        TableConfig tc = schema.getTables().get(tableName);
+        // 前面过滤后者后面过滤！这里出现了两次过滤, 在 parser 里面有一次
+        TableConfig tc = schema.getTables().get(tableName.toUpperCase());
         if (tc == null) {
-            String msg = "can't find table define in schema " + tableName + " schema:" + schema.getName();
+            String msg = "can't find table define in schema " + schema.getName() + " schema:" + tableName;
             logger.warn(msg);
-            throw new SQLNonTransientException(msg);
+            throw new IllegalArgumentException(msg);
         }
 
-
         if (!checkRuleRequired(schema, ctx, routeUnit, tc)) {
-            throw new IllegalArgumentException("route rule for table "
+            throw new IllegalArgumentException("partition key for table "
                     + tc.getName() + " is required: " + ctx.getSql());
 
         }
-        // 路由到所有表,
+        // 路由到所有表, select 需要 partitionColumn， update insert  delete 也需要，不然就双写了
         if (tc.getPartitionColumn() == null) {
 //            不应该支持 没有 partitionColumn 的情况
             //单表且不是childTable
@@ -715,12 +719,15 @@ public class RouterUtil {
             if (routeUnit.getTablesAndConditions() != null && routeUnit.getTablesAndConditions().size() > 0) {
                 RouterUtil.findRouteWithcConditionsForTables(schema, rrs, routeUnit.getTablesAndConditions(), tablesRouteMap, ctx.getSql(), isSelect);
                 if (rrs.isFinishedRoute()) {
+                    logger.info("should here");
                     return rrs;
+                }else{
+                    logger.info("should true");
                 }
             }
 
             if (tablesRouteMap.get(tableName) == null) {
-                return routeToMultiNode(rrs, tc.getDatasource() , ctx.getSql());
+                return routeToMultiNode(rrs, tc.getDatasource(), ctx.getSql());
             } else {
                 return routeToMultiNode(rrs, tablesRouteMap.get(tableName), ctx.getSql());
             }
@@ -740,11 +747,12 @@ public class RouterUtil {
         for (Map.Entry<String, Map<String, Set<ColumnRoutePair>>> entry : tablesAndConditions.entrySet()) {
             String tableName = entry.getKey().toUpperCase();
             TableConfig tableConfig = schema.getTables().get(tableName);
+            // 有检查一次
             if (tableConfig == null) {
                 String msg = "can't find table define in schema "
                         + tableName + " schema:" + schema.getName();
                 logger.warn(msg);
-                throw new SQLNonTransientException(msg);
+                throw new IllegalArgumentException(msg);
             }
 
             // 全局表或者不分库的表略过（全局表后面再计算）
@@ -756,27 +764,28 @@ public class RouterUtil {
                 //非全局表：分库表、childTable、其他
                 Map<String, Set<ColumnRoutePair>> columnsMap = entry.getValue();
                 String partionCol = tableConfig.getPartitionColumn();
-                String primaryKey = tableConfig.getPrimaryKey();
+//                String primaryKey = tableConfig.getPrimaryKey();
 
                 boolean isFoundPartitionValue = partionCol != null && entry.getValue().get(partionCol) != null;
 
                 // 有主键，并且就一个
                 // 这个操作了什么 ?
                 // 貌似可以进行删除
-                if (entry.getValue().get(primaryKey) != null && entry.getValue().size() == 1) {
-                    //主键查找
-                    // try by primary key if found in cache
-                    Set<ColumnRoutePair> primaryKeyPairs = entry.getValue().get(primaryKey);
-                    if (primaryKeyPairs != null) {
-                        String tableKey = schema.getName() + '_' + tableName;
-                        boolean allFound = false;
-
-                        // need cache primary key -> datanode relation
-                        if (isSelect && tableConfig.getPrimaryKey() != null) {
-                            rrs.setPrimaryKey(tableKey + '.' + tableConfig.getPrimaryKey());
-                        }
-                    }
-                }
+//                分裤分表不应该有主键的概念
+//                if (entry.getValue().get(primaryKey) != null && entry.getValue().size() == 1) {
+//                    //主键查找
+//                    // try by primary key if found in cache
+//                    Set<ColumnRoutePair> primaryKeyPairs = entry.getValue().get(primaryKey);
+//                    if (primaryKeyPairs != null) {
+//                        String tableKey = schema.getName() + '_' + tableName;
+//                        boolean allFound = false;
+//
+//                        // need cache primary key -> datanode relation
+//                        if (isSelect && tableConfig.getPrimaryKey() != null) {
+//                            rrs.setPrimaryKey(tableKey + '.' + tableConfig.getPrimaryKey());
+//                        }
+//                    }
+//                }
 
 
                 // select 语句中包含 partitionColumn,
@@ -784,7 +793,7 @@ public class RouterUtil {
                 if (isFoundPartitionValue) {
                     // 获取 partitionColumn
                     Set<ColumnRoutePair> partitionValue = columnsMap.get(partionCol);
-                    // 一个col, 有这么多 pair!
+                    // 一个col, 有这么多 pair!????
                     for (ColumnRoutePair pair : partitionValue) {
 
                         // 两种情况 : columnValue RangeValue
@@ -817,6 +826,12 @@ public class RouterUtil {
                                     tablesRouteMap.put(tableName, new HashSet<TableConfig.NodeConfig>());
                                 }
                                 tablesRouteMap.get(tableName).add(node);
+                                RouteResultsetNode  routeResultsetNode = new RouteResultsetNode(node.getDatanode(), node.getDatabase(), sql);
+                                rrs.addNode(routeResultsetNode);
+//                                logger.info("route size : {}", rrs.size());
+//                                for(RouteResultsetNode iter : rrs.getNodes()){
+//                                    logger.info("node : {}", iter);
+//                                }
                             }
                         }
 
@@ -859,6 +874,8 @@ public class RouterUtil {
                 }
             }
         }
+        // ???
+        rrs.setFinishedRoute(true);
     }
 
     //

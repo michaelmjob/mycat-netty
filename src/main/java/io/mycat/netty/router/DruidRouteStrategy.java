@@ -51,9 +51,10 @@ public class DruidRouteStrategy extends AbstractRouteStrategy {
          * DruidParser 解析过程中已完成了路由的直接返回
          * ???
          */
-        if (rrs.isFinishedRoute()) {
-            return rrs;
-        }
+//        if (rrs.isFinishedRoute()) {
+//            return rrs;
+//        }
+//        rrs = new RouteResultset();
 
         /**
          * 最简单的select语句
@@ -72,28 +73,29 @@ public class DruidRouteStrategy extends AbstractRouteStrategy {
         }
 
         // 获取所有的路由计算单元,
-        // 计算路由， 放入nodeset
+        // 计算路由, 放入nodeset
         // 一个 RouteCalculateUnit 对应一个 RouteResultset
         // 获取路由结果
-        SortedSet<RouteResultsetNode> nodeSet = new TreeSet<>();
+        // 真的需要排序吗 ?
+//        SortedSet<RouteResultsetNode> nodeSet = new TreeSet<>();
         for (RouteCalculateUnit unit : druidParser.getCtx().getRouteCalculateUnits()) {
-            //
-            RouteResultset rrsTmp = RouterUtil.tryRouteForTables(schema, druidParser.getCtx(), unit, rrs, isSelect(statement));
-            if (rrsTmp != null) {
-                for (RouteResultsetNode node : rrsTmp.getNodes()) {
-                    nodeSet.add(node);
-                }
-            }
+
+            // 目前直接修改 rrss 实现，弊端，不能够去重
+            RouterUtil.tryRouteForTables(schema, druidParser.getCtx(), unit, rrs, isSelect(statement));
+//            RouteResultset rrsTmp = RouterUtil.tryRouteForTables(schema, druidParser.getCtx(), unit, rrs, isSelect(statement));
+//            if (rrsTmp != null) {
+//                for (RouteResultsetNode node : rrsTmp.getNodes()) {
+//                    logger.info("node ele : {}", node);
+//                    logger.info(node.getDatabase() + "; " + node.getDataNodeName() + "; " + node.getSql());
+//                    nodeSet.add(node);
+//                }
+//            }
         }
 
-        // 转换格式 set -> array
-        RouteResultsetNode[] nodes = new RouteResultsetNode[nodeSet.size()];
-        int i = 0;
-        for (Iterator<RouteResultsetNode> iterator = nodeSet.iterator(); iterator.hasNext(); ) {
-            nodes[i] = iterator.next();
-            i++;
-        }
-        rrs.setNodes(nodes);
+////        rrs.clearNodes();
+//        nodeSet.forEach(iter -> {
+//            rrs.addNode(iter);
+//        });
 
         return rrs;
     }

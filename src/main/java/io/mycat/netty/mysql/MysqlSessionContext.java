@@ -121,8 +121,9 @@ public class MysqlSessionContext {
     private void send0() throws UnsupportedEncodingException {
 
         // 检查路由结果是否为空
-        RouteResultsetNode[] nodes = rrs.getNodes();
-        if (nodes == null || nodes.length == 0) {
+//        RouteResultsetNode[] nodes = rrs.getNodes();
+//        if (nodes == null || nodes.length == 0) {
+        if(rrs.size() == 0){
             ErrorPacket errorPacket = new ErrorPacket();
             String msg = "No dataNode found ,please check tables defined in schema:" + getFrontSession().getSchema();
             errorPacket.errno =  ErrorCode.ER_NO_DB_ERROR;
@@ -135,7 +136,8 @@ public class MysqlSessionContext {
 
         ResponseHandler responseHandler = null;
 
-        if (nodes.length == 1) {
+//        if (nodes.length == 1) {
+        if(rrs.size() == 1){
             responseHandler = new SingleNodeHandler(rrs, this);
         } else {
             boolean autocommit = getFrontSession().isAutocommit();

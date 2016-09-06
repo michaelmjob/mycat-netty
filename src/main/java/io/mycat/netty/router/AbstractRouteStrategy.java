@@ -48,7 +48,7 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
 //        }
 
 
-        String schema = mysqlSessionContext.getFrontSession().getSchema();
+        String schema = mysqlSessionContext.getFrontSession().getSchema().toUpperCase();
         SchemaConfig schemaConfig = Configuration.getSchemaCofnigs().get(schema);
         String charset = mysqlSessionContext.getFrontSession().getCharset();
 
@@ -56,7 +56,7 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
         // system info is not necessary
         RouteResultset returnedSet = routeSystemInfo(schemaConfig, sqlType, stmt, rrs);
         if (returnedSet == null) {
-            rrs = routeNormalSqlWithAST(schemaConfig, stmt, rrs, charset);
+            return routeNormalSqlWithAST(schemaConfig, stmt, rrs, charset);
         }
 
         return rrs;

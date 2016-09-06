@@ -19,6 +19,18 @@
             </datasource>
         </table>
 
+        <table name="tb1">
+            <partition class="io.mycat.netty.router.partition.PartitionByMod">
+                <property name="partitionKey">order_id</property>
+                <property name="count">2</property>
+            </partition>
+
+            <datasource>
+                <node datanode="d0" database="db0"/>
+                <node datanode="d1" database="db1"/>
+            </datasource>
+        </table>
+
     </schema>
 
 

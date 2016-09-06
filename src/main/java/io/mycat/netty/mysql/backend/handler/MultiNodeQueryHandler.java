@@ -56,7 +56,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     // remove autoCommit
     public MultiNodeQueryHandler(RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext) {
         super(rrs, sessionContext);
-        nodeCount = new AtomicInteger(rrs.getNodes().length);
+        nodeCount = new AtomicInteger(rrs.size());
         assert !Objects.isNull(rrs.getNodes());
 
         this.limitSize = rrs.getLimitSize();

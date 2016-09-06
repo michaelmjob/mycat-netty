@@ -81,7 +81,7 @@ public class XMLSchemaLoader {
             partition.init(kv);
             PartitionConfig config = new PartitionConfig();
             config.setPartition(partition);
-            config.setColumn(kv.get("partitionKey"));
+            config.setColumn(kv.get("partitionKey").toUpperCase());
 //            Partition partition = Thread.currentThread().getContextClassLoader().loadClass(clazz);
 //            Partition partition =  Class.forName(clazz);
             return config;

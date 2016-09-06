@@ -57,6 +57,10 @@ public class MysqlFrontendSession implements Session {
 
     private long sequenceId;
 
+
+    // TODO: add later
+    private String sql;
+
     public boolean isClosed(){
         return !this.channel.isOpen() ||
                 !this.channel.isActive() ||
@@ -162,13 +166,6 @@ public class MysqlFrontendSession implements Session {
         return this.charset;
     }
 
-    /**
-     * @return the schema
-     */
-    public String getSchema() {
-        return this.schema;
-//        return handshakeResponse.schema;
-    }
 
     /**
      * @return the engineConnection

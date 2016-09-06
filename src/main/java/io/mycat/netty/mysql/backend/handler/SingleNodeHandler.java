@@ -28,7 +28,7 @@ public class SingleNodeHandler extends AbstractResponseHandler implements Respon
 
     public SingleNodeHandler(RouteResultset rrs, MysqlSessionContext mysqlSessionContext){
         this.rrs = rrs;
-        this.node = rrs.getNodes()[0];
+        this.node = rrs.getNodes().get(0) ;
         assert !Objects.isNull(this.node);
 
         this.mysqlSessionContext = mysqlSessionContext;
