@@ -25,6 +25,7 @@ package io.mycat.netty.mysql.packet;
 
 import io.mycat.netty.mysql.proto.Proto;
 import io.netty.buffer.ByteBuf;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author mycat
  */
+@NoArgsConstructor
 public class ErrorPacket extends MySQLPacket {
 	private static Logger logger = LoggerFactory.getLogger(ErrorPacket.class);
 
@@ -57,6 +59,7 @@ public class ErrorPacket extends MySQLPacket {
 	public byte mark = SQLSTATE_MARKER;
 	public byte[] sqlState = DEFAULT_SQLSTATE;
 	public byte[] message;
+
 
 	public void read(BinaryPacket bin) {
 		packetLength = bin.packetLength;

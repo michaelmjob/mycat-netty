@@ -89,17 +89,17 @@ public class SingleNodeHandlerTest extends BackendTest {
         // whether should live in a cycle
         // should have a status change circle
 
-        // insert success
-        testSQL(routeResultset, mySQLPacket -> {
-            Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
-        });
-        logger.info("first one : send && receive finish");
-
-        // insert fail
-        testSQL(routeResultset, mySQLPacket -> {
-            Assert.assertTrue("insert distinct pakcet should be errPacket", mySQLPacket instanceof ErrorPacket);
-        });
-        logger.info("second : send && receive finish");
+//        // insert success
+//        testSQL(routeResultset, mySQLPacket -> {
+//            Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
+//        });
+//        logger.info("first one : send && receive finish");
+//
+//        // insert fail
+//        testSQL(routeResultset, mySQLPacket -> {
+//            Assert.assertTrue("insert distinct pakcet should be errPacket", mySQLPacket instanceof ErrorPacket);
+//        });
+//        logger.info("second : send && receive finish");
 
         // select
         routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
@@ -137,9 +137,9 @@ public class SingleNodeHandlerTest extends BackendTest {
         });
     }
 
-    // 榨干session, 使重建session
-    public void testConn(){
-        // according to logic, just using the bloking send2Cient method to implement the conn accquired scene.
-
-    }
+//    // 榨干session, 使重建session
+//    public void testConn(){
+//        // according to logic, just using the bloking send2Cient method to implement the conn accquired scene.
+//
+//    }
 }

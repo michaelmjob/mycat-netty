@@ -9,7 +9,7 @@ import java.sql.SQLNonTransientException;
  */
 public interface RouteStrategy {
 
-    public RouteResultset route(int sqlType, String origSQL, MysqlSessionContext mysqlSessionContext)
+    public RouteResultset route(MysqlSessionContext mysqlSessionContext)
             throws SQLNonTransientException;
 
 

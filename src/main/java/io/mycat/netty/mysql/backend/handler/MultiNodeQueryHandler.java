@@ -41,8 +41,10 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
 
     // should be modifield : update/insert/delete no resultsetpacket
 //     select resultsetpacket
-    private OkPacket ok = new OkPacket();
-    private ResultSetPacket result = new ResultSetPacket();
+    private OkPacket ok = null;
+//            = new OkPacket();
+    private ResultSetPacket result = null;
+//        new ResultSetPacket();
 
     // limit N,M
     private int limitStart;
@@ -54,7 +56,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
 
     // TODO: add limit support.
     // remove autoCommit
-    public MultiNodeQueryHandler(RouteResultset rrs, boolean autocommit, MysqlSessionContext sessionContext) {
+    public MultiNodeQueryHandler(RouteResultset rrs, MysqlSessionContext sessionContext) {
         super(rrs, sessionContext);
         nodeCount = new AtomicInteger(rrs.size());
         assert !Objects.isNull(rrs.getNodes());
@@ -87,6 +89,7 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
             isFailed.set(true);
             errorMsg = new StringBuilder();
             errorMsg.append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
+            mysqlSessionContext.process();
         } else {
             errorMsg.append(";").append(String.valueOf(packet.errno)).append(":").append(new String(packet.message));
         }
@@ -130,6 +133,10 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
 
         lock.lock();
         try {
+            if(Objects.isNull(ok)){
+                ok = new OkPacket();
+                mysqlSessionContext.process();
+            }
             ok.affectedRows += packet.affectedRows;
             if (packet.insertId > 0) {
                 ok.insertId = (ok.insertId == 0) ? packet.insertId : Math.min(ok.insertId, packet.insertId);

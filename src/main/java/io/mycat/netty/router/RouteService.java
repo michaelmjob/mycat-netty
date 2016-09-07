@@ -1,6 +1,7 @@
 package io.mycat.netty.router;
 
 import io.mycat.netty.Session;
+import io.mycat.netty.mysql.MySQLHandshakeHandler;
 import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.parser.ServerParse;
 import lombok.NoArgsConstructor;
@@ -18,15 +19,13 @@ import java.util.Map;
 public class RouteService {
     private static final Logger logger = LoggerFactory.getLogger(RouteService.class);
 
-    public static RouteResultset route(int sqlType, String stmt, MysqlSessionContext mysqlSessionContext) throws SQLNonTransientException {
+    public static RouteResultset route(MysqlSessionContext mysqlSessionContext) throws SQLNonTransientException {
 
-        RouteResultset rrs = null;
-
+        String stmt = mysqlSessionContext.getSql();
+        int sqlType = mysqlSessionContext.getType();
 
         stmt = stmt.trim();
-        rrs = RouteStrategyFactory.getRouteStrategy().route(sqlType, stmt, mysqlSessionContext);
-//        rrs = RouteStrategyFactory.getRouteStrategy().route(sysconf, schema, sqlType, stmt,
-//                charset, sc);
+        RouteResultset rrs = RouteStrategyFactory.getRouteStrategy().route(mysqlSessionContext);
         return rrs;
 
 ////        后期添加hintsql的支持

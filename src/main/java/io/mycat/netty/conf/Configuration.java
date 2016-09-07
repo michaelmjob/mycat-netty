@@ -3,6 +3,7 @@ package io.mycat.netty.conf;
 import io.mycat.netty.mysql.backend.SessionService;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.MysqlDataSource;
+import io.mycat.netty.router.RouteStrategyFactory;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -39,7 +40,10 @@ public class Configuration {
             System.exit(-1);
         }
 
+        // should move 2 startUp
         sessionService.init(schemaLoader);
+
+        RouteStrategyFactory.init();
 
     }
 

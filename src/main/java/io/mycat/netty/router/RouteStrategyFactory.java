@@ -10,7 +10,7 @@ public class RouteStrategyFactory {
 
     private static ConcurrentHashMap<String, RouteStrategy> strategies = new ConcurrentHashMap<>();
 
-    public void init(){
+    public static void init(){
         strategies.put("druidparser", new DruidRouteStrategy());
 
         routeStrategy = strategies.get("druidparser");

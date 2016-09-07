@@ -6,6 +6,7 @@ import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.router.RouteResultset;
 import lombok.Setter;
 
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -27,8 +28,10 @@ public class SyncMysqlSessionContext extends MysqlSessionContext {
     @Override
     public void send2Client(MySQLPacket mySQLPacket){
         super.send2Client(mySQLPacket);
+        if(!Objects.isNull(check)) {
+            check.accept(mySQLPacket);
+        }
         blocking.countDown();
-        check.accept(mySQLPacket);
     }
 
     public void blocking() throws InterruptedException {

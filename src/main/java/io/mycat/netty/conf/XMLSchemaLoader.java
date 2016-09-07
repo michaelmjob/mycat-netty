@@ -129,14 +129,14 @@ public class XMLSchemaLoader {
 
 //            schemaNode.getChildNodes()
 
-            TableConfig tableConfig = new TableConfig();
+            TableConfig tableConfig = null;
             // instance.getSchemaConfig().tables;
             // deal with table
             for (int j = 0; j < tableNodes.getLength(); j++) {
+                tableConfig = new TableConfig();
                 Element tableNode = (Element) tableNodes.item(j);
                 String name = tableNode.getAttribute("name");
 
-//                Element partitionNode = (Element)tableNode.getElementsByTagName("partition").item(0);
                 if (!tableNode.getParentNode().getNodeName().equals("schema")) {
                     continue;
                 }
@@ -165,7 +165,7 @@ public class XMLSchemaLoader {
                 for (int h = 0; h < subTableNodes.getLength(); h++) {
                     String name = ((Element) subTableNodes.item(h)).getAttribute("name");
                     // primary key is null
-                    getSchemaConfigs().get(schemaName).getTables().put(name,
+                    getSchemaConfigs().get(schemaName.toUpperCase()).getTables().put(name,
                             new TableConfig(name, config.getColumn(), nodes, null, config));
                 }
             }

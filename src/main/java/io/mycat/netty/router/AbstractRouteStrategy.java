@@ -18,7 +18,7 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
 
 
     @Override
-    public RouteResultset route(int sqlType, String origSQL, MysqlSessionContext mysqlSessionContext) throws SQLNonTransientException {
+    public RouteResultset route(MysqlSessionContext mysqlSessionContext) throws SQLNonTransientException {
 
         // beforeRouteProcess, 全局表的逻辑
 
@@ -33,11 +33,15 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
 //            stmt = RouterUtil.removeSchema(stmt, schema.getName());
 //        }
 
-        String stmt = origSQL;
+
+        String stmt = mysqlSessionContext.getSql();
+        int sqlType = mysqlSessionContext.getType();
+
+
         RouteResultset rrs = new RouteResultset(stmt, sqlType);
 
         if (mysqlSessionContext != null ) {
-            rrs.setAutocommit(mysqlSessionContext.getFrontSession().isAutocommit());
+            rrs.setAutocommit(mysqlSessionContext.isAutocommit());
         }
 
         /**
@@ -48,9 +52,9 @@ public abstract class AbstractRouteStrategy implements RouteStrategy{
 //        }
 
 
-        String schema = mysqlSessionContext.getFrontSession().getSchema().toUpperCase();
+        String schema = mysqlSessionContext.getSchema();
         SchemaConfig schemaConfig = Configuration.getSchemaCofnigs().get(schema);
-        String charset = mysqlSessionContext.getFrontSession().getCharset();
+        String charset = mysqlSessionContext.getCharset();
 
         // two steps.
         // system info is not necessary

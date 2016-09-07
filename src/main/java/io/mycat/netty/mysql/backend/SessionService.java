@@ -31,7 +31,7 @@ public class SessionService {
     public static Host getSession(String datanode, boolean readOnly) {
         DataSource dataSource = dataSources.get(datanode);
         Host host;
-        // TODO: 使用最少channel算法选取read
+        // TODO: 使用最少channel算法选取read, 需要 一个queue store session to send
         if (readOnly) {
             host = dataSource.getReadHosts()[0];
         } else {
