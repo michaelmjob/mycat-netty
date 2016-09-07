@@ -13,12 +13,14 @@ import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.netty.channel.Channel;
 import junit.framework.Assert;
 import org.junit.*;
+import org.junit.runner.Result;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -34,7 +36,7 @@ public class handshakeTest {
 
     private static NettyBackendSession session;
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws InterruptedException {
         session = new NettyBackendSession();
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
@@ -45,12 +47,15 @@ public class handshakeTest {
         session.setPort(3306);
 
         // 先使用 session服用的模式
-        ResponseHandler responseHandler = Mockito.spy(ResponseHandler.class);
-        Mockito.doNothing().when(responseHandler).okResponse(Mockito.any(OkPacket.class), Mockito.any(NettyBackendSession.class));
-
-        session.setResponseHandler(responseHandler);
+//        ResponseHandler responseHandler = Mockito.spy(ResponseHandler.class);
+//        Mockito.doNothing().when(responseHandler).okResponse(Mockito.any(OkPacket.class), Mockito.any(NettyBackendSession.class));
+//        session.setResponseHandler(responseHandler);
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        session.setResponseHandler(new BlockingResponseHandler(countDownLatch));
         session.initConnect();
 
+        countDownLatch.await();
+        logger.info("handshake success");
         // add mokito 4 back funciton
         // can mock part of function
 //        Host host = new EmptyHost();
@@ -67,11 +72,13 @@ public class handshakeTest {
 
     private CountDownLatch countDownLatch;
 
-
+    private static BlockingResponseHandler blockingResponseHandler;
     @Before
     public void setUp() {
         countDownLatch = new CountDownLatch(1);
-        session.setResponseHandler(new BlockingResponseHandler(countDownLatch));
+
+        blockingResponseHandler = new BlockingResponseHandler(countDownLatch);
+        session.setResponseHandler(blockingResponseHandler);
     }
 
     @Test
@@ -80,10 +87,17 @@ public class handshakeTest {
         logger.info("show databases");
         session.sendQueryCmd("show databases");
 
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof ResultSetPacket;
+            ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
+            ROWOutput(packet.getRows());
+            Assert.assertNull(session.getErrorPacket());
+        });
+
         countDownLatch.await();
-        ROWOutput(session.getResultSetPacket().getRows());
-//        logger.info("show database finish connect, resultsetPacket {}", session.getResultSetPacket().getPacket());
-        Assert.assertNull(session.getErrorPacket());
+
+        logger.info("countdown!");
+
     }
 
     @Test
@@ -92,10 +106,15 @@ public class handshakeTest {
         logger.info("use db0");
         session.sendQueryCmd("use  db0");
 
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof OkPacket;
+            OKOutput((OkPacket)mySQLPacket);
+            Assert.assertNull(session.getErrorPacket());
+        });
+
         countDownLatch.await();
 
-        ROWOutput(session.getResultSetPacket().getRows());
-        Assert.assertNull(session.getErrorPacket());
+        logger.info("countdown!");
     }
 
     @Test
@@ -105,8 +124,15 @@ public class handshakeTest {
         session.sendQueryCmd("show tables");
 
 
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof ResultSetPacket;
+            ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
+            ROWOutput(packet.getRows());
+        });
+
         countDownLatch.await();
-        ROWOutput(session.getResultSetPacket().getRows());
+
+        logger.info("countdown!");
 
         Assert.assertNull(session.getErrorPacket());
     }
@@ -115,14 +141,17 @@ public class handshakeTest {
     @Test
     public void test_4_Insert() throws InterruptedException {
         String sql = "insert into mytable(t_title, t_author) values('i_title', 'i_author');";
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof OkPacket;
+            OKOutput((OkPacket) mySQLPacket);
+            Assert.assertNull(session.getErrorPacket());
+        });
 
         logger.info("begin insert table");
         session.sendQueryCmd(sql);
 
-
         countDownLatch.await();
-        OKOutput(session.getOkPacket());
-        Assert.assertNull(session.getErrorPacket());
+
     }
 
 
@@ -133,13 +162,19 @@ public class handshakeTest {
 
         // 单个运行，无数据，是正常的
         // 有数据也是正常的
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
+            ROWOutput(packet.getRows());
+
+            Assert.assertNull(session.getErrorPacket());
+        });
+
          session.sendQueryCmd("select * from mytable");
+
 
         countDownLatch.await();
 
-        ROWOutput(session.getResultSetPacket().getRows());
-
-        Assert.assertNull(session.getErrorPacket());
+        logger.info("countdown!");
     }
 
 
@@ -147,15 +182,18 @@ public class handshakeTest {
     public void test_6_Update() throws InterruptedException {
         String sql = "update  mytable set t_author='mysql_proxy' where t_title='i_title'";
 
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof OkPacket;
+            OKOutput((OkPacket)mySQLPacket);
+            Assert.assertNull(session.getErrorPacket());
+        });
+
 
         logger.info("begin update table");
         session.sendQueryCmd(sql);
 
         countDownLatch.await();
 
-        OKOutput(session.getOkPacket());
-//        logger.info("finish update ok connect : {}", session.getOkPacket().getPacket());
-        Assert.assertNull(session.getErrorPacket());
     }
 
 
@@ -165,12 +203,16 @@ public class handshakeTest {
     public void test_7_Delete() throws InterruptedException {
         String sql = "delete from mytable where t_title='i_title'";
 
+        blockingResponseHandler.setCheck(mySQLPacket -> {
+            assert mySQLPacket instanceof OkPacket;
+            OKOutput((OkPacket) mySQLPacket);
+            Assert.assertNull(session.getErrorPacket());
+        });
+
         session.sendQueryCmd(sql);
 
         countDownLatch.await();
 
-        OKOutput(session.getOkPacket());
-        Assert.assertNull(session.getErrorPacket());
     }
 
     private void ROWOutput(List<RowDataPacket> rows) {

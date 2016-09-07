@@ -115,10 +115,11 @@ public class MultiNodeHandlerTest extends BackendTest {
         blockingMysqlSessionContext.getSession();
 
         blockingMysqlSessionContext.setBlocking(new CountDownLatch(1));
+        blockingMysqlSessionContext.setCheck(check);
+        blockingMysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.RECEIVE);
+
         blockingMysqlSessionContext.send();
 
-
-        blockingMysqlSessionContext.setCheck(check);
         blockingMysqlSessionContext.blocking();
         logger.info("sql send && receive finish");
     }

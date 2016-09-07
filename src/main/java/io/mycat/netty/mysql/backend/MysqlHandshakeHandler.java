@@ -66,9 +66,9 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //                if(!this.out.release()){
 //                    logger.error("release buffer failed", this);
 //                }
+                channelHandlerContext.pipeline().remove(this);
                 session.getResponseHandler().okResponse(ok, session);
 //                this.session.getCountDownLatch().countDown();
-                channelHandlerContext.pipeline().remove(this);
                 break;
             case ErrorPacket.FIELD_COUNT:
                 // 0xff
@@ -80,6 +80,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 //                if(!this.out.release()){
 //                    logger.error("release buffer failed", this);
 //                }
+                // whether need to rmeove
                 session.getResponseHandler().errorResponse(err, session);
 //                this.session.getCountDownLatch().countDown();
                 break;

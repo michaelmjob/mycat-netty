@@ -65,7 +65,7 @@ public class MysqlSessionContext {
                     // String sql, int type, SchemaConfig schema
                     next = route();
                     currentStatus = STATUS.GETSESSION;
-                    break;
+//                    break;
                 case GETSESSION:
                     logger.info("get session");
                     next = getSession();
@@ -213,7 +213,7 @@ public class MysqlSessionContext {
     }
 
 
-    private enum STATUS{
+    public static enum STATUS{
         INIT, ROUTE, GETSESSION, SEND2SERVER, RECEIVE, SEND2CLIENT, QUIT,
     }
 }

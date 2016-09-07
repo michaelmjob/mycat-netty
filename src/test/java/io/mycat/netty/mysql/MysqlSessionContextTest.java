@@ -45,8 +45,27 @@ public class MysqlSessionContextTest {
         schemaLoader.setSchemaFile("/SessionContext.xml");
         Configuration.setSchemaLoader(schemaLoader);
         Configuration.init();
+
+
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+        System.out.println(" ============ ");
+
     }
 
+    // d1 :
+    // insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(1,1,1, '2016-01-01', '2016-01-01', 1);
+    // insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(3,3,3, '2016-01-01', '2016-01-01', 1);
+    // insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(5,5,5, '2016-01-01', '2016-01-01', 1);
+    // d0 :
+    // insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(2,2,2, '2016-01-01', '2016-01-01', 1);
+    // insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(4,4,4, '2016-01-01', '2016-01-01', 1);
     @Test
     public void testSelect() throws InterruptedException {
         // single select

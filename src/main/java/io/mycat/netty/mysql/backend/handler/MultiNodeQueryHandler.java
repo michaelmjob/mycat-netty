@@ -206,9 +206,10 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
         try {
             if (!fieldsRtn.get()) {
                 // should set packetId++?
+                result = new ResultSetPacket();
                 result.setHeader(resultSetPacket.getHeader());
                 result.setFields(resultSetPacket.getFields());
-                resultSetPacket.setEof(resultSetPacket.getEof());
+                result.setEof(resultSetPacket.getEof());
                 packetId = (byte)(resultSetPacket.getFields().size() + 2);
 
                 // for  check

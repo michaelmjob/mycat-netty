@@ -93,7 +93,7 @@ public class NettyBackendSession implements BackendSession {
     // session not remove originaly, dependent on Host
     public void back() {
         this.responseHandler = null;
-//        resultSetPacket = new ResultSetPacket();
+        resultSetPacket.init();
         owner.back(sessionId);
     }
 

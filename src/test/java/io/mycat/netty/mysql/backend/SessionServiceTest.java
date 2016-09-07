@@ -89,6 +89,7 @@ public class SessionServiceTest extends BackendTest{
         host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
 
+        // ensure session back
     }
 
     // ??
