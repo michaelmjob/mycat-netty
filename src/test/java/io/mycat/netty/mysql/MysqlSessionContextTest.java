@@ -1,5 +1,6 @@
 package io.mycat.netty.mysql;
 
+import io.mycat.netty.TestUtil;
 import io.mycat.netty.conf.Configuration;
 import io.mycat.netty.conf.XMLSchemaLoader;
 import io.mycat.netty.mysql.handler.SyncMysqlSessionContext;
@@ -75,10 +76,12 @@ public class MysqlSessionContextTest {
 
 
         mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
         mysqlSessionContext.setCheck(mySQLPacket -> {
             Assert.assertTrue("select  pakcet should be resultPacket", mySQLPacket instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket)mySQLPacket;
             logger.info("rows len : {}", resultSetPacket.getRows().size());
+            TestUtil.ROWOutput(resultSetPacket.getRows());
             Assert.assertEquals("tb0 field should be 3", 3, resultSetPacket.getFields().size());
             Assert.assertEquals("should only one data in db", 1, resultSetPacket.getRows().size());
         });
@@ -89,22 +92,25 @@ public class MysqlSessionContextTest {
 
 
         // multi select
-        stmt = "select order_id from tb0 where order_id in (1,2,3,4,5)";
+        stmt = "select order_id, product_id, usr_id from tb0 where order_id in (1,2,3,4,5)";
         mysqlSessionContext.setSql(stmt);
         mysqlSessionContext.setType(ServerParse.SELECT);
 
         mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
         mysqlSessionContext.setCheck(mySQLPacket -> {
             Assert.assertTrue("select  pakcet should be resultPacket", mySQLPacket instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket)mySQLPacket;
             logger.info("rows len : {}", resultSetPacket.getRows().size());
+            TestUtil.ROWOutput(resultSetPacket.getRows());
             Assert.assertEquals("tb0 field should be 3", 3, resultSetPacket.getFields().size());
-            Assert.assertEquals("should only one data in db", 1, resultSetPacket.getRows().size());
+            Assert.assertEquals("should only one data in db", 13, resultSetPacket.getRows().size());
         });
         // should route, send2Server, then async, receive, write2client
         mysqlSessionContext.process();
 
         mysqlSessionContext.blocking();
+        logger.info("finish ");
     }
 
 //    @Test

@@ -1,5 +1,6 @@
 package io.mycat.netty.mysql.backend;
 
+import io.mycat.netty.TestUtil;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.BlockingResponseHandler;
@@ -90,7 +91,7 @@ public class handshakeTest {
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof ResultSetPacket;
             ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
-            ROWOutput(packet.getRows());
+            TestUtil.ROWOutput(packet.getRows());
             Assert.assertNull(session.getErrorPacket());
         });
 
@@ -108,7 +109,7 @@ public class handshakeTest {
 
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
-            OKOutput((OkPacket)mySQLPacket);
+            TestUtil.OKOutput((OkPacket) mySQLPacket);
             Assert.assertNull(session.getErrorPacket());
         });
 
@@ -127,7 +128,7 @@ public class handshakeTest {
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof ResultSetPacket;
             ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
-            ROWOutput(packet.getRows());
+            TestUtil.ROWOutput(packet.getRows());
         });
 
         countDownLatch.await();
@@ -143,7 +144,7 @@ public class handshakeTest {
         String sql = "insert into mytable(t_title, t_author) values('i_title', 'i_author');";
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
-            OKOutput((OkPacket) mySQLPacket);
+            TestUtil.OKOutput((OkPacket) mySQLPacket);
             Assert.assertNull(session.getErrorPacket());
         });
 
@@ -164,7 +165,7 @@ public class handshakeTest {
         // 有数据也是正常的
         blockingResponseHandler.setCheck(mySQLPacket -> {
             ResultSetPacket packet = (ResultSetPacket)mySQLPacket;
-            ROWOutput(packet.getRows());
+            TestUtil.ROWOutput(packet.getRows());
 
             Assert.assertNull(session.getErrorPacket());
         });
@@ -184,7 +185,7 @@ public class handshakeTest {
 
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
-            OKOutput((OkPacket)mySQLPacket);
+            TestUtil.OKOutput((OkPacket) mySQLPacket);
             Assert.assertNull(session.getErrorPacket());
         });
 
@@ -205,7 +206,7 @@ public class handshakeTest {
 
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
-            OKOutput((OkPacket) mySQLPacket);
+            TestUtil.OKOutput((OkPacket) mySQLPacket);
             Assert.assertNull(session.getErrorPacket());
         });
 
@@ -215,26 +216,4 @@ public class handshakeTest {
 
     }
 
-    private void ROWOutput(List<RowDataPacket> rows) {
-        logger.info("length : {}", rows.size());
-        for (RowDataPacket row : rows) {
-            StringBuilder builder = new StringBuilder();
-            for (byte[] field : row.fieldValues) {
-                logger.info("field value :  {}", field);
-                builder.append(new String(field)).append(" ,");
-            }
-            logger.info("field value : {}", builder.toString());
-        }
-    }
-
-    // 没有数据返回，就是null, 这里会报null指针异常，需要处理
-    public void OKOutput(OkPacket okPacket) {
-        logger.info("affectedRows : {}", okPacket.affectedRows);
-        logger.info("insertId : {}", okPacket.insertId);
-        logger.info("serverStatus : {}", okPacket.serverStatus);
-        logger.info("warningCount : {}", okPacket.warningCount);
-        if (!Objects.isNull(okPacket.message)) {
-            logger.info("message : {}", new String(okPacket.message));
-        }
-    }
 }
