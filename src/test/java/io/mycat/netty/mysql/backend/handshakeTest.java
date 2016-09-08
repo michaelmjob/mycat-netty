@@ -1,5 +1,6 @@
 package io.mycat.netty.mysql.backend;
 
+import io.mycat.netty.H2TestUtil;
 import io.mycat.netty.TestUtil;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.backend.datasource.Host;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -36,8 +38,12 @@ public class handshakeTest {
     private static final Logger logger = LoggerFactory.getLogger(handshakeTest.class);
 
     private static NettyBackendSession session;
+
+
     @BeforeClass
-    public static void beforeClass() throws InterruptedException {
+    public static void beforeClass() throws InterruptedException, SQLException {
+        H2TestUtil.beforeClass();
+
         session = new NettyBackendSession();
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
