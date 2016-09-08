@@ -91,14 +91,4 @@ public class MySQLProtocolHandler extends ProtocolHandler {
             this.mysqlSession.writeAndFlush(err);
         }
     }
-
-//    private void success(Channel channel) {
-//        logger.info("success info return form MySQLHandshakeHandler");
-//        ByteBuf out = channel.alloc().buffer();
-//        OK ok = new OK();
-//        ok.sequenceId = 2;
-//        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
-//        out.writeBytes(ok.toPacket());
-//        channel.writeAndFlush(out);
-//    }
 }

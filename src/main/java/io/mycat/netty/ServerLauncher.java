@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
  *
  */
 public class ServerLauncher {

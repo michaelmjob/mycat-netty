@@ -18,6 +18,7 @@ package io.mycat.netty.mysql;
 import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.proto.*;
+import io.mycat.netty.router.parser.util.ObjectUtil;
 import io.mycat.netty.util.CharsetUtil;
 import io.mycat.netty.Session;
 
@@ -25,12 +26,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author <a href="mailto:jorgie.mail@gmail.com">jorgie li</a>
@@ -38,6 +38,7 @@ import java.util.Map;
  */
 @Data
 public class MysqlFrontendSession implements Session {
+    private static Logger logger = LoggerFactory.getLogger(MysqlFrontendSession.class);
 
     private Channel channel;
     // maybe error!
@@ -57,6 +58,7 @@ public class MysqlFrontendSession implements Session {
 
     private long sequenceId;
 
+//    private MysqlSessionContext mysqlSessionContext;
 
     // TODO: add later
     private String sql;
@@ -76,6 +78,7 @@ public class MysqlFrontendSession implements Session {
     }
 
     public void writeAndFlush(byte[] bytes){
+        logger.info("write to client  by front session");
         this.transport.out.writeBytes(bytes);
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
@@ -166,14 +169,6 @@ public class MysqlFrontendSession implements Session {
         return this.charset;
     }
 
-
-    /**
-     * @return the engineConnection
-     */
-    public Connection getEngineConnection() {
-        return engineConnection;
-    }
-
     /**
      * @param engineConnection the engineConnection to set
      */
@@ -209,12 +204,18 @@ public class MysqlFrontendSession implements Session {
         channel.attr(Session.CHANNEL_SESSION_KEY).set(this);
     }
 
+    //  TODO: check resource close
     public void close() {
         attachments.clear();
         if (channel != null && channel.isOpen()) {
             channel.attr(Session.CHANNEL_SESSION_KEY).remove();
             channel.close();
         }
+//        context clear resource rightly after send2client
+//        if(!Objects.isNull(mysqlSessionContext)){
+//            mysqlSessionContext.close();
+//        }
+        //
     }
     
     public boolean setCharsetIndex(int ci) {

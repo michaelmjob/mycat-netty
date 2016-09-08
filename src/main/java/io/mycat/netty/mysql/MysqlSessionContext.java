@@ -34,6 +34,7 @@ public class MysqlSessionContext {
     // session interface should ultilize
     private MysqlFrontendSession frontSession;
 
+    // should remove
     private String sql;
     private int type;
     private RouteResultset rrs;
@@ -44,6 +45,23 @@ public class MysqlSessionContext {
     public MysqlSessionContext(MysqlFrontendSession frontSession){
         this.frontSession = frontSession;
         this.currentStatus = STATUS.INIT;
+        // should remove
+        this.sql = frontSession.getSql();
+    }
+
+    public MysqlSessionContext(MysqlFrontendSession frontSession, int type){
+        this.frontSession = frontSession;
+        this.currentStatus = STATUS.INIT;
+        this.sql = frontSession.getSql();
+        this.type = type;
+    }
+
+//    public String getSql(){
+//        return this.frontSession.getSql();
+//    }
+
+    public void close(){
+
     }
 
     private void releaseBackendConnections(){
@@ -59,7 +77,7 @@ public class MysqlSessionContext {
                     logger.info("init");
 
                     currentStatus = STATUS.ROUTE;
-                    break;
+//                    break;
                 case ROUTE:
                     logger.info("route");
                     // String sql, int type, SchemaConfig schema
@@ -100,7 +118,7 @@ public class MysqlSessionContext {
         try {
             errorPacket.message = errorMsg.getBytes(getCharset());
         } catch (UnsupportedEncodingException e) {
-            logger.error("never happen error : {} for sql : {}", e, sql);
+            logger.error("never happen error : {} for sql : {}", e, getSql());
             errorPacket.message = errorMsg.getBytes();
         }
         send2Client(errorPacket);
@@ -126,12 +144,12 @@ public class MysqlSessionContext {
         try {
             rrs = RouteService.route(this);
             if(Objects.isNull(rrs) || rrs.getNodes().size() == 0){
-                logger.info("route fail for sql : {}", sql);
+                logger.info("route fail for sql : {}", getSql());
                 throw new IllegalArgumentException("route failed");
             }
         } catch (Exception e) {
             StringBuilder s = new StringBuilder();
-            logger.warn(s.append(this).append(sql).toString() + " err:" + e.toString(), e);
+            logger.warn(s.append(this).append(getSql()).toString() + " err:" + e.toString(), e);
             String msg = e.getMessage();
             logger.info("error msg : " + msg);
 

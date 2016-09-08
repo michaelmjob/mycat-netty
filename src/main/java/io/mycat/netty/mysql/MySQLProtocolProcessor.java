@@ -44,9 +44,11 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 this.getSession().sendOk();
                 break;
             case Flags.COM_QUIT:
+                // TODO: move sessionContext here to close
                 getTrace().protocol("COM_QUIT");
                 getSession().close();
-                getProtocolTransport().close();
+
+//                getProtocolTransport().close();
                 break;
             case Flags.COM_PROCESS_KILL:
                 getTrace().protocol("COM_PROCESS_KILL");
@@ -150,6 +152,7 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 processRollback(sql, rs >>> 8);
                 break;
             default:
+                // 后端准备执行
                 execute(sql, rs);
         }
     }
@@ -398,34 +401,40 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         }
     }
 
+    // 后端执行的入口
     private void execute(String sql, int type) throws Exception {
-        Connection conn = getSession().getEngineConnection();
-        Statement stmt = null;
-        ResultSet rs = null;
+        getSession().setSql(sql);
         switch (type) {
             case ServerParse.SELECT:
+                logger.info("select");
                 // "show" as "select" query
                 // @author little-pan
                 // @since 2016-07-13
+                // 这里放到处理队列中操作, 还是线程执行
+//                getSession().setSql(sql);
+                MysqlSessionContext mysqlSessionContext = new MysqlSessionContext(getSession(), type);
+                mysqlSessionContext.process();
             case ServerParse.SHOW:
-                try {
-                    stmt = conn.createStatement();
-                    rs = stmt.executeQuery(sql);
-                    sendResultSet(rs);
-                } finally {
-                    //JdbcUtils.closeSilently(stmt);
-                    //JdbcUtils.closeSilently(rs);
-                }
+                logger.info("show");
+//                try {
+//                    stmt = conn.createStatement();
+//                    rs = stmt.executeQuery(sql);
+//                    sendResultSet(rs);
+//                } finally {
+//                    //JdbcUtils.closeSilently(stmt);
+//                    //JdbcUtils.closeSilently(rs);
+//                }
                 break;
             case ServerParse.SET:
-                try {
-                    stmt = conn.createStatement();
-                    stmt.execute(sql);
-                    this.getSession().sendOk();
-                } finally {
-                    //JdbcUtils.closeSilently(stmt);
-                    //JdbcUtils.closeSilently(rs);
-                }
+//                try {
+//                    stmt = conn.createStatement();
+//                    stmt.execute(sql);
+//                    this.getSession().sendOk();
+//                } finally {
+//                    //JdbcUtils.closeSilently(stmt);
+//                    //JdbcUtils.closeSilently(rs);
+//                }
+                logger.info("set");
                 break;
 
             default:

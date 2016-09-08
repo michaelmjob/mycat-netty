@@ -21,10 +21,9 @@ public class RouteService {
 
     public static RouteResultset route(MysqlSessionContext mysqlSessionContext) throws SQLNonTransientException {
 
-        String stmt = mysqlSessionContext.getSql();
+        String stmt = mysqlSessionContext.getSql().trim();
         int sqlType = mysqlSessionContext.getType();
 
-        stmt = stmt.trim();
         RouteResultset rrs = RouteStrategyFactory.getRouteStrategy().route(mysqlSessionContext);
         return rrs;
 
