@@ -5,6 +5,7 @@ import io.mycat.netty.conf.Configuration;
 import io.mycat.netty.conf.XMLSchemaLoader;
 import io.mycat.netty.mysql.handler.SyncMysqlSessionContext;
 import io.mycat.netty.mysql.packet.MySQLPacket;
+import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.parser.ServerParse;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import junit.framework.Assert;
@@ -70,7 +71,8 @@ public class MysqlSessionContextTest {
     @Test
     public void testSelect() throws InterruptedException {
         // single select
-        String stmt = "select order_id, product_id, usr_id from tb0 where order_id=5";
+        String stmt;
+        stmt = "select order_id, product_id, usr_id from tb0 where order_id=5";
         mysqlSessionContext.setSql(stmt);
         mysqlSessionContext.setType(ServerParse.SELECT);
 
@@ -111,6 +113,81 @@ public class MysqlSessionContextTest {
 
         mysqlSessionContext.blocking();
         logger.info("finish ");
+
+
+
+
+        // insert
+        stmt = "insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(12,12,12, '2016-01-01', '2016-01-01', 1)";
+        mysqlSessionContext.setSql(stmt);
+        mysqlSessionContext.setType(ServerParse.INSERT);
+
+        mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
+        mysqlSessionContext.setCheck(mySQLPacket -> {
+            Assert.assertTrue("select  pakcet should be okPacket", mySQLPacket instanceof OkPacket);
+        });
+        // should route, send2Server, then async, receive, write2client
+        mysqlSessionContext.process();
+
+        mysqlSessionContext.blocking();
+        logger.info("finish ");
+
+
+        // update
+        stmt = "update tb0 set status=2 where order_id=12";
+        mysqlSessionContext.setSql(stmt);
+        mysqlSessionContext.setType(ServerParse.UPDATE);
+
+        mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
+        mysqlSessionContext.setCheck(mySQLPacket -> {
+            Assert.assertTrue("update pakcet should be okPacket", mySQLPacket instanceof OkPacket);
+        });
+        // should route, send2Server, then async, receive, write2client
+        mysqlSessionContext.process();
+
+        mysqlSessionContext.blocking();
+        logger.info("finish ");
+
+
+        // select ensurence
+        stmt = "select order_id, product_id, usr_id from tb0 where order_id=12";
+        mysqlSessionContext.setSql(stmt);
+        mysqlSessionContext.setType(ServerParse.SELECT);
+
+        mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
+        mysqlSessionContext.setCheck(mySQLPacket -> {
+            Assert.assertTrue("select  pakcet should be resultPacket", mySQLPacket instanceof ResultSetPacket);
+            ResultSetPacket resultSetPacket = (ResultSetPacket)mySQLPacket;
+            logger.info("rows len : {}", resultSetPacket.getRows().size());
+            TestUtil.ROWOutput(resultSetPacket.getRows());
+            Assert.assertEquals("tb0 field should be 3", 3, resultSetPacket.getFields().size());
+            Assert.assertEquals("should only one data in db", 1, resultSetPacket.getRows().size());
+        });
+        // should route, send2Server, then async, receive, write2client
+        mysqlSessionContext.process();
+
+        mysqlSessionContext.blocking();
+        logger.info("finish ");
+
+        // delete
+        stmt = "delete from tb0 where order_id=12";
+        mysqlSessionContext.setSql(stmt);
+        mysqlSessionContext.setType(ServerParse.DELETE);
+
+        mysqlSessionContext.setBlocking(new CountDownLatch(1));
+        mysqlSessionContext.setCurrentStatus(MysqlSessionContext.STATUS.INIT);
+        mysqlSessionContext.setCheck(mySQLPacket -> {
+            Assert.assertTrue("delete pakcet should be okPacket", mySQLPacket instanceof OkPacket);
+        });
+        // should route, send2Server, then async, receive, write2client
+        mysqlSessionContext.process();
+
+        mysqlSessionContext.blocking();
+        logger.info("finish ");
+
     }
 
 //    @Test

@@ -406,6 +406,9 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         getSession().setSql(sql);
         switch (type) {
             case ServerParse.SELECT:
+            case ServerParse.INSERT:
+            case ServerParse.DELETE:
+            case ServerParse.UPDATE:
                 logger.info("select");
                 // "show" as "select" query
                 // @author little-pan
@@ -414,29 +417,13 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
 //                getSession().setSql(sql);
                 MysqlSessionContext mysqlSessionContext = new MysqlSessionContext(getSession(), type);
                 mysqlSessionContext.process();
+                break;
             case ServerParse.SHOW:
                 logger.info("show");
-//                try {
-//                    stmt = conn.createStatement();
-//                    rs = stmt.executeQuery(sql);
-//                    sendResultSet(rs);
-//                } finally {
-//                    //JdbcUtils.closeSilently(stmt);
-//                    //JdbcUtils.closeSilently(rs);
-//                }
                 break;
             case ServerParse.SET:
-//                try {
-//                    stmt = conn.createStatement();
-//                    stmt.execute(sql);
-//                    this.getSession().sendOk();
-//                } finally {
-//                    //JdbcUtils.closeSilently(stmt);
-//                    //JdbcUtils.closeSilently(rs);
-//                }
                 logger.info("set");
                 break;
-
             default:
                 unsupported(sql);
         }

@@ -51,6 +51,29 @@ public class Select2Mysql {
                 logger.info( "result : order_di -> {},  product_id -> {},  user_id -> {}", result.getString(1), result.getString(2), result.getString(3));
             }
 
+            // insert db0
+            logger.info("insert db0");
+            stmt = conn.createStatement();
+            stmt.executeUpdate("insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(12,12,12, '2016-01-01', '2016-01-01', 1)");
+
+
+            // insert db1
+            logger.info("insert db1");
+            stmt = conn.createStatement();
+            stmt.executeUpdate("insert into tb0(order_id, product_id, usr_id, begin_time, end_time, status) values(13,13,13, '2016-01-01', '2016-01-01', 1)");
+
+
+            // update db0
+            logger.info("update db0");
+            stmt = conn.createStatement();
+            stmt.executeUpdate("update tb0 set status=2 where id=12");
+
+            // update db1
+            logger.info("update db1");
+            stmt = conn.createStatement();
+            stmt.executeUpdate("update tb0 set status=2 where id=13");
+
+
 
         } catch (SQLException se) {
             System.out.println("数据库操作失败！");
@@ -67,8 +90,4 @@ public class Select2Mysql {
             }
         }
     }
-
-
-
-
 }
