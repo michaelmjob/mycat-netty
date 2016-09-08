@@ -21,7 +21,7 @@ public class Select2Mysql {
 
     // need mysql mock
     @Test
-    public void testSQL() {
+    public void testSingleSQL() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -33,12 +33,24 @@ public class Select2Mysql {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(dbUrl, username, password);
+
+            // select from one datanode
             Statement stmt = conn.createStatement();
             ResultSet result = stmt.executeQuery("select order_id, product_id, usr_id from tb0 where order_id=5");
 
             while (result.next()) {
                 logger.info( "result : order_di -> {},  product_id -> {},  user_id -> {}", result.getString(1), result.getString(2), result.getString(3));
             }
+
+
+            // select from multi datanodes
+            stmt = conn.createStatement();
+            result = stmt.executeQuery("select order_id, product_id, usr_id from tb0 where order_id in (1,2,3,4,5)");
+
+            while (result.next()) {
+                logger.info( "result : order_di -> {},  product_id -> {},  user_id -> {}", result.getString(1), result.getString(2), result.getString(3));
+            }
+
 
         } catch (SQLException se) {
             System.out.println("数据库操作失败！");
