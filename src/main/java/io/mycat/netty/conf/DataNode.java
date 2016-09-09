@@ -14,6 +14,9 @@ import java.io.IOException;
  * Created by snow_young on 16/8/14.
  *
  * should remove this class, maybe extra
+ *
+ * read && write hosts consist of datasource, one datanode owns a datanode with specified database name,
+ * so, if database name is different, differs te datanode
  */
 @Data
 public class DataNode {

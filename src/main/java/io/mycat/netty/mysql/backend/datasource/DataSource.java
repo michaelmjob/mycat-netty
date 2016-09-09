@@ -38,8 +38,8 @@ public class DataSource {
     private DataSourceConfig.DatanodeConfig datanodeConfig;
     private String hostname;
 
-    public DataSource(String name, DataSourceConfig.DatanodeConfig datanodeConfig, String[] schemas){
-        this.hostname = name;
+    public DataSource(String hostname, DataSourceConfig.DatanodeConfig datanodeConfig, String[] schemas){
+        this.hostname = hostname;
         this.datanodeConfig = datanodeConfig;
         this.schemas = schemas;
     }

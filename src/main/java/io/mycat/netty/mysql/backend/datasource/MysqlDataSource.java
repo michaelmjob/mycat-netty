@@ -7,8 +7,8 @@ import io.mycat.netty.conf.DataSourceConfig;
  */
 public class MysqlDataSource extends DataSource{
 
-    public MysqlDataSource(String name, DataSourceConfig.DatanodeConfig datanodeConfig, String[] schemas) {
-        super(name, datanodeConfig, schemas);
+    public MysqlDataSource(String hostname, DataSourceConfig.DatanodeConfig datanodeConfig, String[] schemas) {
+        super(hostname, datanodeConfig, schemas);
 
         readHosts = new MysqlHost[datanodeConfig.getReadhost().size()];
         for(int i = 0; i < datanodeConfig.getReadhost().size(); i++){
