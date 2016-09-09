@@ -13,6 +13,7 @@ import java.util.*;
 
 /**
  * Created by snow_young on 16/8/29.
+ * should all be static
  */
 public class SessionService {
     private static final Logger logger = LoggerFactory.getLogger(SessionService.class);

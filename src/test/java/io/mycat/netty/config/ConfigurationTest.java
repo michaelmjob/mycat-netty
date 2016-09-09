@@ -1,6 +1,7 @@
 package io.mycat.netty.config;
 
 import io.mycat.netty.conf.Configuration;
+import io.mycat.netty.mysql.backend.SessionService;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import org.junit.Assert;
@@ -20,30 +21,25 @@ public class ConfigurationTest {
     public void testLoad_datasource(){
         Configuration.init();
 
-        Map<String, DataSource> dataSourceMap = Configuration.getDataSources();
+        Map<String, DataSource> dataSourceMap = SessionService.getDataSources();
 
         Assert.assertEquals(2, dataSourceMap.size());
 
-        checkConsistency(dataSourceMap.get("d0"), "db0",30);
-        checkConsistency(dataSourceMap.get("d1"), "db1", 30);
+        checkConsistency(dataSourceMap.get("d0"), "db0",6);
+        checkConsistency(dataSourceMap.get("d1"), "db1", 8);
 
         System.out.println("finish test");
     }
 
 
     private void checkConsistency(DataSource dataSource, String dbname, int size){
-        for(Host host : dataSource.getAllHosts()){
-            int d0truesize = host.connectionSize("db0", true);
-            int d0falsesize = host.connectionSize("db0", false);
-            int d1truesize = host.connectionSize("db1", true);
-            int d1falsesize = host.connectionSize("db1", false);
-            int checksize = host.connectionSize(dbname, true);
-            logger.info("db0 true size : {}", d0truesize);
-            logger.info("db0 false size : {}", d0falsesize);
-            logger.info("db1 true size : {}", d1truesize);
-            logger.info("db1 false size : {}", d1falsesize);
-            junit.framework.Assert.assertEquals(size, checksize);
-//            junit.framework.Assert.assertEquals(size, d1truesize);
+        for(Host host : dataSource.getAllHosts()) {
+            int truesize = host.connectionSize(dbname, true);
+            int falsesize = host.connectionSize(dbname, false);
+            logger.info(" true size : {}", truesize);
+            logger.info(" false size : {}", falsesize);
+            junit.framework.Assert.assertEquals(size, truesize);
+            junit.framework.Assert.assertEquals(0, falsesize);
         }
     }
 }

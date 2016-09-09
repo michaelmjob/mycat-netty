@@ -3,13 +3,16 @@ package io.mycat.netty;
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.EmbeddedMysql;
 import junit.framework.Test;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.CountDownLatch;
 
 import static com.wix.mysql.config.MysqldConfig.aMysqldConfig;
 import static com.wix.mysql.EmbeddedMysql.anEmbeddedMysql;
@@ -27,12 +30,15 @@ import static java.sql.DriverManager.*;
 public class MockMysql {
     private static final Logger logger = LoggerFactory.getLogger(MockMysql.class);
 
-    public static final String userName  = "xujianhai";
+    public static final String userName = "xujianhai";
     public static final String pass = "xujianhai";
     public static final String db0url = "jdbc:mysql://localhost:3306/db0";
     public static final String db1url = "jdbc:mysql://localhost:3306/db1";
 
-    public static void main(String[] args) throws SQLException {
+    public static EmbeddedMysql mysqld;
+
+    @BeforeClass
+    public static void beforeMockClass() {
         MysqldConfig config = aMysqldConfig(v5_6_23)
                 .withCharset(UTF8)
                 .withPort(3306)
@@ -40,12 +46,21 @@ public class MockMysql {
                 .withTimeZone("Europe/Vilnius")
                 .build();
 
-        EmbeddedMysql mysqld = anEmbeddedMysql(config)
+        mysqld = anEmbeddedMysql(config)
                 .addSchema("db0", classPathScript("/db0.sql"))
                 .addSchema("db1", classPathScripts("/db1.sql"))
                 .start();
+    }
+
+    @AfterClass
+    public static void tearDown(){
+        mysqld.stop();
+        //optional, as there is a shutdown hook
+    }
 
 
+    @org.junit.Test
+    public void test() throws SQLException {
         //do work
         TestDBUtil.showDB(() ->{
             try {
@@ -76,8 +91,11 @@ public class MockMysql {
                 return null;
             }
         });
-
-
-            mysqld.stop(); //optional, as there is a shutdown hook
-        }
     }
+
+    @org.junit.Test
+    public void testService() throws InterruptedException {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        countDownLatch.await();
+    }
+}

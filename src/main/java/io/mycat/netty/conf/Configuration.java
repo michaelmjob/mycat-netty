@@ -25,10 +25,9 @@ public class Configuration {
     @Setter
     private static XMLSchemaLoader schemaLoader = new XMLSchemaLoader();
 
+    @Getter
     private static SessionService sessionService = new SessionService();
     // name databaseName nodeConfiguration
-    @Getter
-    private static Map<String, DataSource> dataSources;
 
     public static void init() {
         // load database cluster definition
