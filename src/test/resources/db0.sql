@@ -19,3 +19,8 @@ GRANT ALL ON  db0.* TO 'xujianhai'@'%';
 GRANT ALL ON  db1.* TO 'xujianhai'@'%';
 
 flush privileges;
+
+set global general_log=on;
+show  variables like 'general_log_file';
+
+# tail -f 日志,在调试情况下使用

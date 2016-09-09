@@ -98,10 +98,10 @@
 
     <!--<datanode name="d1" balance="wrr" maxconn="100" minconn="10" readtype="1" dbtype="mysql" dbdriver="builtin">-->
     <datanode name="d1" balance="wrr" maxconn="100" minconn="2" readtype="1" dbtype="mysql" dbdriver="builtin">
-        <writehost url="192.168.99.100:3320" user="xujianhai" password="xujianhai"/>
-        <readhost url="192.168.99.100:3320" user="xujianhai" password="xujianhai" weight="1"/>
-        <readhost url="192.168.99.100:3320" user="xujianhai" password="xujianhai" weight="1"/>
-        <readhost url="192.168.99.100:3320" user="xujianhai" password="xujianhai" weight="1"/>
+        <writehost url="192.168.99.101:3320" user="xujianhai" password="xujianhai"/>
+        <readhost url="192.168.99.101:3320" user="xujianhai" password="xujianhai" weight="1"/>
+        <readhost url="192.168.99.101:3320" user="xujianhai" password="xujianhai" weight="1"/>
+        <readhost url="192.168.99.101:3320" user="xujianhai" password="xujianhai" weight="1"/>
         <heartbeat>select user()</heartbeat>
     </datanode>
 
