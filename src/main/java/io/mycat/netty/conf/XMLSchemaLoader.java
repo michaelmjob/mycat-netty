@@ -123,7 +123,7 @@ public class XMLSchemaLoader {
             Element schemaNode = (Element) schemaNodes.item(i);
             String schemaName = schemaNode.getAttribute("name");
 //            getSchemaConfigs().put(schemaName, new SchemaConfig());
-            getSchemaConfigs().put(schemaName.toUpperCase(), new SchemaConfig());
+            getSchemaConfigs().put(schemaName.toUpperCase(), new SchemaConfig(schemaName));
             NodeList tableNodes = schemaNode.getElementsByTagName("table");
             NodeList tablegroupNodes = schemaNode.getElementsByTagName("tablegroup");
 

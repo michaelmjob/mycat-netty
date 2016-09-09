@@ -1,21 +1,23 @@
 package io.mycat.netty.mysql.packet;
 
+import io.mycat.netty.mysql.proto.Flags;
 import io.mycat.netty.mysql.proto.Proto;
 import io.mycat.netty.router.parser.util.ObjectUtil;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
  * Created by snow_young on 16/8/12.
  */
-public class OkPacket extends MySQLPacket{
+public class OkPacket extends MySQLPacket {
     private static final Logger logger = LoggerFactory.getLogger(MySQLPacket.class);
 
     public static final byte FIELD_COUNT = 0X00;
-    public static final byte[] ok = new byte[]{ 7, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0};
+    public static final byte[] ok = new byte[]{7, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0};
 
     public byte fieldCount = FIELD_COUNT;
     public long affectedRows;
@@ -37,11 +39,12 @@ public class OkPacket extends MySQLPacket{
         serverStatus = mm.readUB2();
         warningCount = mm.readUB2();
 
-        if(mm.hasRemaining()){
+        if (mm.hasRemaining()) {
             this.message = mm.readBytesWithLength();
         }
     }
 
+    // 这个完全正确
     public void read(byte[] data) {
         MySQLMessage mm = new MySQLMessage(data);
         packetLength = mm.readUB3();
@@ -51,6 +54,7 @@ public class OkPacket extends MySQLPacket{
         insertId = mm.readLength();
         serverStatus = mm.readUB2();
         warningCount = mm.readUB2();
+
         if (mm.hasRemaining()) {
             this.message = mm.readBytesWithLength();
         }
@@ -73,25 +77,25 @@ public class OkPacket extends MySQLPacket{
     public byte[] getPacket() {
 
         int size = calcPacketSize();
-        byte[] packet = new byte[size+4];
+        byte[] packet = new byte[size + 4];
 
         System.arraycopy(Proto.build_fixed_int(3, size), 0, packet, 0, 3);
         System.arraycopy(Proto.build_fixed_int(1, packetId), 0, packet, 3, 1);
         int offset = 4;
 
-        packet[offset++] = fieldCount;
 
+        packet[offset++] = FIELD_COUNT;
 
-        byte[] affectedRowsBytes =  Proto.build_lenenc_int(affectedRows);
+        byte[] affectedRowsBytes = Proto.build_lenenc_int(affectedRows);
         System.arraycopy(affectedRowsBytes, 0, packet, offset, affectedRowsBytes.length);
-        offset =+ affectedRowsBytes.length;
+        // last =+ bug
+        offset += affectedRowsBytes.length;
 
         byte[] insertIdBytes = Proto.build_lenenc_int(insertId);
         System.arraycopy(insertIdBytes, 0, packet, offset, insertIdBytes.length);
         offset += insertIdBytes.length;
 
 
-//        System.arraycopy(Proto.build_fixed_int(serverStatus, 2), 0, packet, offset, 2);
         System.arraycopy(Proto.build_fixed_int(2, serverStatus), 0, packet, offset, 2);
         offset += 2;
 
@@ -99,8 +103,7 @@ public class OkPacket extends MySQLPacket{
         System.arraycopy(Proto.build_fixed_int(2, warningCount), 0, packet, offset, 2);
         offset += 2;
 
-//        int size =
-        if(!Objects.isNull(message)) {
+        if (!Objects.isNull(message)) {
             byte[] len = Proto.build_lenenc_int(message.length);
             System.arraycopy(len, 0, packet, offset, len.length);
             offset += len.length;
@@ -111,6 +114,7 @@ public class OkPacket extends MySQLPacket{
         logger.info("OKPacket array : {} ", packet);
         logger.info("packet ln : " + packet.length + ", expected len: " + size);
         return packet;
+
     }
 
     @Override

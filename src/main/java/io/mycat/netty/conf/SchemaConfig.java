@@ -24,6 +24,12 @@ public class SchemaConfig {
 
     Map<String, TableConfig> tables;
 
-    public SchemaConfig(){ tables = new HashMap<>();}
+//    public SchemaConfig(){ tables = new HashMap<>();}
+
+    public SchemaConfig(String schemaName){
+        this.name = schemaName;
+        tables = new HashMap<>();
+    }
+
 
 }

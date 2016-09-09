@@ -77,6 +77,9 @@ public class MysqlSessionContext {
                     logger.info("init");
 
                     currentStatus = STATUS.ROUTE;
+//                    getFrontSession().sendOk();
+//                    next = false;
+//                    break;
 //                    break;
                 case ROUTE:
                     logger.info("route");

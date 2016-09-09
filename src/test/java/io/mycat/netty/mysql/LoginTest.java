@@ -38,7 +38,7 @@ public class LoginTest {
         try {
             con = DriverManager.getConnection(dbUrl, username, password);
         } catch (SQLException se) {
-            System.out.println("数据库连接失败！");
+            System.out.println("数据库连接失败！不应该发生");
             se.printStackTrace();
             Assert.assertTrue(false);
         } finally {

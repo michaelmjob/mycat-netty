@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by snow_young on 16/8/12.
+ *
+ * TODO: check log abnormal
  */
 @NoArgsConstructor
 @Data
@@ -108,6 +110,7 @@ public class NettyBackendSession implements BackendSession {
     public void setErrorPacket(byte[] data) {
         this.errorPacket = new ErrorPacket();
         this.errorPacket.read(data);
+        logger.error("error response : {}", new String(errorPacket.message));
         responseHandler.errorResponse(this.errorPacket, this);
         this.back();
     }

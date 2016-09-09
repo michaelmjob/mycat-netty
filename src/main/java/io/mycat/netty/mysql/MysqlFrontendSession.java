@@ -78,7 +78,7 @@ public class MysqlFrontendSession implements Session {
     }
 
     public void writeAndFlush(byte[] bytes){
-        logger.info("write to client  by front session");
+        logger.info("write to client  by front session : {}", bytes);
         this.transport.out.writeBytes(bytes);
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
@@ -122,10 +122,14 @@ public class MysqlFrontendSession implements Session {
         OK ok = new OK();
         ok.sequenceId = getNextSequenceId();
         ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+
+        logger.info("send ok  data : {}", ok.toPacket());
+
         this.transport.out.writeBytes(ok.toPacket());
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
     }
+
 
     public long getNextSequenceId() {
         return ++this.sequenceId;
@@ -211,6 +215,7 @@ public class MysqlFrontendSession implements Session {
             channel.attr(Session.CHANNEL_SESSION_KEY).remove();
             channel.close();
         }
+        this.transport.close();
 //        context clear resource rightly after send2client
 //        if(!Objects.isNull(mysqlSessionContext)){
 //            mysqlSessionContext.close();

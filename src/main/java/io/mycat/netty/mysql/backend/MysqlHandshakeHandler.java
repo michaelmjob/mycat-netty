@@ -63,12 +63,8 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 logger.info("authenticate success");
                 OkPacket ok = new OkPacket();
                 ok.read(packet);
-//                if(!this.out.release()){
-//                    logger.error("release buffer failed", this);
-//                }
                 channelHandlerContext.pipeline().remove(this);
                 session.getResponseHandler().okResponse(ok, session);
-//                this.session.getCountDownLatch().countDown();
                 break;
             case ErrorPacket.FIELD_COUNT:
                 // 0xff
@@ -77,9 +73,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 String errMsg = new String (err.message);
                 logger.error("cant't connect to mysql server, errmsg:" + errMsg + " "+this.session);
 
-//                if(!this.out.release()){
-//                    logger.error("release buffer failed", this);
-//                }
                 // whether need to rmeove
                 session.getResponseHandler().errorResponse(err, session);
 //                this.session.getCountDownLatch().countDown();
@@ -103,26 +96,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                     logger.info("wait count : " + this.session.getCountDownLatch().getCount());
                     channelHandlerContext.channel().writeAndFlush(out);
 
-//                    try {
-//                        logger.info("wait for serverchannel success");
-//                        logger.info("wait count : " + this.session.getCountDownLatch().getCount());
-//                        this.session.getCountDownLatch().await();
-//                        logger.info("wait for serverchannel success yes");
-//                    } catch (InterruptedException e) {
-//                        logger.info("wait for server channel failed", e);
-//                    }
-//                    if(Objects.isNull(this.session.getServerChannel())){
-//                        logger.info("serverChannel is null");
-//                        return;
-//                    }
-//
-//
-//                    assert !Objects.isNull(this.session.getServerChannel());
-//                    // often null
-//                    this.session.getServerChannel().writeAndFlush(out);
-////                    this.session.getServerChannel().writeAndFlush(session.authenticate());
-//                    in.release();
-//                    logger.info("finish mysql handshake handler channel read, send authentication");
                     break;
                 }
                 break;

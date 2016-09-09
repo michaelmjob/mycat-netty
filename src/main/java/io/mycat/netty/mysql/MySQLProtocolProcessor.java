@@ -4,6 +4,7 @@ import io.mycat.netty.ProtocolProcessException;
 import io.mycat.netty.mysql.parser.*;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.mysql.response.CharacterSet;
+import io.mycat.netty.mysql.response.ShowDatabases;
 import io.mycat.netty.util.MysqlDefs;
 import io.mycat.netty.util.ResultSetUtil;
 import io.mycat.netty.util.StringUtil;
@@ -292,12 +293,9 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
                 case ServerParseShow.DATABASES:
 
                     // 如果transport专门处理io， session处理什么？ 保留相关信息？
-                    ArrayList<byte[]> showdata = io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession());
+                    ArrayList<byte[]> showdata = ShowDatabases.getPacket(getSession());
 
                     this.getSession().writeAndFlush(showdata);
-//                    for (byte[] bs : io.mycat.netty.mysql.response.ShowDatabases.getPacket(getSession())) {
-//                        out.writeBytes(bs);
-//                    }
                     logger.info("return enter show databases");
 
                     break;
