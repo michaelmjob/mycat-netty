@@ -4,6 +4,7 @@ import io.mycat.netty.conf.DataSourceConfig;
 import io.mycat.netty.conf.SchemaConfig;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.conf.XMLSchemaLoader;
+import io.mycat.netty.mysql.Constants;
 import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
@@ -16,6 +17,7 @@ import io.mycat.netty.mysql.response.ResultSetPacket;
 import io.mycat.netty.router.RouteResultset;
 import jdk.nashorn.internal.runtime.regexp.joni.ast.BackRefNode;
 import junit.framework.Assert;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,37 +64,41 @@ public class SessionServiceTest extends BackendTest{
         frontendSession.setAutocommit(true);
     }
 
+    @AfterClass
+    public static void afterClass() throws IOException {
+        sessionService.close();
+    }
+
 
     // test insert && delete
     @Test
     public void testSend() throws IOException, InterruptedException {
 
-        Host host = sessionService.getSession("d0", true);
+        Host host = sessionService.getSession(Constants.D0, true);
 
         // frontend_db_name 换成 backend_db_name 需要更换
         // 这个已经是转换过的 sql senstence.
         // 分库分表， frontend_table -> backend_db_table,  table里面的内容不回发生改变。
 
-
         CountDownLatch countDownLatch;
         String sql;
-        String databaseName = "db0";
+        String databaseName = Constants.DB0;
 
-        sql = "delete from  tb0 where order_id=1";
+
+        sql = "insert into tb0 values(2,2,2,'2016-01-01', '2016-01-01', 1)";
+        logger.info("test sql : {}", sql);
         countDownLatch = new CountDownLatch(1);
         host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
 
-
-        sql = "insert into tb0 values(1,1,1,'2016-01-01', '2016-01-01', 1)";
+        sql = "delete from  tb0 where order_id=2";
+        logger.info("test sql : {}", sql);
         countDownLatch = new CountDownLatch(1);
         host.send(databaseName, sql, getResponseHandler(countDownLatch, host), mysqlSessionContext);
         countDownLatch.await();
-
         // ensure session back
     }
 
-    // ??
     public ResponseHandler getResponseHandler(CountDownLatch countDownLatch, Host host){
         return new ResponseHandler() {
             @Override

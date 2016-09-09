@@ -22,6 +22,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
@@ -227,7 +228,8 @@ public class NettyBackendSession implements BackendSession {
 
     // what aboud init and create!!
     public boolean initConnect() {
-        countDownLatch = new CountDownLatch(1);
+//        countDownLatch = new CountDownLatch(1);
+        countDownLatch = new CountDownLatch(2);
         Bootstrap b = new Bootstrap();
         b.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .option(ChannelOption.TCP_NODELAY, true)
@@ -251,10 +253,14 @@ public class NettyBackendSession implements BackendSession {
                 if (channelFuture.isSuccess()) {
                     NettyBackendSession.this.serverChannel = channelFuture.channel();
                     logger.info("tcp connect to mysql success");
+                    NettyBackendSession.this.countDownLatch.countDown();
                 } else {
                     logger.error("initial connection failed!");
+                    if(NettyBackendSession.this.countDownLatch.getCount() == 2){
+                        NettyBackendSession.this.countDownLatch.countDown();
+                    }
+                    NettyBackendSession.this.countDownLatch.countDown();
                 }
-                NettyBackendSession.this.countDownLatch.countDown();
                 logger.info("countdownLatch has been solved");
             }
         });
@@ -312,6 +318,32 @@ public class NettyBackendSession implements BackendSession {
 //                + ", host=" + host + ", port=" + port + ", statusSync="
 //                + statusSync + ", writeQueue=" + this.getWriteQueue().size()
 //                + ", modifiedSQLExecuted=" + modifiedSQLExecuted + "]";
+    }
+
+    // 这个应该有结果
+    @Override
+    public void close() throws IOException{
+        sendQuit();
+    }
+
+    public void sendQuit(){
+        this.query = "QUIT";
+        CommandPacket packet = new CommandPacket();
+        packet.packetId = 0;
+        packet.command = MySQLPacket.COM_QUIT;
+        try {
+            packet.arg = query.getBytes(charset);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("get bytes from query occurs error", e);
+            throw new RuntimeException(e);
+        }
+        lastTime = TimeUtil.currentTimeMillis();
+
+        ByteBuf out = this.serverChannel.alloc().buffer(DEFAULT_BUFFER_SIZE);
+        out.writeBytes(packet.getPacket());
+        this.serverChannel.writeAndFlush(out);
+        logger.info("send bytes for query : {}", query);
+
     }
 
     public static class Builder {

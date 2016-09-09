@@ -35,12 +35,9 @@ public class BackendTest {
         sessionService.load_datasource(schemaLoader.getDatasource(), schemaLoader.getSchemaConfigs().values());
         sessionService.init_datasource();
 
-//        checkConsistency(SessionService.getDataSources().get("d0"), "db0",2);
-//        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 2);
-
         // after refactor, the db conn session is shared.
-        checkConsistency(SessionService.getDataSources().get("d0"), "db0",6);
-        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 8);
+        checkConsistency(SessionService.getDataSources().get("d0"), "db0",2);
+        checkConsistency(SessionService.getDataSources().get("d1"), "db1", 2);
         // logic
         System.out.println(" ============ ");
         System.out.println(" ============ ");

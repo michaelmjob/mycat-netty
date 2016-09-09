@@ -9,13 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.validation.Schema;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.*;
 
 /**
  * Created by snow_young on 16/8/29.
  * should all be static
  */
-public class SessionService {
+public class SessionService implements Closeable{
     private static final Logger logger = LoggerFactory.getLogger(SessionService.class);
 
     @Getter
@@ -116,5 +118,16 @@ public class SessionService {
             }
         }
         return node2dbMap;
+    }
+
+    @Override
+    public void close() throws IOException {
+        dataSources.values().forEach(dataSource -> {
+            try {
+                dataSource.close();
+            } catch (IOException e) {
+                logger.error("should not occur here, error: {}", e);
+            }
+        });
     }
 }

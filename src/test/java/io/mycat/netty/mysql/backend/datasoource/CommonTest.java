@@ -10,9 +10,9 @@ import java.util.List;
  * Created by snow_young on 16/9/9.
  */
 public class CommonTest {
-    protected DataSourceConfig.HostConfig hostConfig;
-    protected DataSourceConfig.HostConfig writeConfig;
-    protected DataSourceConfig.DatanodeConfig datanodeConfig;
+    protected static DataSourceConfig.HostConfig hostConfig;
+    protected static DataSourceConfig.HostConfig writeConfig;
+    protected static DataSourceConfig.DatanodeConfig datanodeConfig;
     
     public void init(){
         hostConfig = new DataSourceConfig.HostConfig(Constants.db0url, Constants.user, Constants.pass, true, 1);

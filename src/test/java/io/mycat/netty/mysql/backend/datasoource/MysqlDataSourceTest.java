@@ -5,7 +5,9 @@ import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.datasource.MysqlDataSource;
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +22,14 @@ import org.slf4j.LoggerFactory;
 public class MysqlDataSourceTest extends CommonTest{
     private static final Logger logger = LoggerFactory.getLogger(MysqlDataSourceTest.class);
 
-    private String[] schemas;
+    private static String[] schemas;
+
+    private static DataSource dataSource;
+
+    @BeforeClass
+    public static void beforeMysqlDatasOurce(){
+
+    }
 
     // prepare config
     @Before
@@ -33,9 +42,15 @@ public class MysqlDataSourceTest extends CommonTest{
 
     }
 
+    @After
+    public void teardown(){
+
+    }
+
+
     @Test
     public void testInit(){
-        DataSource dataSource = new MysqlDataSource(Constants.D0, datanodeConfig, schemas);
+        dataSource = new MysqlDataSource(Constants.D0, datanodeConfig, schemas);
         dataSource.init();
 
         for(Host host : dataSource.getAllHosts()){
@@ -43,7 +58,7 @@ public class MysqlDataSourceTest extends CommonTest{
             int falsesize = host.connectionSize(Constants.DB0, false);
             logger.info("true size : {}", truesize);
             logger.info("false size : {}", falsesize);
-            Assert.assertEquals(20, truesize);
+            Assert.assertEquals(10, truesize);
         }
     }
 

@@ -5,7 +5,7 @@ import org.junit.Test;
 
 /**
  * Created by snow_young on 16/8/14.
- * ???my
+ * add more test
  */
 public class MysqlDataNodeTest {
 

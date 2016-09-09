@@ -8,6 +8,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
 
@@ -18,7 +19,7 @@ import java.util.*;
  * consist of read nodes and write nodes, each node implementation is Host.
  */
 @Data
-public class DataSource {
+public class DataSource implements Closeable{
     private static final Logger logger = LoggerFactory.getLogger(DataSource.class);
 
     public static final int BALANCE_NONE = 0;
@@ -143,6 +144,14 @@ public class DataSource {
             }
         }
 
+    }
+
+    @Override
+    public void close() throws IOException {
+        writeHost.close();
+        for(Host host : readHosts){
+            host.close();
+        }
     }
 }
 

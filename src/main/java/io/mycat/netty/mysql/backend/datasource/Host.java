@@ -14,6 +14,7 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 // TODO: ADD HEARTBEAT ACTION
 @Data
-public abstract class Host {
+public abstract class Host implements Closeable{
     private static final Logger logger = LoggerFactory.getLogger(Host.class);
 
     // sessionId -> session
@@ -41,7 +42,8 @@ public abstract class Host {
     private String name;
 
     // conMap : used in other
-    private static ConMap conMap = new ConMap();
+//    private static ConMap conMap = new ConMap();
+    private ConMap conMap = new ConMap();
 
     // TODO: move to ConMap
     private DBHeartbeat heartbeat;
@@ -164,6 +166,8 @@ public abstract class Host {
                 // should add connection get handler
                 //
                 // blocking is difficult need change implemetation : if blocking failed
+                // if create fail, return fail!!!
+                // TODO: finish logic
                 NettyBackendSession nettyBackendSession = createNewConnection(schema, autocommit, new ConnectionGetResponseHandler(ok -> {
                     if (ok.equals(Boolean.FALSE)) {
                         logger.error("connect false");
@@ -204,6 +208,26 @@ public abstract class Host {
     @Override
     public int hashCode(){
         return name.hashCode();
+    }
+
+    @Override
+    public void close() throws IOException{
+        conMap.getAllConQueue().forEach(conQueue -> {
+            conQueue.getAutoCommitCons().forEach(nettyBackendSession -> {
+                try {
+                    nettyBackendSession.close();
+                } catch (IOException e) {
+                    logger.error("should not occur here, error: {}", e);
+                }
+            });
+            conQueue.getManCommitCons().forEach(nettyBackendSession -> {
+                try{
+                    nettyBackendSession.close();
+                } catch (IOException e) {
+                    logger.error("should not occur here, error: {}", e);
+                }
+            });
+        });
     }
 
 }

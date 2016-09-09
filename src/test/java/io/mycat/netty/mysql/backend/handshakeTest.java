@@ -1,31 +1,21 @@
 package io.mycat.netty.mysql.backend;
 
-import io.mycat.netty.H2TestUtil;
 import io.mycat.netty.TestUtil;
 import io.mycat.netty.conf.SystemConfig;
+import io.mycat.netty.mysql.Constants;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.BlockingResponseHandler;
-import io.mycat.netty.mysql.backend.handler.ResponseHandler;
-import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
-import io.mycat.netty.mysql.packet.RowDataPacket;
-import io.mycat.netty.mysql.proto.Packet;
-import io.mycat.netty.mysql.proto.RowPacket;
 import io.mycat.netty.mysql.response.ResultSetPacket;
-import io.netty.channel.Channel;
 import junit.framework.Assert;
 import org.junit.*;
-import org.junit.runner.Result;
 import org.junit.runners.MethodSorters;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -34,38 +24,34 @@ import java.util.concurrent.CountDownLatch;
  * session 级别的测试
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class handshakeTest {
-    private static final Logger logger = LoggerFactory.getLogger(handshakeTest.class);
+public class HandshakeTest {
+    private static final Logger logger = LoggerFactory.getLogger(HandshakeTest.class);
 
     private static NettyBackendSession session;
 
 
     @BeforeClass
     public static void beforeClass() throws InterruptedException, SQLException {
-        H2TestUtil.beforeClass();
+//        H2TestUtil.beforeClass();
 
         session = new NettyBackendSession();
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
         session.setMaxPacketSize(SystemConfig.maxPacketSize);
-        session.setUserName("root");
-        session.setPassword("xujianhai");
-        session.setHost("localhost");
-        session.setPort(3306);
+        session.setUserName(Constants.user);
+        session.setPassword(Constants.pass);
+        String ip = Constants.db0url.split(":")[0];
+        int port = Integer.parseInt(Constants.db0url.split(":")[1]);
+        session.setHost(ip);
+        session.setPort(port);
 
-        // 先使用 session服用的模式
-//        ResponseHandler responseHandler = Mockito.spy(ResponseHandler.class);
-//        Mockito.doNothing().when(responseHandler).okResponse(Mockito.any(OkPacket.class), Mockito.any(NettyBackendSession.class));
-//        session.setResponseHandler(responseHandler);
+        // what about spy method
         CountDownLatch countDownLatch = new CountDownLatch(1);
         session.setResponseHandler(new BlockingResponseHandler(countDownLatch));
         session.initConnect();
 
         countDownLatch.await();
         logger.info("handshake success");
-        // add mokito 4 back funciton
-        // can mock part of function
-//        Host host = new EmptyHost();
         Host host = Mockito.mock(Host.class);
         Mockito.doNothing().when(host).back(Mockito.anyLong());
 
@@ -73,8 +59,9 @@ public class handshakeTest {
     }
 
     @AfterClass
-    public static void afterClass() {
-        session.setClosed(true);
+    public static void afterClass() throws IOException {
+        session.close();
+//        session.setClosed(true);
     }
 
     private CountDownLatch countDownLatch;
@@ -147,7 +134,7 @@ public class handshakeTest {
     // each test, should remove tables and databases;
     @Test
     public void test_4_Insert() throws InterruptedException {
-        String sql = "insert into mytable(t_title, t_author) values('i_title', 'i_author');";
+        String sql = "insert into tb0 values(2,2,2,'2016-01-01', '2016-01-01', 1)";
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
             TestUtil.OKOutput((OkPacket) mySQLPacket);
@@ -165,7 +152,7 @@ public class handshakeTest {
 
     @Test
     public void test_5_Select() throws InterruptedException {
-        logger.info("begin connect select * from mytable");
+        logger.info("begin connect select * from tb0");
 
         // 单个运行，无数据，是正常的
         // 有数据也是正常的
@@ -176,7 +163,8 @@ public class handshakeTest {
             Assert.assertNull(session.getErrorPacket());
         });
 
-         session.sendQueryCmd("select * from mytable");
+        // just for test
+         session.sendQueryCmd("select * from tb0");
 
 
         countDownLatch.await();
@@ -187,7 +175,7 @@ public class handshakeTest {
 
     @Test
     public void test_6_Update() throws InterruptedException {
-        String sql = "update  mytable set t_author='mysql_proxy' where t_title='i_title'";
+        String sql = "update tb0 set status=2 where order_id=2";
 
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;
@@ -208,7 +196,7 @@ public class handshakeTest {
     // 有时候会导致异常， 得添加重试
     @Test
     public void test_7_Delete() throws InterruptedException {
-        String sql = "delete from mytable where t_title='i_title'";
+        String sql = "delete from tb0 where order_id=2";
 
         blockingResponseHandler.setCheck(mySQLPacket -> {
             assert mySQLPacket instanceof OkPacket;

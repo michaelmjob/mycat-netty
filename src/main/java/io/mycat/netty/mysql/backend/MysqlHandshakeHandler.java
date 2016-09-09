@@ -64,6 +64,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 OkPacket ok = new OkPacket();
                 ok.read(packet);
                 channelHandlerContext.pipeline().remove(this);
+                this.session.getCountDownLatch().countDown();
                 session.getResponseHandler().okResponse(ok, session);
                 break;
             case ErrorPacket.FIELD_COUNT:
@@ -74,6 +75,7 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 logger.error("cant't connect to mysql server, errmsg:" + errMsg + " "+this.session);
 
                 // whether need to rmeove
+                this.session.getCountDownLatch().countDown();
                 session.getResponseHandler().errorResponse(err, session);
 //                this.session.getCountDownLatch().countDown();
                 break;

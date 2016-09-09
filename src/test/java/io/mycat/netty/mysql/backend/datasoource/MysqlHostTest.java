@@ -11,6 +11,7 @@ import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,11 @@ import java.util.List;
 public class MysqlHostTest extends CommonTest{
     private static final Logger logger = LoggerFactory.getLogger(MysqlHostTest.class);
 
+
+    @BeforeClass
+    public static void beforeMysqlDataHost(){
+
+    }
 
     @Before
     public void setUp(){
