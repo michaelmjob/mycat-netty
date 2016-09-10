@@ -1,4 +1,4 @@
-package io.mycat.netty.mysql;
+package io.mycat.netty.Integration;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;

@@ -1,12 +1,12 @@
 package io.mycat.netty.mysql.handler;
 
+import io.mycat.netty.util.TestUtil;
 import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.backend.BackendTest;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.MySQLPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.router.RouteResultset;
-import io.mycat.netty.router.RouteResultsetNode;
 import io.mycat.netty.mysql.response.ResultSetPacket;
 import junit.framework.Assert;
 import org.junit.BeforeClass;
@@ -18,8 +18,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 
 /**
  * Created by snow_young on 16/8/21.
@@ -42,69 +40,44 @@ public class SingleNodeHandlerTest extends BackendTest {
         Mockito.doNothing().when(frontendSession).writeAndFlush(Mockito.any(MySQLPacket.class));
     }
 
-
-
     /**
      * Insert:
      * insert twice, success firstly, fail secondly due to 重复的 insert
      */
 
-    public RouteResultset buildSingleRouteResultSet(String dataNodeName, String databaseName, String sql) {
-        RouteResultsetNode node = new RouteResultsetNode(dataNodeName, databaseName, sql);
-        RouteResultsetNode[] nodeArr = new RouteResultsetNode[]{node};
-        RouteResultset routeResultset = new RouteResultset();
-        routeResultset.setNodes(nodeArr);
-        return routeResultset;
-    }
-
-    public void testSQL(RouteResultset routeResultset, Consumer<MySQLPacket> check) throws InterruptedException {
-        SyncMysqlSessionContext blockingMysqlSessionContext = new SyncMysqlSessionContext(frontendSession);
-
-        blockingMysqlSessionContext.setRrs(routeResultset);
-        blockingMysqlSessionContext.getSession();
-
-        blockingMysqlSessionContext.setBlocking(new CountDownLatch(1));
-        blockingMysqlSessionContext.send();
-
-
-        blockingMysqlSessionContext.setCheck(check);
-        blockingMysqlSessionContext.blocking();
-        logger.info("sql send && receive finish");
-    }
-
     @Test
-    public void testInsert() throws InterruptedException {
+    public void testINormal() throws InterruptedException {
 
         String dataNodeName = "d1";
         String databaseName = "db1";
-        String insert = "insert into tb0 values(3,1,1,'2016-01-01', '2016-01-01', 1)";
+        String insert = "insert into tb0 values(3, 3 ,3, '2016-01-01', '2016-01-01', 1)";
         // just for test, not used in production
         String select = "select * from tb0";
         String update = "update tb0 set status=2";
         String delete = "delete from tb0";
 
         // build route, ensuere host exists after route
-        RouteResultset routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, insert);
+        RouteResultset routeResultset = TestUtil.buildSingleRouteResultSet(dataNodeName, databaseName, insert);
 
         // whether should live in a cycle
         // should have a status change circle
 
         // insert success
-        testSQL(routeResultset, mySQLPacket -> {
+        TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
             Assert.assertTrue("insert success pakcet should be okPacket", mySQLPacket instanceof OkPacket);
         });
         logger.info("first one : send && receive finish");
 
         // insert fail
-        testSQL(routeResultset, mySQLPacket -> {
+        TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
             Assert.assertTrue("insert distinct pakcet should be errPacket", mySQLPacket instanceof ErrorPacket);
         });
         logger.info("second : send && receive finish");
 
         // select
-        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
+        routeResultset = TestUtil.buildSingleRouteResultSet(dataNodeName, databaseName, select);
         logger.info("select sql : {}", routeResultset.getNodes().get(0).getSql());
-        testSQL(routeResultset, packet -> {
+        TestUtil.testSQL(frontendSession, routeResultset, packet -> {
             Assert.assertTrue("select pakcet should be ResultsetPacket", packet instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;
             Assert.assertEquals("tb0 field should be 6", 6, resultSetPacket.getFields().size());
@@ -113,22 +86,22 @@ public class SingleNodeHandlerTest extends BackendTest {
         });
 
 //        // update
-        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, update);
-        testSQL(routeResultset, mySQLPacket -> {
+        routeResultset = TestUtil.buildSingleRouteResultSet(dataNodeName, databaseName, update);
+        TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
             Assert.assertTrue("update pakcet should return okPacket", mySQLPacket instanceof OkPacket);
             logger.info("update check right");
         });
 
         // delete
-        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, delete);
-        testSQL(routeResultset, mySQLPacket -> {
+        routeResultset = TestUtil.buildSingleRouteResultSet(dataNodeName, databaseName, delete);
+        TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
             Assert.assertTrue("delete pakcet should return okPacket", mySQLPacket instanceof OkPacket);
             logger.info("delete check right");
         });
 
         // select again
-        routeResultset = buildSingleRouteResultSet(dataNodeName, databaseName, select);
-        testSQL(routeResultset, packet -> {
+        routeResultset = TestUtil.buildSingleRouteResultSet(dataNodeName, databaseName, select);
+        TestUtil.testSQL(frontendSession, routeResultset, packet -> {
             Assert.assertTrue("pakcet should be ResultsetPacket", packet instanceof ResultSetPacket);
             ResultSetPacket resultSetPacket = (ResultSetPacket) packet;
             Assert.assertEquals("tb0 field should be 6", 6, resultSetPacket.getFields().size());

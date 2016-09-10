@@ -1,16 +1,14 @@
-package io.mycat.netty;
+package io.mycat.netty.mockmysql;
 
 import com.wix.mysql.config.MysqldConfig;
 import com.wix.mysql.EmbeddedMysql;
-import junit.framework.Test;
+import io.mycat.netty.util.TestUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 
@@ -62,7 +60,7 @@ public class MockMysql {
     @org.junit.Test
     public void test() throws SQLException {
         //do work
-        TestDBUtil.showDB(() ->{
+        TestUtil.showDB(() -> {
             try {
                 return getConnection(db0url, userName, pass);
             } catch (SQLException e) {
@@ -72,7 +70,7 @@ public class MockMysql {
             }
         });
 
-        TestDBUtil.showTB(() -> {
+        TestUtil.showTB(() -> {
             try {
                 return getConnection(db0url, userName, pass);
             } catch (SQLException e) {
@@ -82,7 +80,7 @@ public class MockMysql {
             }
         });
 
-        TestDBUtil.showTB(() -> {
+        TestUtil.showTB(() -> {
             try {
                 return getConnection(db1url, userName, pass);
             } catch (SQLException e) {

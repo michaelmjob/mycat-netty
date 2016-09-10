@@ -1,6 +1,6 @@
 package io.mycat.netty.mysql.backend;
 
-import io.mycat.netty.TestUtil;
+import io.mycat.netty.util.TestUtil;
 import io.mycat.netty.conf.SystemConfig;
 import io.mycat.netty.mysql.Constants;
 import io.mycat.netty.mysql.backend.datasource.Host;

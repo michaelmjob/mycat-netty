@@ -1,6 +1,6 @@
 package io.mycat.netty.mysql;
 
-import io.mycat.netty.TestUtil;
+import io.mycat.netty.util.TestUtil;
 import io.mycat.netty.conf.Configuration;
 import io.mycat.netty.conf.XMLSchemaLoader;
 import io.mycat.netty.mysql.handler.SyncMysqlSessionContext;

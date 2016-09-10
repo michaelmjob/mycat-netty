@@ -1,18 +1,10 @@
-package io.mycat.netty;
-
-import com.alibaba.druid.support.spring.stat.annotation.Stat;
-import io.mycat.netty.conf.SystemConfig;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+package io.mycat.netty.mockmysql;
 
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.*;
 import java.util.concurrent.CountDownLatch;
 

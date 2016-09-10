@@ -1,4 +1,4 @@
-package io.mycat.netty.mysql;
+package io.mycat.netty.Integration;
 
 import org.junit.Assert;
 import org.junit.Test;
