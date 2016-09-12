@@ -4,6 +4,8 @@ import io.mycat.netty.conf.*;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.datasource.MysqlDataSource;
+import io.mycat.netty.mysql.backend.strategy.LeastConnStrategy;
+import io.mycat.netty.mysql.backend.strategy.ReadStrategy;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,20 +25,22 @@ public class SessionService implements Closeable{
     @Getter
     private static Map<String, DataSource> dataSources;
 
+    private ReadStrategy readStrategy;
 
     public void init(XMLSchemaLoader schemaLoader) {
         logger.info("load datasource from cconfig");
         load_datasource(schemaLoader.getDatasource(), schemaLoader.getSchemaConfigs().values());
         logger.info("init datasource");
         init_datasource();
+
     }
 
-    public static Host getSession(String datanode, boolean readOnly) {
+    public static Host getSession(String datanode, boolean readOnly, String database) {
         DataSource dataSource = dataSources.get(datanode);
         Host host;
         // TODO: 使用最少channel算法选取read, 需要 一个queue store session to send
         if (readOnly) {
-            host = dataSource.getReadHosts()[0];
+            host = dataSource.getOneReadHost(database);
         } else {
             host = dataSource.getWriteHost();
         }
@@ -83,6 +87,7 @@ public class SessionService implements Closeable{
     public void init_datasource() {
         for (DataSource dataSource : dataSources.values()) {
             dataSource.init();
+            // class reflection
         }
     }
 

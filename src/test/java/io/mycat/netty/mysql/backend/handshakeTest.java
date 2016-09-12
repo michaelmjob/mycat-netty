@@ -1,8 +1,8 @@
 package io.mycat.netty.mysql.backend;
 
+import io.mycat.netty.mysql.TestConstants;
 import io.mycat.netty.util.TestUtil;
 import io.mycat.netty.conf.SystemConfig;
-import io.mycat.netty.mysql.Constants;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.BlockingResponseHandler;
 import io.mycat.netty.mysql.packet.OkPacket;
@@ -38,10 +38,10 @@ public class HandshakeTest {
 
         session.setPacketHeaderSize(SystemConfig.packetHeaderSize);
         session.setMaxPacketSize(SystemConfig.maxPacketSize);
-        session.setUserName(Constants.user);
-        session.setPassword(Constants.pass);
-        String ip = Constants.db0url.split(":")[0];
-        int port = Integer.parseInt(Constants.db0url.split(":")[1]);
+        session.setUserName(TestConstants.user);
+        session.setPassword(TestConstants.pass);
+        String ip = TestConstants.db0url.split(":")[0];
+        int port = Integer.parseInt(TestConstants.db0url.split(":")[1]);
         session.setHost(ip);
         session.setPort(port);
 

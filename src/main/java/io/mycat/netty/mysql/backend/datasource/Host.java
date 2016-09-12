@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * <p>
  * represent a real node providing many database operation,
  * for read or write, u should know : one node may have many databases;
+ *
+ * warning: 因为实例化的时候，只实例化了autocommit,所以如果业务有大量的 mancommit 的化，请自行更改源代码
  */
 // TODO: ADD HEARTBEAT ACTION
 @Data
@@ -58,6 +60,9 @@ public abstract class Host implements Closeable{
 
     DataSourceConfig.HostConfig hostConfig;
     DataSourceConfig.DatanodeConfig datanodeConfig;
+
+    public Host(){
+    }
 
     public Host(String hostName, DataSourceConfig.HostConfig hostConfig, DataSourceConfig.DatanodeConfig dataNodeConfig,
                 boolean isReadNode) {

@@ -500,6 +500,8 @@ public class Constants {
      */
     public static final int QUERY_STATISTICS_MAX_ENTRIES = 100;
 
+    public static final String READ_STRATEGY = "io.mycat.netty.mysql.backend.strategy.LeastConnStrategy";
+
     private Constants() {
         // utility class
     }

@@ -167,7 +167,7 @@ public class MysqlSessionContext {
     public boolean getSession(){
         for(RouteResultsetNode node : rrs.getNodes()){
             logger.info("node info: datanodeName {}, database {}, slave?  {} ", node.getDataNodeName(), node.getDatabase(), node.getCanRunSlave());
-            node.setHost(SessionService.getSession(node.getDataNodeName(), isAutocommit()));
+            node.setHost(SessionService.getSession(node.getDataNodeName(), isAutocommit(), node.getDatabase()));
         }
         return true;
     }

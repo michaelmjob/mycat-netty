@@ -45,12 +45,12 @@ public class DataSourceConfig {
         private String dbdriver;
         private HostConfig writehost;
         private List<HostConfig> readhost;
+        private String readStrategy;
 
         public DatanodeConfig(){
             readhost = new ArrayList<>();
             writehost = new HostConfig();
         }
-
     }
 
     @Data

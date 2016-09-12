@@ -1,8 +1,10 @@
 package io.mycat.netty.conf;
 
+import com.google.common.base.Strings;
 import io.mycat.netty.mysql.auth.XmlUtils;
 import io.mycat.netty.router.partition.AbstractPartition;
 import io.mycat.netty.router.partition.Partition;
+import io.mycat.netty.util.Constants;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,6 +194,11 @@ public class XMLSchemaLoader {
                 datanode.setReadtype(Boolean.parseBoolean(e.getAttribute("readtype")));
                 datanode.setDbtype(e.getAttribute("dbtype"));
                 datanode.setDbdriver(e.getAttribute("dbdriver"));
+                String readStrategy = e.getAttribute("\"readStrategy");
+                if(Strings.isNullOrEmpty(readStrategy)){
+                    readStrategy = Constants.READ_STRATEGY;
+                }
+                datanode.setReadStrategy(readStrategy);
 
 //               <writehost url="localhost:3306" user="xujianhai" password="xujianhai"/>
 //               <readhost url="localhost:3306" user="xujianhai" password="xujianhai"/>

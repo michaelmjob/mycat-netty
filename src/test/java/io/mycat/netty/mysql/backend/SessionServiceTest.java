@@ -1,24 +1,16 @@
 package io.mycat.netty.mysql.backend;
 
-import io.mycat.netty.conf.DataSourceConfig;
-import io.mycat.netty.conf.SchemaConfig;
-import io.mycat.netty.conf.SystemConfig;
-import io.mycat.netty.conf.XMLSchemaLoader;
-import io.mycat.netty.mysql.Constants;
+import io.mycat.netty.mysql.TestConstants;
 import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.handler.ResponseHandler;
-import io.mycat.netty.mysql.backend.handler.SingleNodeHandler;
 import io.mycat.netty.mysql.packet.ErrorPacket;
 import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.response.ResultSetPacket;
-import io.mycat.netty.router.RouteResultset;
-import jdk.nashorn.internal.runtime.regexp.joni.ast.BackRefNode;
 import junit.framework.Assert;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -26,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.validation.SchemaFactoryLoader;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -74,7 +65,7 @@ public class SessionServiceTest extends BackendTest{
     @Test
     public void testSend() throws IOException, InterruptedException {
 
-        Host host = sessionService.getSession(Constants.D0, true);
+        Host host = sessionService.getSession(TestConstants.D0, true, "db0");
 
         // frontend_db_name 换成 backend_db_name 需要更换
         // 这个已经是转换过的 sql senstence.
@@ -82,7 +73,7 @@ public class SessionServiceTest extends BackendTest{
 
         CountDownLatch countDownLatch;
         String sql;
-        String databaseName = Constants.DB0;
+        String databaseName = TestConstants.DB0;
 
 
         sql = "insert into tb0 values(2,2,2,'2016-01-01', '2016-01-01', 1)";

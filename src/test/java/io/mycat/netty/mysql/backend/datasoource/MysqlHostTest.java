@@ -1,24 +1,14 @@
 package io.mycat.netty.mysql.backend.datasoource;
 
-import io.mycat.netty.conf.DataSourceConfig;
-import io.mycat.netty.mysql.Constants;
-import io.mycat.netty.mysql.backend.NettyBackendSession;
+import io.mycat.netty.mysql.TestConstants;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.datasource.MysqlHost;
-import io.mycat.netty.mysql.backend.handler.ResponseHandler;
-import io.mycat.netty.mysql.packet.ErrorPacket;
-import io.mycat.netty.mysql.packet.OkPacket;
-import io.mycat.netty.mysql.response.ResultSetPacket;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by snow_young on 16/8/14.
@@ -45,14 +35,14 @@ public class MysqlHostTest extends CommonTest{
         Host host = new MysqlHost("mysqlhostTest", hostConfig, datanodeConfig, true);
 
         try {
-            host.init(Constants.DB0);
+            host.init(TestConstants.DB0);
         } catch (InterruptedException e) {
             logger.error("init error for host", e);
             Assert.assertTrue(false);
         }
 
         // should ensure all connection is finished
-        int size = host.connectionSize(Constants.DB0, true);
+        int size = host.connectionSize(TestConstants.DB0, true);
 
         logger.info("host size  : {}", size);
         Assert.assertEquals(10, size);

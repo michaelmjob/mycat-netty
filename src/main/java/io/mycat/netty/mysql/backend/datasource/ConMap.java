@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by snow_young on 16/8/14.
  * 是所有数据库的连接都在这里 ?
+ *  ConMap is not static
  */
 public class ConMap {
     // key : schema

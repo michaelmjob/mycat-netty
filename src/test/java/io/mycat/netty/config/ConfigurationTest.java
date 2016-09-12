@@ -25,8 +25,12 @@ public class ConfigurationTest {
 
         Assert.assertEquals(2, dataSourceMap.size());
 
-        checkConsistency(dataSourceMap.get("d0"), "db0",6);
-        checkConsistency(dataSourceMap.get("d1"), "db1", 8);
+//        not shared now
+//        checkConsistency(dataSourceMap.get("d0"), "db0",6);
+//        checkConsistency(dataSourceMap.get("d1"), "db1", 8);
+
+        checkConsistency(dataSourceMap.get("d0"), "db0", 2);
+        checkConsistency(dataSourceMap.get("d1"), "db1", 2);
 
         System.out.println("finish test");
     }

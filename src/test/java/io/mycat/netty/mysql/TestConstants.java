@@ -3,7 +3,7 @@ package io.mycat.netty.mysql;
 /**
  * Created by snow_young on 16/9/9.
  */
-public class Constants {
+public class TestConstants {
     public static final String user = "xujianhai";
     public static final String pass = "xujianhai";
     public static final String db0url = "192.168.99.100:3320";

@@ -81,14 +81,14 @@ public class MultiNodeHandlerTest extends BackendTest {
 
 
         // delete
-//        routeResultset = TestUtil.buildSingleRouteResultSet(Constants.D0, Constants.DB0, delete);
+//        routeResultset = TestUtil.buildSingleRouteResultSet(TestConstants.D0, TestConstants.DB0, delete);
         routeResultset = build_common_routeset(new String[]{delete, delete});
         TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
             Assert.assertTrue("delete pakcet should return okPacket", mySQLPacket instanceof OkPacket);
             logger.info("delete check right");
         });
 
-//        routeResultset = TestUtil.buildSingleRouteResultSet(Constants.D1, Constants.DB1, delete);
+//        routeResultset = TestUtil.buildSingleRouteResultSet(TestConstants.D1, TestConstants.DB1, delete);
 //        TestUtil.testSQL(frontendSession, routeResultset, mySQLPacket -> {
 //            Assert.assertTrue("delete pakcet should return okPacket", mySQLPacket instanceof OkPacket);
 //            logger.info("delete check right");

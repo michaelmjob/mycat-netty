@@ -1,6 +1,6 @@
 package io.mycat.netty.mysql.backend.datasoource;
 
-import io.mycat.netty.mysql.Constants;
+import io.mycat.netty.mysql.TestConstants;
 import io.mycat.netty.mysql.backend.datasource.DataSource;
 import io.mycat.netty.mysql.backend.datasource.Host;
 import io.mycat.netty.mysql.backend.datasource.MysqlDataSource;
@@ -38,8 +38,7 @@ public class MysqlDataSourceTest extends CommonTest{
         super.init();
 
         schemas = new String[1];
-        schemas[0] = Constants.DB0;
-
+        schemas[0] = TestConstants.DB0;
     }
 
     @After
@@ -50,17 +49,26 @@ public class MysqlDataSourceTest extends CommonTest{
 
     @Test
     public void testInit(){
-        dataSource = new MysqlDataSource(Constants.D0, datanodeConfig, schemas);
+        dataSource = new MysqlDataSource(TestConstants.D0, datanodeConfig, schemas);
         dataSource.init();
 
         for(Host host : dataSource.getAllHosts()){
-            int truesize = host.connectionSize(Constants.DB0, true);
-            int falsesize = host.connectionSize(Constants.DB0, false);
+            int truesize = host.connectionSize(TestConstants.DB0, true);
+            int falsesize = host.connectionSize(TestConstants.DB0, false);
             logger.info("true size : {}", truesize);
             logger.info("false size : {}", falsesize);
             Assert.assertEquals(10, truesize);
         }
     }
+
+    @Test
+    public void testReadBalance(){
+        dataSource = new MysqlDataSource(TestConstants.D0, datanodeConfig, schemas);
+        dataSource.init();
+
+//        dataSource.
+    }
+
 
     @Test
     public void testWrongInit(){
