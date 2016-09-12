@@ -2,11 +2,9 @@ package io.mycat.netty.mysql.auth;
 
 import com.google.common.base.Strings;
 import io.mycat.netty.util.SecurityUtil;
-import io.mycat.netty.util.StringUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,25 +46,25 @@ public abstract class AbstractPrivilege implements Privilege{
 
     // TODO: move encryption algorithm, here is natvie
     @Override
-    public boolean checkPassword(String user, String password, String salt) {
+    public boolean checkPassword(String user, byte[] password, String salt) {
         logger.info("check password for user {} with pass {} and salt {}", user, password, salt);
         String localPass = password(user);
         try {
             if(Strings.isNullOrEmpty(localPass)){
                 return true;
             }
-            String encryptPass411 = Base64.encodeBase64String(SecurityUtil.scramble411(localPass, salt));
-            if(encryptPass411.equals(password)){
+            byte[] encryptPass411 = SecurityUtil.scramble411(localPass, salt);
+            logger.info("411 : {}", encryptPass411);
+            if(Arrays.equals(encryptPass411, password)){
                 return true;
             }
         } catch (Exception e) {
-            logger.info("validate User:{} and Password:{} with salt:{} occur error", user, password, salt, e);
+            logger.info("validate User:{} and Password:{} with salt:{} occur error, 411 pass : {}", user, password, salt,e);
         }
         return false;
     }
 
     public Collection<String> getSchemas(String user){
-        List<String> neddSchemas =  new ArrayList<String>();
         return users.get(user).getSortedSchemas();
     }
 

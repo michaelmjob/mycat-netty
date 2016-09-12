@@ -216,78 +216,51 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
             logger.info("auth task is running");
             MysqlFrontendSession session = ctx.attr(TMP_SESSION_KEY).getAndRemove();
             HandshakeResponse authReply = null;
-//            AuthPacket authPacket = new AuthPacket();/**/
+            AuthPacket authPacket = new AuthPacket();/**/
             try {
                 byte[] packet = new byte[transport.in.readableBytes()];
                 transport.in.readBytes(packet);
-                authReply = HandshakeResponse.loadFromPacket(packet);
-//                authPacket.read(packet);
-//                if (!privilege.userExists(authPacket.user)) {
-//                    error(ErrorCode.ER_ACCESS_DENIED_ERROR,
-//                            "Access denied for user '" + authPacket.user + "'");
-//                    logger.error("user not exist : " + authPacket.user);
-//                    return;
-//                }
-//
-//                if (!StringUtil.isEmpty(authPacket.database)
-//                        && !privilege.schemaExists(authPacket.user, authPacket.database)) {
-//                    String s = "Access denied for user '" + authPacket.user
-//                            + "' to database '" + authPacket.database + "'";
-//                    logger.error(s);
-//                    error(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
-//                    return;
-//                }
-//
-//                String password = authPacket.password.toString();
-//                if(!privilege.checkPassword(authPacket.user, password,
-//                        (String) session.getAttachment(SEED_KEY))) {
-//                    error(ErrorCode.ER_ACCESS_DENIED_ERROR,
-//                            "Access denied for user '" + authPacket.user + "'");
-//                    logger.error("wrong name+passwd , name :{}, passwd: {} ", authPacket.user, authPacket.password);
-//                    return;
-//                }
+//                authReply = HandshakeResponse.loadFromPacket(packet);
+                authPacket.read(packet);
 
-                if (!privilege.userExists(authReply.username)) {
+
+                if (!privilege.userExists(authPacket.user)) {
                     error(ErrorCode.ER_ACCESS_DENIED_ERROR,
-                            "Access denied for user '" + authReply.username + "'");
-                    logger.error("user not exist : " + authReply.username);
+                            "Access denied for user '" + authPacket.user + "'");
+                    logger.error("user not exist : " + authPacket.user);
                     return;
                 }
 
-                if (!StringUtil.isEmpty(authReply.schema)
-                        && !privilege.schemaExists(authReply.username, authReply.schema)) {
-                    String s = "Access denied for user '" + authReply.username
-                            + "' to database '" + authReply.schema + "'";
+                if (!StringUtil.isEmpty(authPacket.database)
+                        && !privilege.schemaExists(authPacket.user, authPacket.database)) {
+                    String s = "Access denied for user '" + authPacket.user
+                            + "' to database '" + authPacket.database + "'";
                     logger.error(s);
                     error(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
                     return;
                 }
 
-                if(!privilege.checkPassword(authReply.username, authReply.authResponse,
-                        (String) session.getAttachment(SEED_KEY))) {
+                // pass读取的是不一样的
+                logger.info("auth packet password : {}", authPacket.password);
+                logger.info("auth packet password : {}", authPacket.password.toString());
+
+
+                if(!privilege.checkPassword(authPacket.user, authPacket.password, session.getAttachment(SEED_KEY))) {
                     error(ErrorCode.ER_ACCESS_DENIED_ERROR,
-                            "Access denied for user '" + authReply.username + "'");
-                    logger.error("wrong name+passwd , name :{}, passwd: {} ", authReply.username, authReply.authResponse);
+                            "Access denied for user '" + authPacket.user + "'");
+                    logger.error("wrong name+passwd , name :{}, passwd: {} ", authPacket.user, authPacket.password.toString());
                     return;
                 }
 
-
-
-
-
-                Connection connect = connectEngine(authReply);
-//                session.setHandshakeResponse(authPacket);
-                session.setEngineConnection(connect);
+                session.setHandshakeResponse(authPacket);
                 session.bind(ctx.channel());
                 session.setAttachment("remoteAddress", ctx.channel().remoteAddress().toString());
                 session.setAttachment("localAddress", ctx.channel().localAddress().toString());
                 success(ctx.channel());
             } catch (Exception e) {
-                String errMsg = authReply == null ? e.getMessage()
-                        : "Access denied for user '" + authReply.username + "' to database '" + authReply.schema + "'";
-//                String errMsg = authPacket == null ? e.getMessage()
-//                        : "Access denied for user '" + authPacket.user + "' to database '" + authPacket.database + "'";
-                logger.error("Authorize failed. " + errMsg, e);
+                String errMsg = authPacket == null ? e.getMessage()
+                        : "Access denied for user '" + authPacket.user + "' to database '" + authPacket.database + "'";
+                logger.error("Authorize failed. {},", errMsg, e);
                 error(ErrorCode.ER_DBACCESS_DENIED_ERROR, errMsg);
             } finally {
                 ctx.writeAndFlush(transport.out);

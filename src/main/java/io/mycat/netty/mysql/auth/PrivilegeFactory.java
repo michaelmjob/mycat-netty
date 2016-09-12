@@ -3,9 +3,7 @@ package io.mycat.netty.mysql.auth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Created by snow_young on 16/8/7.
@@ -29,7 +27,7 @@ public class PrivilegeFactory {
             return null;
         }
 
-        public boolean checkPassword(String user, String password, String salt) {
+        public boolean checkPassword(String user, byte[] password, String salt) {
             return true;
         }
 

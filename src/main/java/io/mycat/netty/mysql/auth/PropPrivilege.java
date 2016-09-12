@@ -2,7 +2,6 @@ package io.mycat.netty.mysql.auth;
 
 import io.mycat.netty.util.StringUtil;
 import io.mycat.netty.util.SecurityUtil;
-import io.mycat.netty.util.SysProperties;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -45,11 +45,11 @@ public class PropPrivilege implements Privilege, Source {
         return prop.getProperty(user + ".password");
     }
 
-    public boolean checkPassword(String user, String password, String salt) {
+    public boolean checkPassword(String user, byte[] password, String salt) {
         logger.info("check password for user {} with pass {} and salt {}", user, password, salt);
         String localPass = password(user);
         try {
-            if(StringUtil.isEmpty(localPass) && StringUtil.isEmpty(password)){
+            if(StringUtil.isEmpty(localPass) && !Objects.isNull(password) && password.length != 0){
                 return true;
             }
             String encryptPass411 = Base64.encodeBase64String(SecurityUtil.scramble411(localPass, salt));

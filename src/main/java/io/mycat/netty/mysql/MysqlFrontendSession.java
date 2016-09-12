@@ -196,11 +196,6 @@ public class MysqlFrontendSession implements Session {
         setCharsetIndex((int)handshake.characterSet);
     }
 
-//    public void setHandshake(HandshakePacket handshake) {
-//        this.handshakePacket = handshake;
-//        setCharsetIndex(handshake.serverCharsetIndex);
-//    }
-
     public void setHandshakeResponse(AuthPacket authPacket) {
         this.authPacket = authPacket;
         this.username = authPacket.user;

@@ -14,7 +14,7 @@ public interface Privilege {
     
     String password(String user);
     
-    boolean checkPassword(String user, String password, String salt);
+    boolean checkPassword(String user, byte[] password, String salt);
 
     Collection<String> getSchemas(String user);
 }
