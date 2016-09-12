@@ -93,6 +93,7 @@ public class HandshakePacket extends MySQLPacket {
         System.arraycopy(Proto.build_fixed_int(4, threadId), 0, packet, offset, 4);
         offset += 4;
 
+        // differ !
         System.arraycopy(seed, 0, packet, offset, seed.length);
         offset += seed.length;
 

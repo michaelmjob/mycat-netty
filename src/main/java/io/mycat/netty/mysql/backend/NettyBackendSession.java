@@ -280,7 +280,6 @@ public class NettyBackendSession implements BackendSession {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e.getMessage());
         }
-//        packet.database = schema;
         packet.database = this.currentDB;
 
         logger.info("netty backend session begin to authenticate ");

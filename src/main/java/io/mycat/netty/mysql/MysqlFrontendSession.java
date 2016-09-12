@@ -46,7 +46,7 @@ public class MysqlFrontendSession implements Session {
     private ProtocolTransport transport;
 
     private Handshake handshake;
-//    private HandshakePacket handshakePacket;
+//    private HandshakePacket handshake;
 //    private HandshakeResponse handshakeResponse;
     private AuthPacket authPacket;
 
@@ -151,7 +151,7 @@ public class MysqlFrontendSession implements Session {
 //    }
 
     public long getConnectionId() {
-        return handshake.connectionId ;
+        return handshake.connectionId;
     }
 
     @SuppressWarnings("unchecked")
@@ -195,6 +195,11 @@ public class MysqlFrontendSession implements Session {
         this.handshake = handshake;
         setCharsetIndex((int)handshake.characterSet);
     }
+
+//    public void setHandshake(HandshakePacket handshake) {
+//        this.handshake = handshake;
+//        setCharsetIndex((int)handshake.serverCharsetIndex);
+//    }
 
     public void setHandshakeResponse(AuthPacket authPacket) {
         this.authPacket = authPacket;

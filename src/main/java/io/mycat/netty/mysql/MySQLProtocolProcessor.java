@@ -469,49 +469,5 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
         getProtocolTransport().out.writeBytes(errorPacket.getPacket());
     }
 
-    /**
-     * @param rs
-     * @throws Exception
-     * @see https://dev.mysql.com/doc/internals/en/com-query-response.html
-     */
-    public void sendResultSet(ResultSet rs) throws Exception {
-        ResultSetMetaData metaData = rs.getMetaData();
-        int colunmCount = metaData.getColumnCount();
-
-        ResultSetPacket resultset = new ResultSetPacket();
-        resultset.sequenceId = getNextSequenceId();
-        ResultSetPacket.characterSet = getSession().getCharsetIndex();
-
-        // TODO: 保留这个设计
-        for (int i = 0; i < colunmCount; i++) {
-            int j = i + 1;
-            ColumnPacket columnPacket = new ColumnPacket();
-            columnPacket.org_name = StringUtil.emptyIfNull(metaData.getColumnName(j));
-            columnPacket.name = StringUtil.emptyIfNull(metaData.getColumnLabel(j));
-            columnPacket.org_table = StringUtil.emptyIfNull(metaData.getTableName(j));
-            columnPacket.table = StringUtil.emptyIfNull(metaData.getTableName(j));
-            columnPacket.schema = StringUtil.emptyIfNull(metaData.getSchemaName(j));
-            columnPacket.flags = ResultSetUtil.toFlag(metaData, j);
-            columnPacket.columnLength = metaData.getColumnDisplaySize(j);
-            columnPacket.decimals = metaData.getScale(j);
-            int javaType = MysqlDefs.javaTypeDetect(metaData.getColumnType(j), (int) columnPacket.decimals);
-            columnPacket.type = (byte) (MysqlDefs.javaTypeMysql(javaType) & 0xff);
-            resultset.addColumn(columnPacket);
-        }
-
-        while (rs.next()) {
-            RowPacket rowPacket = new RowPacket();
-            for (int i = 0; i < colunmCount; i++) {
-                int j = i + 1;
-                rowPacket.data.add(StringUtil.emptyIfNull(rs.getString(j)));
-            }
-            resultset.addRow(rowPacket);
-        }
-        ByteBuf out = getProtocolTransport().out;
-        ArrayList<byte[]> packets = resultset.toPackets();
-        for (byte[] bs : packets) {
-            out.writeBytes(bs);
-        }
-    }
 
 }

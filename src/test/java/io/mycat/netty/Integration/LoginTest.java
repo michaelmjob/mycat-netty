@@ -17,14 +17,15 @@ import org.junit.rules.ExpectedException;
  */
 public class LoginTest {
 
-    @Test
-    public void testSuccmanyTimes(){
-        for(int i = 0; i < 20; i++) {
-            testLoginWithPassSucceess();
-        }
-    }
-
 //    @Test
+//    public void testSuccmanyTimes(){
+//        for(int i = 0; i < 20; i++) {
+//            System.out.println("测试 次数 : " + i);
+//            testLoginWithPassSucceess();
+//        }
+//    }
+
+    @Test
     public void testLoginWithPassSucceess() {
         try {
             //加载MySql的驱动类

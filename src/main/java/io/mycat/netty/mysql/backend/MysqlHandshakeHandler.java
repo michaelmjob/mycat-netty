@@ -22,7 +22,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 
     // try attributeKey
     NettyBackendSession session = null;
-//    ByteBuf out = null;
 
     public MysqlHandshakeHandler(NettyBackendSession session){
         logger.info("handshake init");
@@ -33,8 +32,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
     public void channelActive(ChannelHandlerContext channelHandlerContext){
         logger.info("mysql handshake handler channel active");
         logger.info("channel active count : " +this.session.getCountDownLatch().getCount());
-//        this.session.wait();
-//        this.session.getCountDownLatch().countDown();
     }
 
     // 服务端会发送数据过来，需要进行解析。
@@ -82,8 +79,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
                 if(handshakePacket == null){
                     // receive handshake packet
                     processHandShake(packet);
-//                    this.out = this.session.getServerChannel().alloc().buffer();
-//                    ByteBuf out = Unpooled.buffer(SystemConfig.DEFAULT_BUFFER_SIZE);
                     ByteBuf out = Unpooled.buffer(SystemConfig.HANDSHAKE_BUFFER_SIZE);
                     out.writeBytes(session.authenticate());
                     assert !Objects.isNull(this.session);
@@ -109,7 +104,6 @@ public class MysqlHandshakeHandler extends ChannelInboundHandlerAdapter{
 
         int charsetIndex = (int) (handshake.serverCharsetIndex & 0xff);
         String charset = io.mycat.netty.mysql.packet.CharsetUtil.getCharset(charsetIndex);
-//        logger.info("charset Index : {}, charset: {}", charsetIndex, charset);
         if(charset != null){
             this.session.setCharsetIndex(charsetIndex);
             this.session.setCharset(charset);

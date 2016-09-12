@@ -125,13 +125,13 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 //        handshake.removeCapabilityFlag(Flags.CLIENT_TRANSACTIONS);
 //        handshake.removeCapabilityFlag(Flags.CLIENT_RESERVED);
 //        handshake.removeCapabilityFlag(Flags.CLIENT_REMEMBER_OPTIONS);
-
-
+//
+//
 //        MysqlFrontendSession temp = new MysqlFrontendSession();
 //        temp.setHandshake(handshake);
 //        temp.setAttachment(SEED_KEY, handshake.seed);
 //        ctx.attr(TMP_SESSION_KEY).set(temp);
-//
+
 //        logger.info("prepare flush authentication, mysql handshake handler : {}", handshake);
 //        out.writeBytes(handshake.getPacket());
 //        ctx.writeAndFlush(out);
@@ -220,7 +220,6 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
             try {
                 byte[] packet = new byte[transport.in.readableBytes()];
                 transport.in.readBytes(packet);
-//                authReply = HandshakeResponse.loadFromPacket(packet);
                 authPacket.read(packet);
 
 
@@ -239,11 +238,6 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
                     error(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
                     return;
                 }
-
-                // pass读取的是不一样的
-                logger.info("auth packet password : {}", authPacket.password);
-                logger.info("auth packet password : {}", authPacket.password.toString());
-
 
                 if(!privilege.checkPassword(authPacket.user, authPacket.password, session.getAttachment(SEED_KEY))) {
                     error(ErrorCode.ER_ACCESS_DENIED_ERROR,

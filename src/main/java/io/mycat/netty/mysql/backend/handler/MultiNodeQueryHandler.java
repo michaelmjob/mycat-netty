@@ -44,7 +44,6 @@ public class MultiNodeQueryHandler extends MultiNodeHandler implements ResponseH
     private OkPacket ok = null;
 //            = new OkPacket();
     private ResultSetPacket result = null;
-//        new ResultSetPacket();
 
     // limit N,M
     private int limitStart;
