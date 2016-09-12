@@ -20,6 +20,10 @@ import io.mycat.netty.ProtocolTransport;
 import io.mycat.netty.Session;
 import io.mycat.netty.mysql.auth.Privilege;
 import io.mycat.netty.mysql.auth.PrivilegeFactory;
+import io.mycat.netty.mysql.packet.AuthPacket;
+import io.mycat.netty.mysql.packet.ErrorPacket;
+import io.mycat.netty.mysql.packet.HandshakePacket;
+import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.util.Constants;
 import io.mycat.netty.util.SysProperties;
@@ -94,7 +98,44 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         logger.info("prepare flush authentication, mysql handshake handler : {}", handshake);
         out.writeBytes(handshake.toPacket());
         ctx.writeAndFlush(out);
-    
+
+//  ===========
+
+
+//        HandshakePacket handshake = new HandshakePacket();
+//        handshake.packetId = 0;
+//        handshake.protocolVersion = MySQLServer.PROTOCOL_VERSION;
+//        // TODO:
+//        handshake.serverVersion = MySQLServer.SERVER_VERSION.getBytes();
+//        handshake.threadId= connIdGenerator.incrementAndGet();
+//        // TODO:
+//        handshake.seed = getRandomString(8).getBytes();
+//        handshake.serverCapabilities = Flags.CLIENT_BASIC_FLAGS;
+//        handshake.serverCharsetIndex = (byte)CharsetUtil.getIndex(MySQLServer.DEFAULT_CHARSET);
+//        handshake.serverStatus = Flags.SERVER_STATUS_AUTOCOMMIT;
+//        // TODO:
+//        handshake.restOfScrambleBuff = getRandomString(12).getBytes();
+////        handshake. = 21;
+////        handshake.authPluginName = "mysql_native_password";
+//        // Remove some flags from the reply
+//        handshake.removeCapabilityFlag(Flags.CLIENT_COMPRESS);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_IGNORE_SPACE);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_LOCAL_FILES);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_SSL);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_TRANSACTIONS);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_RESERVED);
+//        handshake.removeCapabilityFlag(Flags.CLIENT_REMEMBER_OPTIONS);
+
+
+//        MysqlFrontendSession temp = new MysqlFrontendSession();
+//        temp.setHandshake(handshake);
+//        temp.setAttachment(SEED_KEY, handshake.seed);
+//        ctx.attr(TMP_SESSION_KEY).set(temp);
+//
+//        logger.info("prepare flush authentication, mysql handshake handler : {}", handshake);
+//        out.writeBytes(handshake.getPacket());
+//        ctx.writeAndFlush(out);
+//
     }
 
     @Override
@@ -146,16 +187,15 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
 
     /**
      * @param channel
-     * @param buf
      * @return
      */
     private void success(Channel channel) {
         logger.info("success info return form MySQLHandshakeHandler");
         ByteBuf out = channel.alloc().buffer();
-        OK ok = new OK();
-        ok.sequenceId = 2;
-        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
-        out.writeBytes(ok.toPacket());
+        OkPacket okPacket = new OkPacket();
+        okPacket.packetId = 2;
+        okPacket.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+        out.writeBytes(okPacket.getPacket());
         channel.writeAndFlush(out);
     }
     
@@ -176,18 +216,44 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
             logger.info("auth task is running");
             MysqlFrontendSession session = ctx.attr(TMP_SESSION_KEY).getAndRemove();
             HandshakeResponse authReply = null;
+//            AuthPacket authPacket = new AuthPacket();/**/
             try {
                 byte[] packet = new byte[transport.in.readableBytes()];
                 transport.in.readBytes(packet);
                 authReply = HandshakeResponse.loadFromPacket(packet);
-                
+//                authPacket.read(packet);
+//                if (!privilege.userExists(authPacket.user)) {
+//                    error(ErrorCode.ER_ACCESS_DENIED_ERROR,
+//                            "Access denied for user '" + authPacket.user + "'");
+//                    logger.error("user not exist : " + authPacket.user);
+//                    return;
+//                }
+//
+//                if (!StringUtil.isEmpty(authPacket.database)
+//                        && !privilege.schemaExists(authPacket.user, authPacket.database)) {
+//                    String s = "Access denied for user '" + authPacket.user
+//                            + "' to database '" + authPacket.database + "'";
+//                    logger.error(s);
+//                    error(ErrorCode.ER_DBACCESS_DENIED_ERROR, s);
+//                    return;
+//                }
+//
+//                String password = authPacket.password.toString();
+//                if(!privilege.checkPassword(authPacket.user, password,
+//                        (String) session.getAttachment(SEED_KEY))) {
+//                    error(ErrorCode.ER_ACCESS_DENIED_ERROR,
+//                            "Access denied for user '" + authPacket.user + "'");
+//                    logger.error("wrong name+passwd , name :{}, passwd: {} ", authPacket.user, authPacket.password);
+//                    return;
+//                }
+
                 if (!privilege.userExists(authReply.username)) {
                     error(ErrorCode.ER_ACCESS_DENIED_ERROR,
                             "Access denied for user '" + authReply.username + "'");
                     logger.error("user not exist : " + authReply.username);
                     return;
                 }
-                
+
                 if (!StringUtil.isEmpty(authReply.schema)
                         && !privilege.schemaExists(authReply.username, authReply.schema)) {
                     String s = "Access denied for user '" + authReply.username
@@ -204,9 +270,14 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
                     logger.error("wrong name+passwd , name :{}, passwd: {} ", authReply.username, authReply.authResponse);
                     return;
                 }
-//                Connection connect = connectEngine(authReply);
-                session.setHandshakeResponse(authReply);
-//                session.setEngineConnection(connect);
+
+
+
+
+
+                Connection connect = connectEngine(authReply);
+//                session.setHandshakeResponse(authPacket);
+                session.setEngineConnection(connect);
                 session.bind(ctx.channel());
                 session.setAttachment("remoteAddress", ctx.channel().remoteAddress().toString());
                 session.setAttachment("localAddress", ctx.channel().localAddress().toString());
@@ -214,6 +285,8 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
             } catch (Exception e) {
                 String errMsg = authReply == null ? e.getMessage()
                         : "Access denied for user '" + authReply.username + "' to database '" + authReply.schema + "'";
+//                String errMsg = authPacket == null ? e.getMessage()
+//                        : "Access denied for user '" + authPacket.user + "' to database '" + authPacket.database + "'";
                 logger.error("Authorize failed. " + errMsg, e);
                 error(ErrorCode.ER_DBACCESS_DENIED_ERROR, errMsg);
             } finally {
@@ -225,10 +298,10 @@ public class MySQLHandshakeHandler extends ProtocolHandler {
         public void error(int errno, String msg) {
             logger.info("error msg : " + msg);
             transport.out.clear();
-            ERR err = new ERR();
-            err.errorCode = errno;
-            err.errorMessage = msg;
-            transport.out.writeBytes(err.toPacket());
+            ErrorPacket errorPacket = new ErrorPacket();
+            errorPacket.errno = errno;
+            errorPacket.message = msg.getBytes();
+            transport.out.writeBytes(errorPacket.getPacket());
         } 
     }
 }

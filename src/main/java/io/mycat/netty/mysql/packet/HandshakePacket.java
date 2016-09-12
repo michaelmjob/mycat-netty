@@ -54,6 +54,11 @@ public class HandshakePacket extends MySQLPacket {
         restOfScrambleBuff = mm.readBytesWithNull();
     }
 
+    public void removeCapabilityFlag(long flag) {
+        this.serverCapabilities &= ~flag;
+    }
+
+    // 有默认支持的协议版本。
     public void read(byte[] data) {
         MySQLMessage mm = new MySQLMessage(data);
         packetLength = mm.readUB3();

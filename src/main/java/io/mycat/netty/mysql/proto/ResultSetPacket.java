@@ -66,10 +66,11 @@ public class ResultSetPacket {
     }
 
     public byte[] eofPacket() {
-        EOF eof = new EOF();
-        eof.sequenceId = this.sequenceId;
-        this.sequenceId++;
-        return eof.toPacket();
+//        EOF eof = new EOF();
+//        eof.sequenceId = this.sequenceId;
+//        this.sequenceId++;
+//        return eof.toPacket();
+        return null;
     }
 
     public void addColumn(ColumnPacket column) {

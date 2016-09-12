@@ -16,7 +16,7 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.*;
-import io.mycat.netty.mysql.proto.ERR;
+import io.mycat.netty.mysql.packet.ErrorPacket;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -85,10 +85,10 @@ public class MySQLProtocolHandler extends ProtocolHandler {
 
         public void handleThrowable(Throwable e) {
             ProtocolProcessException convert = ProtocolProcessException.convert(e);
-            ERR err = new ERR();
-            err.errorCode = convert.getErrorCode();
-            err.errorMessage = convert.getMessage();
-            this.mysqlSession.writeAndFlush(err);
+            ErrorPacket errorPacket = new ErrorPacket();
+            errorPacket.errno = convert.getErrorCode();
+            errorPacket.message = convert.getMessage().getBytes();
+            this.mysqlSession.writeAndFlush(errorPacket.getPacket());
         }
     }
 }

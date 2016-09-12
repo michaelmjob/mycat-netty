@@ -1,20 +1,15 @@
 package io.mycat.netty.mysql.backend;
 
 import io.mycat.netty.conf.SystemConfig;
-import io.mycat.netty.mysql.MySQLHandshakeHandler;
 import io.mycat.netty.mysql.packet.*;
-import io.mycat.netty.mysql.proto.Handshake;
 import io.mycat.netty.mysql.proto.Packet;
-import io.mycat.netty.util.SecurityUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 /**

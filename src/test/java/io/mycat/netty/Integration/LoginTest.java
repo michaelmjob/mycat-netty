@@ -17,9 +17,6 @@ import org.junit.rules.ExpectedException;
  */
 public class LoginTest {
 
-//    @Rule
-//    public ExpectedException thrown= ExpectedException.none();
-
     @Test
     public void testLoginWithPassSucceess() {
         try {
@@ -137,8 +134,6 @@ public class LoginTest {
         String dbUrl = "jdbc:mysql://localhost:8090/schema?connectTimeout=1000";
         Connection con = null;
         try {
-//            thrown.expect(SQLException.class);
-//            thrown.expectMessage("Access denied for user 'xujianhai'");
             con = DriverManager.getConnection(dbUrl, username, wrongpass);
             Assert.assertTrue(false);
         } catch (SQLException se) {

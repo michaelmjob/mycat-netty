@@ -112,90 +112,90 @@ public abstract class Packet {
         return packet;
     }
     
-    public static ArrayList<byte[]> read_full_result_set(InputStream in, OutputStream out, ArrayList<byte[]> buffer, boolean bufferResultSet) throws IOException {
-        // Assume we have the start of a result set already
-        
-        byte[] packet = buffer.get((buffer.size()-1));
-        long colCount = ColCountPacket.loadFromPacket(packet).colCount;
-        
-        // Read the columns and the EOF field
-        for (int i = 0; i < (colCount+1); i++) {
-            packet = Packet.read_packet(in);
-            if (packet == null) {
-                throw new IOException();
-            }
-            buffer.add(packet);
-            
-            // Evil optimization
-            if (!bufferResultSet) {
-                Packet.write(out, buffer);
-                out.flush();
-                buffer.clear();
-            }
-        }
-        
-        int packedPacketSize = 65535;
-        byte[] packedPacket = new byte[packedPacketSize];
-        int position = 0;
-        
-        while (true) {
-            packet = Packet.read_packet(in);
-            
-            if (packet == null) {
-                throw new IOException();
-            }
-            
-            int packetType = Packet.getType(packet);
-            
-            if (packetType == Flags.EOF || packetType == Flags.ERR) {
-                byte[] newPackedPacket = new byte[position];
-                System.arraycopy(packedPacket, 0, newPackedPacket, 0, position);
-                buffer.add(newPackedPacket);
-                packedPacket = packet;
-                break;
-            }
-            
-            if (position+packet.length > packedPacketSize) {
-                int subsize = packedPacketSize - position;
-                System.arraycopy(packet, 0, packedPacket, position, subsize);
-                buffer.add(packedPacket);
-                
-                // Evil optimization
-                if (!bufferResultSet) {
-                    Packet.write(out, buffer);
-                    out.flush();
-                    buffer.clear();
-                }
-                
-                packedPacket = new byte[packedPacketSize];
-                position = 0;
-                System.arraycopy(packet, subsize, packedPacket, position, packet.length-subsize);
-                position += packet.length-subsize;
-            }
-            else {
-                System.arraycopy(packet, 0, packedPacket, position, packet.length);
-                position += packet.length;
-            }
-        }
-        buffer.add(packedPacket);
-        
-        // Evil optimization
-        if (!bufferResultSet) {
-            Packet.write(out, buffer);
-            buffer.clear();
-            out.flush();
-        }
-        
-        if (Packet.getType(packet) == Flags.ERR) {
-            return buffer;
-        }
-        
-        if (EOF.loadFromPacket(packet).hasStatusFlag(Flags.SERVER_MORE_RESULTS_EXISTS)) {
-            buffer.add(Packet.read_packet(in));
-            buffer = Packet.read_full_result_set(in, out, buffer, bufferResultSet);
-        }
-        return buffer;
-    }
+//    public static ArrayList<byte[]> read_full_result_set(InputStream in, OutputStream out, ArrayList<byte[]> buffer, boolean bufferResultSet) throws IOException {
+//        // Assume we have the start of a result set already
+//
+//        byte[] packet = buffer.get((buffer.size()-1));
+//        long colCount = ColCountPacket.loadFromPacket(packet).colCount;
+//
+//        // Read the columns and the EOF field
+//        for (int i = 0; i < (colCount+1); i++) {
+//            packet = Packet.read_packet(in);
+//            if (packet == null) {
+//                throw new IOException();
+//            }
+//            buffer.add(packet);
+//
+//            // Evil optimization
+//            if (!bufferResultSet) {
+//                Packet.write(out, buffer);
+//                out.flush();
+//                buffer.clear();
+//            }
+//        }
+//
+//        int packedPacketSize = 65535;
+//        byte[] packedPacket = new byte[packedPacketSize];
+//        int position = 0;
+//
+//        while (true) {
+//            packet = Packet.read_packet(in);
+//
+//            if (packet == null) {
+//                throw new IOException();
+//            }
+//
+//            int packetType = Packet.getType(packet);
+//
+//            if (packetType == Flags.EOF || packetType == Flags.ERR) {
+//                byte[] newPackedPacket = new byte[position];
+//                System.arraycopy(packedPacket, 0, newPackedPacket, 0, position);
+//                buffer.add(newPackedPacket);
+//                packedPacket = packet;
+//                break;
+//            }
+//
+//            if (position+packet.length > packedPacketSize) {
+//                int subsize = packedPacketSize - position;
+//                System.arraycopy(packet, 0, packedPacket, position, subsize);
+//                buffer.add(packedPacket);
+//
+//                // Evil optimization
+//                if (!bufferResultSet) {
+//                    Packet.write(out, buffer);
+//                    out.flush();
+//                    buffer.clear();
+//                }
+//
+//                packedPacket = new byte[packedPacketSize];
+//                position = 0;
+//                System.arraycopy(packet, subsize, packedPacket, position, packet.length-subsize);
+//                position += packet.length-subsize;
+//            }
+//            else {
+//                System.arraycopy(packet, 0, packedPacket, position, packet.length);
+//                position += packet.length;
+//            }
+//        }
+//        buffer.add(packedPacket);
+//
+//        // Evil optimization
+//        if (!bufferResultSet) {
+//            Packet.write(out, buffer);
+//            buffer.clear();
+//            out.flush();
+//        }
+//
+//        if (Packet.getType(packet) == Flags.ERR) {
+//            return buffer;
+//        }
+//
+//        if (EOF.loadFromPacket(packet).hasStatusFlag(Flags.SERVER_MORE_RESULTS_EXISTS)) {
+//            buffer.add(Packet.read_packet(in));
+//            buffer = Packet.read_full_result_set(in, out, buffer, bufferResultSet);
+//        }
+//        return buffer;
+//    }
     
     public static void write(OutputStream out, ArrayList<byte[]> buffer) throws IOException {
         for (byte[] packet: buffer) {

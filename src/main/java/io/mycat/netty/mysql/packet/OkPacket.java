@@ -26,6 +26,11 @@ public class OkPacket extends MySQLPacket {
     public int warningCount;
     public byte[] message = null;
 
+    public void setStatusFlag(long flag) {
+        this.serverStatus |= flag;
+    }
+
+
     public void read(BinaryPacket bin) {
         packetLength = bin.packetLength;
         packetId = bin.packetId;

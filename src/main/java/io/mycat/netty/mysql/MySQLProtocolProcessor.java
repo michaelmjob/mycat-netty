@@ -1,6 +1,8 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.ProtocolProcessException;
+import io.mycat.netty.mysql.packet.ErrorPacket;
+import io.mycat.netty.mysql.packet.OkPacket;
 import io.mycat.netty.mysql.parser.*;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.mysql.response.CharacterSet;
@@ -453,18 +455,18 @@ public class MySQLProtocolProcessor extends TraceableProcessor {
     }
 
     public void sendOk() {
-        OK ok = new OK();
-        ok.sequenceId = getNextSequenceId();
-        ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
-        getProtocolTransport().out.writeBytes(ok.toPacket());
+        OkPacket okPacket = new OkPacket();
+        okPacket.packetId = (byte)getNextSequenceId();
+        okPacket.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+        getProtocolTransport().out.writeBytes(okPacket.getPacket());
     }
 
     public void sendError(int errno, String msg) {
-        ERR err = new ERR();
-        err.sequenceId = getNextSequenceId();
-        err.errorCode = errno;
-        err.errorMessage = msg;
-        getProtocolTransport().out.writeBytes(err.toPacket());
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.packetId = (byte)getNextSequenceId();
+        errorPacket.errno = errno;
+        errorPacket.message = msg.getBytes();
+        getProtocolTransport().out.writeBytes(errorPacket.getPacket());
     }
 
     /**

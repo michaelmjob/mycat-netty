@@ -16,7 +16,7 @@
 package io.mycat.netty.mysql;
 
 import io.mycat.netty.ProtocolTransport;
-import io.mycat.netty.mysql.packet.MySQLPacket;
+import io.mycat.netty.mysql.packet.*;
 import io.mycat.netty.mysql.proto.*;
 import io.mycat.netty.router.parser.util.ObjectUtil;
 import io.mycat.netty.util.CharsetUtil;
@@ -46,7 +46,10 @@ public class MysqlFrontendSession implements Session {
     private ProtocolTransport transport;
 
     private Handshake handshake;
-    private HandshakeResponse handshakeResponse;
+//    private HandshakePacket handshakePacket;
+//    private HandshakeResponse handshakeResponse;
+    private AuthPacket authPacket;
+
     private Connection engineConnection;
     private Map<String, Object> attachments = new HashMap<String, Object>();
     private String charset;
@@ -84,10 +87,6 @@ public class MysqlFrontendSession implements Session {
         this.transport.in.release();
     }
 
-    public void writeAndFlush(ERR err){
-       this.transport.out.clear();
-        this.writeAndFlush(err.toPacket());
-    }
 
     public void writeAndFlush(ByteBuf bytes){
         this.ctx.writeAndFlush(bytes);
@@ -107,25 +106,27 @@ public class MysqlFrontendSession implements Session {
     }
 
     public void sendError(int errno, String msg) {
-        ERR err = new ERR();
-        err.sequenceId = getNextSequenceId();
-        err.errorCode = errno;
-        err.errorMessage = msg;
+        ErrorPacket errorPacket = new ErrorPacket();
+        errorPacket.packetId = (byte)getNextSequenceId();
+        errorPacket.errno = errno;
+        // TODO: ADD CHARSET SUPPORT
+        errorPacket.message = msg.getBytes();
 
-        this.transport.out.writeBytes(err.toPacket());
+
+        this.transport.out.writeBytes(errorPacket.getPacket());
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
 //        getProtocolTransport().out.writeBytes(err.toPacket());
     }
 
     public void sendOk() {
-        OK ok = new OK();
-        ok.sequenceId = getNextSequenceId();
+
+        OkPacket ok = new OkPacket();
+        ok.packetId = (byte)getNextSequenceId();
         ok.setStatusFlag(Flags.SERVER_STATUS_AUTOCOMMIT);
+        logger.info("send ok  data : {}", ok.getPacket());
 
-        logger.info("send ok  data : {}", ok.toPacket());
-
-        this.transport.out.writeBytes(ok.toPacket());
+        this.transport.out.writeBytes(ok.getPacket());
         this.ctx.writeAndFlush(this.transport.out);
         this.transport.in.release();
     }
@@ -142,8 +143,15 @@ public class MysqlFrontendSession implements Session {
     /**
      * @return the sessionId
      */
+//    public long getConnectionId() {
+//        return handshake.connectionId;
+//    }
+//    public long getConnectionId() {
+//        return handshakePacket.threadId ;
+//    }
+
     public long getConnectionId() {
-        return handshake.connectionId;
+        return handshake.connectionId ;
     }
 
     @SuppressWarnings("unchecked")
@@ -188,14 +196,16 @@ public class MysqlFrontendSession implements Session {
         setCharsetIndex((int)handshake.characterSet);
     }
 
-    /**
-     * @param handshakeResponse the handshakeResponse to set
-     */
-    public void setHandshakeResponse(HandshakeResponse handshakeResponse) {
-        this.handshakeResponse = handshakeResponse;
-        this.username = handshakeResponse.username;
-        this.schema = handshakeResponse.schema;
-        this.setCharsetIndex((int)handshakeResponse.characterSet);
+//    public void setHandshake(HandshakePacket handshake) {
+//        this.handshakePacket = handshake;
+//        setCharsetIndex(handshake.serverCharsetIndex);
+//    }
+
+    public void setHandshakeResponse(AuthPacket authPacket) {
+        this.authPacket = authPacket;
+        this.username = authPacket.user;
+        this.schema = authPacket.database;
+        this.setCharsetIndex((int)authPacket.charsetIndex);
 
     }
 
