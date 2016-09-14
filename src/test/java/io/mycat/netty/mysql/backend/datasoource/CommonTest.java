@@ -1,7 +1,7 @@
 package io.mycat.netty.mysql.backend.datasoource;
 
 import io.mycat.netty.conf.DataSourceConfig;
-import io.mycat.netty.mysql.TestConstants;
+import io.mycat.netty.TestConstants;
 import io.mycat.netty.util.Constants;
 
 import java.util.ArrayList;

@@ -1,5 +1,6 @@
 package io.mycat.netty.Integration;
 
+import io.mycat.netty.TestConstants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +27,8 @@ public class ShowTest {
 
     // select @@version
     // select @@version_comment limit 1
-    private String username = "xujianhai";
-    private String password = "xujianhai";
+    String username = TestConstants.user;
+    String password = TestConstants.pass;
 //    private String dbUrl = "jdbc:mysql://localhost:8090/schema?connectTimeout=1000";
     private String dbUrl = "jdbc:mysql://localhost:8090/frontdb0?connectTimeout=1000";
     private final Map<String, String> variables = new HashMap<String, String>();

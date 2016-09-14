@@ -1,6 +1,6 @@
 package io.mycat.netty.mysql.backend;
 
-import io.mycat.netty.mysql.TestConstants;
+import io.mycat.netty.TestConstants;
 import io.mycat.netty.mysql.MysqlFrontendSession;
 import io.mycat.netty.mysql.MysqlSessionContext;
 import io.mycat.netty.mysql.backend.datasource.DataSource;

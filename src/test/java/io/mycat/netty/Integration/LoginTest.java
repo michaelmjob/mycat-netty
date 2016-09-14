@@ -7,6 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import com.sun.source.tree.AssertTree;
+import io.mycat.netty.TestConstants;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,8 +36,8 @@ public class LoginTest {
             e.printStackTrace();
         }
 
-        String username = "xujianhai";
-        String password = "xujianhai";
+        String username = TestConstants.user;
+        String password = TestConstants.pass;
         String dbUrl = "jdbc:mysql://localhost:8090/schema?connectTimeout=1000";
         // test success
         Connection con = null;

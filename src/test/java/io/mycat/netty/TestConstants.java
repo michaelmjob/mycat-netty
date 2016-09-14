@@ -1,4 +1,4 @@
-package io.mycat.netty.mysql;
+package io.mycat.netty;
 
 /**
  * Created by snow_young on 16/9/9.

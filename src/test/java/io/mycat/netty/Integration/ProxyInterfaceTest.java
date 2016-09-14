@@ -1,5 +1,6 @@
 package io.mycat.netty.Integration;
 
+import io.mycat.netty.TestConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -15,8 +16,8 @@ import java.sql.*;
 public class ProxyInterfaceTest {
     private static Logger logger = LoggerFactory.getLogger(ProxyInterfaceTest.class);
 
-    private String username = "xujianhai";
-    private String password = "xujianhai";
+    String username = TestConstants.user;
+    String password = TestConstants.pass;
     private String dbUrl = "jdbc:mysql://localhost:8090/frontdb0?connectTimeout=1000";
 
     // need mysql mock
